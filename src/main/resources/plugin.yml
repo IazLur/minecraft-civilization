@@ -1,0 +1,6 @@
+name: TestJava
+version: '${version}'
+main: edouard.testjava.TestJava
+api-version: 1.18
+authors: [ Edouard ]
+description: TestJava

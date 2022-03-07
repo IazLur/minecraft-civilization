@@ -1,0 +1,48 @@
+package edouard.testjava.services;
+
+import edouard.testjava.Config;
+import edouard.testjava.repositories.VillageRepository;
+import org.bukkit.ChatColor;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+
+public class BlockProtectionService {
+    public void protectRestOfTheWorld(BlockBreakEvent e) {
+        e.setCancelled(true);
+        e.setDropItems(false);
+        e.getPlayer().sendMessage(ChatColor.RED + "Ce terrain n'est pas dans votre territoire");
+    }
+
+    public void protectRestOfTheWorld(BlockPlaceEvent e) {
+        e.setCancelled(true);
+        e.setBuild(false);
+        e.getPlayer().sendMessage(ChatColor.RED + "Ce terrain n'est pas dans votre territoire");
+    }
+
+    public boolean canPlayerBreakBlock(BlockBreakEvent e) {
+        return VillageRepository.getCurrentVillageConstructibleIfOwn(e.getPlayer()) != null;
+    }
+
+    public boolean canPlayerCreateVillage(BlockPlaceEvent e) {
+        boolean result = VillageRepository.getCurrentVillageTerritory(e.getPlayer()) == null;
+        if(!result) {
+            e.setCancelled(true);
+            e.setBuild(false);
+        }
+        return result;
+    }
+
+    public boolean isVillageCenterTypeGettingDestroyed(BlockBreakEvent e) {
+        if(e.getBlock().getType() == Config.VILLAGE_CENTER_TYPE) {
+            e.setCancelled(true);
+            e.setDropItems(false);
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean canPlayerPlaceBlock(BlockPlaceEvent e) {
+        return VillageRepository.getCurrentVillageConstructibleIfOwn(e.getPlayer()) != null;
+    }
+}
