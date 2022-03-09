@@ -84,7 +84,7 @@ public final class TestJava extends JavaPlugin implements Listener {
 
         playerService.killAllDelegators();
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerSpawnThread(), 0, 20);
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerEatThread(), 0, 20 * 60 * 5);
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerEatThread(), 0, 20 * 5);
     }
 
     @EventHandler

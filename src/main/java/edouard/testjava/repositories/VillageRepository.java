@@ -44,16 +44,30 @@ public class VillageRepository {
     public static VillageModel getCurrentVillageConstructible(@Nonnull LivingEntity livingEntity) {
         VillageModel nearest = VillageRepository.getNearestOf(livingEntity);
         if (nearest == null) return null;
-        return getBellLocation(nearest).distance(livingEntity.getLocation())
-                <= Config.VILLAGE_CONSTRUCTIBLE_RADIUS ? nearest : null;
+        Location bell = getBellLocation(nearest);
+        Location loc = livingEntity.getLocation();
+        if (bell.getBlockX() - Config.VILLAGE_CONSTRUCTIBLE_RADIUS / 2 < loc.getBlockX()
+                && bell.getBlockX() + Config.VILLAGE_CONSTRUCTIBLE_RADIUS / 2 > loc.getBlockX()
+                && bell.getBlockZ() - Config.VILLAGE_CONSTRUCTIBLE_RADIUS / 2 < loc.getBlockZ()
+                && bell.getBlockZ() + Config.VILLAGE_CONSTRUCTIBLE_RADIUS / 2 > loc.getBlockZ()) {
+            return nearest;
+        }
+        return null;
     }
 
     @Nullable
     public static VillageModel getCurrentVillageTerritory(@Nonnull LivingEntity livingEntity) {
         VillageModel nearest = VillageRepository.getNearestOf(livingEntity);
         if (nearest == null) return null;
-        return getBellLocation(nearest).distance(livingEntity.getLocation())
-                <= Config.VILLAGE_PROTECTION_RADIUS ? nearest : null;
+        Location bell = getBellLocation(nearest);
+        Location loc = livingEntity.getLocation();
+        if (bell.getBlockX() - Config.VILLAGE_PROTECTION_RADIUS / 2 < loc.getBlockX()
+                && bell.getBlockX() + Config.VILLAGE_PROTECTION_RADIUS / 2 > loc.getBlockX()
+                && bell.getBlockZ() - Config.VILLAGE_PROTECTION_RADIUS / 2 < loc.getBlockZ()
+                && bell.getBlockZ() + Config.VILLAGE_PROTECTION_RADIUS / 2 > loc.getBlockZ()) {
+            return nearest;
+        }
+        return null;
     }
 
     @Nullable
