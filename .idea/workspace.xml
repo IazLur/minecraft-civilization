@@ -10,15 +10,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f91b2139-194e-4538-850d-9d0cde70afca" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/VillagerGoEatThread.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/TestJava.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/TestJava.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/VillagerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/VillagerService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/VillagerEatThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/VillagerEatThread.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/TestJava.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/TestJava.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/services/VillagerService$1.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/VillagerSpawnThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/VillagerSpawnThread.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/services/VillagerService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/services/VillagerService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/threads/VillagerEatThread.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/threads/VillagerEatThread.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/threads/VillagerGoEatThread.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/threads/VillagerGoEatThread.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -87,7 +83,7 @@
       <workItem from="1646915905256" duration="104000" />
       <workItem from="1646916068168" duration="181000" />
       <workItem from="1646916261208" duration="376000" />
-      <workItem from="1646916645705" duration="3035000" />
+      <workItem from="1646916645705" duration="3227000" />
     </task>
     <servers />
   </component>

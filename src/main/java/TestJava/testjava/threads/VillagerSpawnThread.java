@@ -21,7 +21,7 @@ public class VillagerSpawnThread implements Runnable {
             EmpireModel empire = EmpireRepository.get(village.getPlayerName());
             Location bell = VillageRepository.getBellLocation(village);
             // Spawn villager
-            if (rand.nextInt(60 * 30) == 1 &&
+            if (rand.nextInt(60) == 1 &&
                     village.getPopulation() < village.getBedsCount()) {
                 village.setPopulation(village.getPopulation() + 1);
                 VillageRepository.update(village);
