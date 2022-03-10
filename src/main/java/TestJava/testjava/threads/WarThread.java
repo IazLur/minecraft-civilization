@@ -40,7 +40,8 @@ public class WarThread implements Runnable {
         VillageModel meVillage = VillageRepository.get(village);
         if (entities.size() == 0 || other.getPlayerName().equals(me)) {
             Bukkit.getServer().broadcastMessage("La guerre entre " + Colorize.name(village)
-                    + " et " + Colorize.name(enemy.getId()) + " s'est terminée");
+                    + " et " + Colorize.name(enemy.getId()) + " s'est terminée (" +
+                    (entities.size() == 0 ? "défaite" : "victoire") + ")");
             getScheduler().cancelTask(TestJava.threads.get(uniq));
             empire.setIsInWar(false);
             empire.setEnemyName("");
