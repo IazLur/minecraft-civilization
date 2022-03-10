@@ -12,6 +12,7 @@ public class VillageModel {
     private Integer bedsCount;
     private Integer population = 0;
     private Integer garrison = 0;
+    private Integer groundArmy = 0;
     private double x;
     private double y;
     private double z;
@@ -78,5 +79,13 @@ public class VillageModel {
 
     public void setGarrison(Integer garrison) {
         this.garrison = garrison;
+    }
+
+    public Integer getGroundArmy() {
+        return groundArmy;
+    }
+
+    public void setGroundArmy(Integer groundArmy) {
+        this.groundArmy = groundArmy;
     }
 }

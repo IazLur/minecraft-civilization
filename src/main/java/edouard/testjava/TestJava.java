@@ -99,6 +99,7 @@ public final class TestJava extends JavaPlugin implements Listener {
     public void onEntityTarget(EntityTargetLivingEntityEvent e) {
         TestJava.playerService.cancelDelegatorTarget(e);
         TestJava.entityService.testIfSkeletonDamageSameVillage(e);
+        TestJava.entityService.testIfPillagerDamageSameVillage(e);
     }
 
     @EventHandler
@@ -127,6 +128,7 @@ public final class TestJava extends JavaPlugin implements Listener {
     public void onEntityDeath(EntityDeathEvent e) {
         TestJava.entityService.testDeathIfVillager(e);
         TestJava.entityService.testDeathIfSkeleton(e);
+        TestJava.entityService.testDeathIfPillager(e);
     }
 
     @EventHandler
@@ -164,6 +166,7 @@ public final class TestJava extends JavaPlugin implements Listener {
             // Player's territory
             TestJava.villageService.testIfPlacingBed(e);
             TestJava.entityService.testIfPlaceDefender(e);
+            TestJava.entityService.testIfPlaceAttacker(e);
             return;
         }
         TestJava.blockProtectionService.protectRestOfTheWorld(e);
