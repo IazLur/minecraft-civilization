@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ArtifactsWorkspaceSettings">
     <artifacts-to-build>
-      <artifact name="edouard:jar" />
+      <artifact name="TestJava:jar" />
     </artifacts-to-build>
   </component>
   <component name="AutoImportSettings">
@@ -10,20 +10,65 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f91b2139-194e-4538-850d-9d0cde70afca" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/TestJava.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/artifacts/edouard_jar.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/artifacts/TestJava_jar.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/edouard.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/TestJava.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/edouard/testjava/TestJava.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/classes/Pathfinder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/commands/RenameCommand.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/edouard/testjava/commands/RenameCommand.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/models/VillageModel.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/edouard/testjava/models/VillageModel.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/repositories/EmpireRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/edouard/testjava/repositories/EmpireRepository.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/repositories/VillageRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/edouard/testjava/repositories/VillageRepository.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/services/BlockProtectionService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/edouard/testjava/services/BlockProtectionService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/services/EntityService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/edouard/testjava/services/EntityService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/services/PlayerService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/edouard/testjava/services/PlayerService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/threads/VillagerEatThread.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/edouard/testjava/threads/VillagerEatThread.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/Config.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/Config.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/TestJava.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/TestJava.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/classes/CustomEntity.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/classes/CustomEntity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/classes/OneArg.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/classes/OneArg.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/commands/DelegationCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/commands/DelegationCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/commands/RenameCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/commands/RenameCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/helpers/Colorize.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/helpers/Colorize.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/helpers/CustomName.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/helpers/CustomName.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/models/DelegationModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/models/DelegationModel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/models/EmpireModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/models/EmpireModel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/models/VillageModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/models/VillageModel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/models/VillagerModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/models/VillagerModel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/repositories/EmpireRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/repositories/EmpireRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/repositories/VillageRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/repositories/VillageRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/repositories/VillagerRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/repositories/VillagerRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/services/BlockProtectionService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/BlockProtectionService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/services/EntityService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/EntityService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/services/InventoryService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/InventoryService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/services/ItemService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/ItemService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/services/PlayerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/PlayerService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/services/VillageService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/VillageService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/services/VillagerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/VillagerService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/threads/VillagerEatThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/VillagerEatThread.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/threads/VillagerSpawnThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/VillagerSpawnThread.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/plugin.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/plugin.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/Config.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/TestJava.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/classes/CustomEntity.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/classes/OneArg.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/commands/DelegationCommand.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/commands/RenameCommand.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/helpers/Colorize.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/helpers/CustomName.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/models/DelegationModel.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/models/EmpireModel.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/models/VillageModel.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/models/VillagerModel.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/repositories/EmpireRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/repositories/VillageRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/repositories/VillagerRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/services/BlockProtectionService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/services/EntityService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/services/InventoryService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/services/ItemService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/services/PlayerService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/services/VillageService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/services/VillagerService$1.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/services/VillagerService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/threads/VillagerEatThread.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/threads/VillagerSpawnThread.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/plugin.yml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/plugin.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -67,12 +112,13 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="extract.method.default.visibility" value="private" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$USER_HOME$/Desktop/minecraft/plugins" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="project.structure.last.edited" value="Global Libraries" />
-    <property name="project.structure.proportion" value="0.15" />
+    <property name="project.structure.last.edited" value="Artifacts" />
+    <property name="project.structure.proportion" value="0.15039062" />
     <property name="project.structure.side.proportion" value="0.2" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -90,6 +136,8 @@
       <workItem from="1646903977740" duration="8344000" />
       <workItem from="1646915905256" duration="104000" />
       <workItem from="1646916068168" duration="181000" />
+      <workItem from="1646916261208" duration="376000" />
+      <workItem from="1646916645705" duration="250000" />
     </task>
     <servers />
   </component>
