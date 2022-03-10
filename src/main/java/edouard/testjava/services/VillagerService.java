@@ -27,39 +27,49 @@ public class VillagerService {
                 // Block is eatable
                 VillageModel nearby = VillageRepository.getNearestOf(e.getBlock().getLocation());
                 Collection<CustomEntity> villagers = CustomName.whereVillage(nearby.getId());
-                for (CustomEntity villager : villagers) {
-                    if (villager.getEntity() instanceof Villager v) {
-                        Location newLoc = e.getBlock().getLocation();
-                        newLoc.setY(newLoc.getY() + 1);
-                        v.getPathfinder().moveTo(newLoc);
-                        Bukkit.getScheduler().scheduleSyncRepeatingTask(TestJava.plugin, new BukkitRunnable() {
-                            @Override
-                            public void run() {
-                                int first =
-                                        v.getLocation().getBlockX() +
-                                                (v.getLocation().getBlockY() - 1) +
-                                                v.getLocation().getBlockZ();
-                                int second =
-                                        e.getBlock().getLocation().getBlockX() +
-                                                e.getBlock().getLocation().getBlockY() +
-                                                e.getBlock().getLocation().getBlockZ();
-                                if (first == second) {
-                                    VillagerModel villager = VillagerRepository.find(v.getUniqueId());
-                                    if(villager.getFood() < 10) {
-                                        age.setAge(1);
-                                        e.getBlock().setBlockData(age);
-                                        System.out.println("Un villageois a mangé");
-
-                                        // Increment food
-                                        villager.setFood(villager.getFood() + 1);
-                                        VillagerRepository.update(villager);
-                                    }
-                                    this.cancel();
-                                }
-                            }
-                        }, 0, 20);
+                Villager v = null;
+                int oldFood = 11;
+                for (CustomEntity selecting : villagers) {
+                    if (selecting.getEntity() instanceof Villager villager) {
+                        VillagerModel current = VillagerRepository.find(villager.getUniqueId());
+                        if (current.getFood() < oldFood) {
+                            v = (Villager) selecting.getEntity();
+                            oldFood = current.getFood();
+                        }
                     }
                 }
+                if (v == null) {
+                    return;
+                }
+                Location newLoc = e.getBlock().getLocation();
+                newLoc.setY(newLoc.getY() + 1);
+                v.getPathfinder().moveTo(newLoc);
+                Bukkit.getScheduler().scheduleSyncRepeatingTask(TestJava.plugin, new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        int first =
+                                v.getLocation().getBlockX() +
+                                        (v.getLocation().getBlockY() - 1) +
+                                        v.getLocation().getBlockZ();
+                        int second =
+                                e.getBlock().getLocation().getBlockX() +
+                                        e.getBlock().getLocation().getBlockY() +
+                                        e.getBlock().getLocation().getBlockZ();
+                        if (first == second) {
+                            VillagerModel villager = VillagerRepository.find(v.getUniqueId());
+                            if (villager.getFood() < 10) {
+                                age.setAge(1);
+                                e.getBlock().setBlockData(age);
+                                System.out.println("Un villageois a mangé");
+
+                                // Increment food
+                                villager.setFood(villager.getFood() + 1);
+                                VillagerRepository.update(villager);
+                            }
+                            this.cancel();
+                        }
+                    }
+                }, 0, 20);
             }
         }
     }
