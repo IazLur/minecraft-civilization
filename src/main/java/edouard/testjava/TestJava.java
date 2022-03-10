@@ -47,6 +47,7 @@ public final class TestJava extends JavaPlugin implements Listener {
     public static ItemService itemService;
     public static InventoryService inventoryService;
     public static EntityService entityService;
+    public static VillagerService villagerService;
     public static World world;
 
     public TestJava() throws UnsupportedEncodingException {
@@ -86,6 +87,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         TestJava.playerService = new PlayerService();
         TestJava.inventoryService = new InventoryService();
         TestJava.entityService = new EntityService();
+        TestJava.villagerService = new VillagerService();
 
         playerService.killAllDelegators();
         playerService.resetAllWars();
@@ -107,8 +109,8 @@ public final class TestJava extends JavaPlugin implements Listener {
     }
 
     @EventHandler
-    public void test(BlockGrowEvent e) {
-
+    public void onBlockGrow(BlockGrowEvent e) {
+        TestJava.villagerService.testIfGrowIsEatable(e);
     }
 
     @EventHandler

@@ -21,4 +21,8 @@ public class VillagerRepository {
     public static Collection<VillagerModel> getAll() {
         return TestJava.database.findAll(VillagerModel.class);
     }
+
+    public static VillagerModel find(UUID uniqueId) {
+        return TestJava.database.findById(uniqueId, VillagerModel.class);
+    }
 }

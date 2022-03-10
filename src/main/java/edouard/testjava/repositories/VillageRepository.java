@@ -27,17 +27,8 @@ public class VillageRepository {
     @Nullable
     public static VillageModel getNearestOf(@Nonnull LivingEntity livingEntity) {
         double distance = 999D;
-        VillageModel currentVillage = null;
         Location location = livingEntity.getLocation();
-        for (VillageModel village : VillageRepository.getAll()) {
-            Location bellLocation = VillageRepository.getBellLocation(village);
-            double testDistance = bellLocation.distance(location);
-            if (testDistance < distance) {
-                currentVillage = village;
-                distance = testDistance;
-            }
-        }
-        return currentVillage;
+        return getVillageModelDistance(location, distance);
     }
 
     @Nullable
@@ -98,5 +89,23 @@ public class VillageRepository {
 
     public static VillageModel get(@Nonnull String id) {
         return TestJava.database.findById(id, VillageModel.class);
+    }
+
+    public static VillageModel getNearestOf(Location location) {
+        double distance = 999D;
+        return getVillageModelDistance(location, distance);
+    }
+
+    private static VillageModel getVillageModelDistance(Location location, double distance) {
+        VillageModel currentVillage = null;
+        for (VillageModel village : VillageRepository.getAll()) {
+            Location bellLocation = VillageRepository.getBellLocation(village);
+            double testDistance = bellLocation.distance(location);
+            if (testDistance < distance) {
+                currentVillage = village;
+                distance = testDistance;
+            }
+        }
+        return currentVillage;
     }
 }
