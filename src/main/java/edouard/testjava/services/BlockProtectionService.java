@@ -1,22 +1,31 @@
 package edouard.testjava.services;
 
 import edouard.testjava.Config;
+import edouard.testjava.models.VillageModel;
 import edouard.testjava.repositories.VillageRepository;
 import org.bukkit.ChatColor;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 
+import java.util.Objects;
+
 public class BlockProtectionService {
     public void protectRestOfTheWorld(BlockBreakEvent e) {
-        e.setCancelled(true);
-        e.setDropItems(false);
-        e.getPlayer().sendMessage(ChatColor.RED + "Ce terrain n'est pas dans votre territoire");
+        VillageModel village = VillageRepository.getCurrentVillageTerritory(e.getPlayer());
+        if (village != null && !Objects.equals(village.getPlayerName(), e.getPlayer().getDisplayName())) {
+            e.setCancelled(true);
+            e.setDropItems(false);
+            e.getPlayer().sendMessage(ChatColor.RED + "Ce terrain n'est pas dans votre territoire");
+        }
     }
 
     public void protectRestOfTheWorld(BlockPlaceEvent e) {
-        e.setCancelled(true);
-        e.setBuild(false);
-        e.getPlayer().sendMessage(ChatColor.RED + "Ce terrain n'est pas dans votre territoire");
+        VillageModel village = VillageRepository.getCurrentVillageTerritory(e.getPlayer());
+        if (village != null && !Objects.equals(village.getPlayerName(), e.getPlayer().getDisplayName())) {
+            e.setCancelled(true);
+            e.setBuild(false);
+            e.getPlayer().sendMessage(ChatColor.RED + "Ce terrain n'est pas dans votre territoire");
+        }
     }
 
     public boolean canPlayerBreakBlock(BlockBreakEvent e) {
@@ -25,7 +34,7 @@ public class BlockProtectionService {
 
     public boolean canPlayerCreateVillage(BlockPlaceEvent e) {
         boolean result = VillageRepository.getCurrentVillageTerritory(e.getPlayer()) == null;
-        if(!result) {
+        if (!result) {
             e.setCancelled(true);
             e.setBuild(false);
         }
@@ -33,7 +42,7 @@ public class BlockProtectionService {
     }
 
     public boolean isVillageCenterTypeGettingDestroyed(BlockBreakEvent e) {
-        if(e.getBlock().getType() == Config.VILLAGE_CENTER_TYPE) {
+        if (e.getBlock().getType() == Config.VILLAGE_CENTER_TYPE) {
             e.setCancelled(true);
             e.setDropItems(false);
             return true;
