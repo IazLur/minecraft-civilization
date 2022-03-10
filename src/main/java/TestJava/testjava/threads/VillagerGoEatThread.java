@@ -16,6 +16,7 @@ public class VillagerGoEatThread implements Runnable {
     private final Villager finalV;
     private final Block block;
     private final Ageable age;
+    private int ignore = 0;
     private UUID uniq;
 
     public VillagerGoEatThread(Villager finalV, Block block, Ageable age, UUID uniq) {
@@ -27,6 +28,14 @@ public class VillagerGoEatThread implements Runnable {
 
     @Override
     public void run() {
+        if (this.ignore > 0) {
+            this.ignore--;
+            return;
+        }
+        if (age.getAge() != age.getMaximumAge()) {
+            getScheduler().cancelTask(TestJava.threads.get(uniq));
+            TestJava.threads.remove(uniq);
+        }
         if (finalV.getLocation().distance(block.getLocation()) <= 1) {
             VillagerModel villager = VillagerRepository.find(finalV.getUniqueId());
             if (villager.getFood() < 10) {
@@ -36,6 +45,10 @@ public class VillagerGoEatThread implements Runnable {
                 // Increment food
                 villager.setFood(villager.getFood() + 1);
                 VillagerRepository.update(villager);
+                getScheduler().cancelTask(TestJava.threads.get(uniq));
+                TestJava.threads.remove(uniq);
+            } else {
+                this.ignore = 20 * 5;
             }
             getScheduler().cancelTask(TestJava.threads.get(uniq));
             TestJava.threads.remove(uniq);
