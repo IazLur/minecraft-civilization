@@ -4,6 +4,7 @@ import edouard.testjava.TestJava;
 import edouard.testjava.models.EmpireModel;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
 
 public class EmpireRepository {
     public static void update(@Nonnull EmpireModel empire) {
@@ -16,5 +17,9 @@ public class EmpireRepository {
 
     public static EmpireModel remove(@Nonnull EmpireModel empire) {
         return TestJava.database.remove(empire, EmpireModel.class);
+    }
+
+    public static Collection<EmpireModel> getAll() {
+        return TestJava.database.findAll(EmpireModel.class);
     }
 }

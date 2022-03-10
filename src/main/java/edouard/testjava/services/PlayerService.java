@@ -170,4 +170,15 @@ public class PlayerService {
         e.setDamage(0D);
         player.sendMessage(ChatColor.RED + "Vous ne pouvez pas attaquer les villageois");
     }
+
+    public void resetAllWars() {
+        Collection<EmpireModel> empires = EmpireRepository.getAll();
+        for(EmpireModel empire : empires) {
+            if(empire.getIsInWar()) {
+                empire.setIsInWar(false);
+                empire.setEnemyName("");
+                EmpireRepository.update(empire);
+            }
+        }
+    }
 }
