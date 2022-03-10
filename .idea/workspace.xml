@@ -1,14 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="ArtifactsWorkspaceSettings">
+    <artifacts-to-build>
+      <artifact name="edouard:jar" />
+    </artifacts-to-build>
+  </component>
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f91b2139-194e-4538-850d-9d0cde70afca" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/TestJava.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/edouard/testjava/TestJava.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/models/VillageModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/edouard/testjava/models/VillageModel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/services/EntityService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/edouard/testjava/services/EntityService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/edouard.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/TestJava.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/edouard/testjava/TestJava.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/classes/Pathfinder.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/commands/RenameCommand.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/edouard/testjava/commands/RenameCommand.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/models/VillageModel.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/edouard/testjava/models/VillageModel.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/repositories/EmpireRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/edouard/testjava/repositories/EmpireRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/repositories/VillageRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/edouard/testjava/repositories/VillageRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/services/BlockProtectionService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/edouard/testjava/services/BlockProtectionService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/services/EntityService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/edouard/testjava/services/EntityService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/services/PlayerService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/edouard/testjava/services/PlayerService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/edouard/testjava/threads/VillagerEatThread.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/edouard/testjava/threads/VillagerEatThread.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -26,8 +41,23 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RESET_MODE" value="HARD" />
   </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
+  </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="useMavenConfig" value="true" />
+      </MavenGeneralSettings>
+    </option>
   </component>
   <component name="ProjectId" id="268yODsEY5FJR6k3RjPgZ9HoHea" />
   <component name="ProjectViewState">
@@ -41,6 +71,9 @@
     <property name="extract.method.default.visibility" value="private" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_package_manager_path" value="npm" />
+    <property name="project.structure.last.edited" value="Global Libraries" />
+    <property name="project.structure.proportion" value="0.15" />
+    <property name="project.structure.side.proportion" value="0.2" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -54,7 +87,9 @@
       <workItem from="1646819498769" duration="9000" />
       <workItem from="1646819516359" duration="98000" />
       <workItem from="1646819618405" duration="861000" />
-      <workItem from="1646903977740" duration="7203000" />
+      <workItem from="1646903977740" duration="8344000" />
+      <workItem from="1646915905256" duration="104000" />
+      <workItem from="1646916068168" duration="181000" />
     </task>
     <servers />
   </component>

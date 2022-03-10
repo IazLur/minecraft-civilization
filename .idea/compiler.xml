@@ -9,5 +9,9 @@
         <module name="edouard" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="edouard" target="17" />
+      <module name="JavaTest" target="17" />
+    </bytecodeTargetLevel>
   </component>
 </project>
