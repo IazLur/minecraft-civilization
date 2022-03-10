@@ -23,10 +23,9 @@ import org.bukkit.inventory.ItemStack;
 
 public class EntityService {
     public void testSpawnIfVillager(EntitySpawnEvent e) {
-        if (!(e.getEntity() instanceof Villager)) {
+        if (!(e.getEntity() instanceof Villager villager)) {
             return;
         }
-        Villager villager = (Villager) e.getEntity();
         VillageModel village = VillageRepository.getNearestOf(villager);
         villager.setCustomNameVisible(true);
         assert village != null;

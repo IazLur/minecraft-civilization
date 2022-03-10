@@ -4,17 +4,19 @@ import edouard.testjava.classes.CustomEntity;
 import edouard.testjava.helpers.Colorize;
 import edouard.testjava.helpers.CustomName;
 import edouard.testjava.models.VillageModel;
+import edouard.testjava.models.VillagerModel;
 import edouard.testjava.repositories.VillageRepository;
+import edouard.testjava.repositories.VillagerRepository;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 
 public class RenameCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -50,6 +52,15 @@ public class RenameCommand implements CommandExecutor {
 
         Bukkit.getServer().broadcastMessage(Colorize.name(((Player) sender).getDisplayName()) +
                 " a renommé son village " + Colorize.name(old.getId()) + " par " + Colorize.name(args[0]));
+
+        // Updating model
+        Collection<VillagerModel> villagers = VillagerRepository.getAll();
+        for (VillagerModel villager : villagers) {
+            if (Objects.equals(villager.getVillageName(), old.getId())) {
+                villager.setVillageName(args[0]);
+                VillagerRepository.update(villager);
+            }
+        }
 
         return true;
     }

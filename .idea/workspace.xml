@@ -5,11 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f91b2139-194e-4538-850d-9d0cde70afca" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/edouard/testjava/models/VillagerModel.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/edouard/testjava/repositories/VillagerRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/TestJava.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/edouard/testjava/TestJava.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/classes/Pathfinder.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/commands/RenameCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/edouard/testjava/commands/RenameCommand.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/services/EntityService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/edouard/testjava/services/EntityService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/edouard/testjava/threads/VillagerEatThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/edouard/testjava/threads/VillagerEatThread.java" afterDir="false" />
     </list>
@@ -56,7 +53,7 @@
       <workItem from="1646819498769" duration="9000" />
       <workItem from="1646819516359" duration="98000" />
       <workItem from="1646819618405" duration="861000" />
-      <workItem from="1646903977740" duration="2806000" />
+      <workItem from="1646903977740" duration="3362000" />
     </task>
     <servers />
   </component>
