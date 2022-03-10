@@ -4,17 +4,20 @@ import edouard.testjava.TestJava;
 import edouard.testjava.helpers.Colorize;
 import edouard.testjava.helpers.CustomName;
 import edouard.testjava.models.VillageModel;
+import edouard.testjava.models.VillagerModel;
 import edouard.testjava.repositories.VillageRepository;
+import edouard.testjava.repositories.VillagerRepository;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Skeleton;
+import org.bukkit.entity.Villager;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
-import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -31,6 +34,13 @@ public class EntityService {
         villager.setCustomName(ChatColor.BLUE + "[" + village.getId() + "] " + ChatColor.WHITE
                 + customName);
         Bukkit.getServer().broadcastMessage(Colorize.name(customName) + " est né à " + Colorize.name(village.getId()));
+
+        // Creating new model entity
+        VillagerModel nVillager = new VillagerModel();
+        nVillager.setVillageName(village.getId());
+        nVillager.setFood(10);
+        nVillager.setId(villager.getUniqueId());
+        VillagerRepository.update(nVillager);
     }
 
     public void testDeathIfVillager(EntityDeathEvent e) {
@@ -44,6 +54,7 @@ public class EntityService {
         VillageModel village = VillageRepository.get(CustomName.squareBrackets(e.getEntity().getCustomName(), 0));
         village.setPopulation(village.getPopulation() - 1);
         VillageRepository.update(village);
+        VillagerRepository.remove(e.getEntity().getUniqueId());
 
         Bukkit.getServer().broadcastMessage(Colorize.name(e.getEntity().getCustomName()) + " est malheureusement décédé");
     }

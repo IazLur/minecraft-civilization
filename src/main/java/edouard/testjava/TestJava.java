@@ -5,6 +5,7 @@ import edouard.testjava.commands.RenameCommand;
 import edouard.testjava.models.DelegationModel;
 import edouard.testjava.models.EmpireModel;
 import edouard.testjava.models.VillageModel;
+import edouard.testjava.models.VillagerModel;
 import edouard.testjava.services.*;
 import edouard.testjava.threads.VillagerEatThread;
 import edouard.testjava.threads.VillagerSpawnThread;
@@ -14,6 +15,7 @@ import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockGrowEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -73,6 +75,9 @@ public final class TestJava extends JavaPlugin implements Listener {
         if (!TestJava.database.collectionExists(DelegationModel.class)) {
             TestJava.database.createCollection(DelegationModel.class);
         }
+        if (!TestJava.database.collectionExists(VillagerModel.class)) {
+            TestJava.database.createCollection(VillagerModel.class);
+        }
 
         // Registering services
         TestJava.blockProtectionService = new BlockProtectionService();
@@ -99,6 +104,11 @@ public final class TestJava extends JavaPlugin implements Listener {
         TestJava.playerService.testIfDelegatorDamagePlayer(e);
         TestJava.playerService.testIfPlayerDamageDelegator(e);
         TestJava.playerService.testIfPlayerDamageVillager(e);
+    }
+
+    @EventHandler
+    public void test(BlockGrowEvent e) {
+
     }
 
     @EventHandler

@@ -1,10 +1,10 @@
 package edouard.testjava.threads;
 
 import edouard.testjava.classes.CustomEntity;
-import edouard.testjava.classes.Pathfinder;
 import edouard.testjava.helpers.CustomName;
 import edouard.testjava.models.VillageModel;
 import edouard.testjava.repositories.VillageRepository;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.LivingEntity;
@@ -21,10 +21,7 @@ public class VillagerEatThread implements Runnable {
             Collection<Block> eatable = new ArrayList<>();
             Collection<CustomEntity> villagers = CustomName.whereVillage(village.getId());
             for (CustomEntity villager : villagers) {
-                Pathfinder pf = new Pathfinder(bell);
-                pf.move(villager.getEntity(), (LivingEntity e) -> {
 
-                });
             }
         }
     }
