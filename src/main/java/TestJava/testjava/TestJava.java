@@ -25,8 +25,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.UUID;
 import java.util.logging.Level;
 
 public final class TestJava extends JavaPlugin implements Listener {
@@ -40,7 +41,7 @@ public final class TestJava extends JavaPlugin implements Listener {
     public static Plugin plugin;
 
     public static JsonDBTemplate database;
-    public static List<ScheduledExecutorService> threads = new ArrayList<>();
+    public static HashMap<UUID, Integer> threads = new HashMap<>();
     public static BlockProtectionService blockProtectionService;
     public static VillageService villageService;
     public static PlayerService playerService;

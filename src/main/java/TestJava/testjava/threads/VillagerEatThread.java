@@ -22,6 +22,7 @@ public class VillagerEatThread implements Runnable {
                         ChatColor.GRAY + "La famine sévit à " + Colorize.name(villagerModel.getVillageName())
                 );
             }
+            VillagerRepository.update(villagerModel);
         });
     }
 }
