@@ -1,5 +1,6 @@
 package edouard.testjava.services;
 
+import edouard.testjava.Config;
 import edouard.testjava.TestJava;
 import edouard.testjava.classes.CustomEntity;
 import edouard.testjava.helpers.CustomName;
@@ -21,11 +22,18 @@ public class VillagerService {
     public void testIfGrowIsEatable(BlockGrowEvent e) {
         Ageable age = (Ageable) e.getNewState().getBlockData();
         if (
-                e.getBlock().getType() == Material.WHEAT_SEEDS
+                e.getBlock().getType() == Material.WHEAT_SEEDS ||
+                e.getBlock().getType() == Material.BEETROOT_SEEDS ||
+                e.getBlock().getType() == Material.CARROTS ||
+                e.getBlock().getType() == Material.POTATOES
         ) {
             if (age.getAge() == age.getMaximumAge()) {
                 // Block is eatable
                 VillageModel nearby = VillageRepository.getNearestOf(e.getBlock().getLocation());
+                double distance = VillageRepository.getBellLocation(nearby).distance(e.getBlock().getLocation());
+                if(distance > Config.VILLAGE_PROTECTION_RADIUS) {
+                    return;
+                }
                 Collection<CustomEntity> villagers = CustomName.whereVillage(nearby.getId());
                 Villager v = null;
                 int oldFood = 11;
@@ -44,19 +52,20 @@ public class VillagerService {
                 Location newLoc = e.getBlock().getLocation();
                 newLoc.setY(newLoc.getY() + 1);
                 v.getPathfinder().moveTo(newLoc);
+                Villager finalV = v;
                 Bukkit.getScheduler().scheduleSyncRepeatingTask(TestJava.plugin, new BukkitRunnable() {
                     @Override
                     public void run() {
                         int first =
-                                v.getLocation().getBlockX() +
-                                        (v.getLocation().getBlockY() - 1) +
-                                        v.getLocation().getBlockZ();
+                                finalV.getLocation().getBlockX() +
+                                        (finalV.getLocation().getBlockY() - 1) +
+                                        finalV.getLocation().getBlockZ();
                         int second =
                                 e.getBlock().getLocation().getBlockX() +
                                         e.getBlock().getLocation().getBlockY() +
                                         e.getBlock().getLocation().getBlockZ();
                         if (first == second) {
-                            VillagerModel villager = VillagerRepository.find(v.getUniqueId());
+                            VillagerModel villager = VillagerRepository.find(finalV.getUniqueId());
                             if (villager.getFood() < 10) {
                                 age.setAge(1);
                                 e.getBlock().setBlockData(age);
