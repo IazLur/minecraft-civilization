@@ -11,3 +11,6 @@ commands:
   rename:
     description: Renommer le village actuel
     usage: /rename <newVillageName>
+  war:
+    description: Déclarer la guerre
+    usage: /war <villageName>

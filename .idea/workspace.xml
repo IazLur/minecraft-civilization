@@ -10,8 +10,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f91b2139-194e-4538-850d-9d0cde70afca" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/commands/WarCommand.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/WarThread.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/VillagerGoEatThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/VillagerGoEatThread.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/TestJava.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/TestJava.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/plugin.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/plugin.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/TestJava.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/TestJava.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/plugin.yml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/plugin.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,6 +69,11 @@
     <property name="project.structure.proportion" value="0.15039062" />
     <property name="project.structure.side.proportion" value="0.2" />
   </component>
+  <component name="RecentsManager">
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="TestJava.testjava.commands" />
+    </key>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -80,7 +90,7 @@
       <workItem from="1646915905256" duration="104000" />
       <workItem from="1646916068168" duration="181000" />
       <workItem from="1646916261208" duration="376000" />
-      <workItem from="1646916645705" duration="3563000" />
+      <workItem from="1646916645705" duration="4890000" />
     </task>
     <servers />
   </component>
