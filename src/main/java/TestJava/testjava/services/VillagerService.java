@@ -43,6 +43,10 @@ public class VillagerService {
                     for (CustomEntity selecting : villagers) {
                         if (selecting.getEntity() instanceof Villager villager) {
                             VillagerModel current = VillagerRepository.find(villager.getUniqueId());
+                            if(current == null) {
+                                selecting.getEntity().remove();
+                                continue;
+                            }
                             if (current.getFood() < oldFood) {
                                 v = (Villager) selecting.getEntity();
                                 oldFood = current.getFood();

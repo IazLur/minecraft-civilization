@@ -111,6 +111,11 @@ public final class TestJava extends JavaPlugin implements Listener {
     }
 
     @EventHandler
+    public void onEntityDamage(EntityDamageEvent e) {
+        TestJava.entityService.preventFireForCustom(e);
+    }
+
+    @EventHandler
     public void onEntityDamageByEntityEvent(EntityDamageByEntityEvent e) {
         TestJava.playerService.testIfDelegatorDamagePlayer(e);
         TestJava.playerService.testIfPlayerDamageDelegator(e);

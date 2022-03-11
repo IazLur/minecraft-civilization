@@ -15,9 +15,12 @@ public class VillagerEatThread implements Runnable {
         Collection<VillagerModel> villagers = VillagerRepository.getAll();
         villagers.forEach(villagerModel -> {
             villagerModel.setFood(villagerModel.getFood() - 1);
-            if(villagerModel.getFood() == 0) {
-                ((Villager) TestJava.plugin.getServer().getEntity(villagerModel.getId()))
-                        .setHealth(0D);
+            if (villagerModel.getFood() <= 0) {
+                Villager v = ((Villager) TestJava.plugin.getServer().getEntity(villagerModel.getId()));
+                if (v == null) {
+                    return;
+                }
+                v.setHealth(0D);
                 TestJava.plugin.getServer().broadcastMessage(
                         ChatColor.GRAY + "La famine sévit à " + Colorize.name(villagerModel.getVillageName())
                 );

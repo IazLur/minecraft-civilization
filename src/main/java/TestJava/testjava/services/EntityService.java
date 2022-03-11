@@ -14,6 +14,7 @@ import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.*;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
@@ -184,10 +185,10 @@ public class EntityService {
         e.getBlockPlaced().setType(Material.AIR);
         Zombie bandit = e.getBlockPlaced().getWorld().spawn(e.getBlockPlaced().getLocation(), Zombie.class);
         bandit.setCustomNameVisible(true);
-        bandit.setCustomName("[" + village + "] Mercenaire");
+        bandit.setCustomName("[" + village.getId() + "] Mercenaire");
         bandit.setRemoveWhenFarAway(false);
         bandit.setPersistent(true);
-        bandit.setBaby();
+        bandit.setAdult();
         bandit.setCanBreakDoors(true);
         bandit.setSwimming(true);
         bandit.getEquipment().setHelmet(new ItemStack(Material.GOLDEN_HELMET));
@@ -214,5 +215,21 @@ public class EntityService {
             return;
         }
         e.setCancelled(true);
+    }
+
+    public void preventFireForCustom(EntityDamageEvent e) {
+        if (e.getEntity() instanceof Player) {
+            return;
+        }
+
+        if (!e.getEntity().isCustomNameVisible()) {
+            return;
+        }
+
+        if (e.getCause() == EntityDamageEvent.DamageCause.FIRE ||
+                e.getCause() == EntityDamageEvent.DamageCause.FIRE_TICK) {
+            e.setCancelled(true);
+            e.setDamage(0D);
+        }
     }
 }
