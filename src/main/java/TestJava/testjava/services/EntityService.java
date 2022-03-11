@@ -187,7 +187,8 @@ public class EntityService {
         bandit.setCustomName("[" + village + "] Mercenaire");
         bandit.setRemoveWhenFarAway(false);
         bandit.setPersistent(true);
-        bandit.setBaby();
+        bandit.setAdult();
+        bandit.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(2D);
         bandit.setCanBreakDoors(true);
         bandit.setSwimming(true);
         bandit.getEquipment().setHelmet(new ItemStack(Material.GOLDEN_HELMET));
