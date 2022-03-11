@@ -15,8 +15,7 @@ public class VillagerGoEatThread implements Runnable {
 
     private final Villager finalV;
     private final Block block;
-    private final Ageable age;
-    private int ignore = 0;
+    private Ageable age;
     private UUID uniq;
 
     public VillagerGoEatThread(Villager finalV, Block block, Ageable age, UUID uniq) {
@@ -28,31 +27,32 @@ public class VillagerGoEatThread implements Runnable {
 
     @Override
     public void run() {
-        if (this.ignore > 0) {
-            this.ignore--;
-            return;
-        }
+        this.age = (Ageable) block.getBlockData();
         if (age.getAge() != age.getMaximumAge()) {
             getScheduler().cancelTask(TestJava.threads.get(uniq));
             TestJava.threads.remove(uniq);
+            return;
         }
-        if (finalV.getLocation().distance(block.getLocation()) <= 1) {
-            VillagerModel villager = VillagerRepository.find(finalV.getUniqueId());
-            if (villager.getFood() < 10) {
-                age.setAge(1);
-                block.setBlockData(age);
+        VillagerModel villager = VillagerRepository.find(finalV.getUniqueId());
+        if(finalV.isDead() || villager == null || villager.getFood() >= 20) {
+            getScheduler().cancelTask(TestJava.threads.get(uniq));
+            TestJava.threads.remove(uniq);
+            return;
+        }
+        if (finalV.getLocation().distance(block.getLocation()) <= 2) {
+            age.setAge(1);
+            block.setBlockData(age);
 
-                // Increment food
-                villager.setFood(villager.getFood() + 1);
-                VillagerRepository.update(villager);
-                getScheduler().cancelTask(TestJava.threads.get(uniq));
-                TestJava.threads.remove(uniq);
-            } else {
-                this.ignore = 20 * 5;
-            }
+            // Increment food
+            villager.setFood(villager.getFood() + 1);
+            VillagerRepository.update(villager);
+
             getScheduler().cancelTask(TestJava.threads.get(uniq));
             TestJava.threads.remove(uniq);
         } else {
+            if (finalV.isSleeping()) {
+                finalV.wakeup();
+            }
             finalV.getPathfinder().moveTo(block.getLocation());
         }
     }
