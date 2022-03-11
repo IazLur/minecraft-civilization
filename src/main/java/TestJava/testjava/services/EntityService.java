@@ -74,6 +74,7 @@ public class EntityService {
         skeleton.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(1D);
         skeleton.setCustomNameVisible(true);
         skeleton.setRemoveWhenFarAway(false);
+        skeleton.setPersistent(true);
         assert village != null;
         String customName = CustomName.generate();
         skeleton.setCustomName(ChatColor.DARK_GREEN + "[" + village.getId() + "] " + ChatColor.WHITE

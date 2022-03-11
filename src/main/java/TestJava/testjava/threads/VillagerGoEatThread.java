@@ -53,7 +53,7 @@ public class VillagerGoEatThread implements Runnable {
             if (finalV.isSleeping()) {
                 finalV.wakeup();
             }
-            finalV.getPathfinder().moveTo(block.getLocation());
+            finalV.getPathfinder().moveTo(block.getLocation(), 3D);
         }
     }
 
