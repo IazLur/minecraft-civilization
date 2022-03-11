@@ -188,6 +188,8 @@ public class EntityService {
         bandit.setRemoveWhenFarAway(false);
         bandit.setPersistent(true);
         bandit.setBaby();
+        bandit.setCanBreakDoors(true);
+        bandit.setSwimming(true);
         bandit.getEquipment().setHelmet(new ItemStack(Material.GOLDEN_HELMET));
         Player enemy = TestJava.playerService.getNearestPlayerWhereNot(bandit, player.getDisplayName());
         TestJava.banditTargets.put(bandit.getUniqueId(), enemy.getDisplayName());
