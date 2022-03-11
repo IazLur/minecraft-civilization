@@ -16,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collection;
 
 public class PlayerService {
@@ -45,6 +46,12 @@ public class PlayerService {
     public Collection<CustomEntity> getAllDelegators() {
         Collection<CustomEntity> entities = CustomName.getAll();
         entities.removeIf(entity -> !entity.getEntity().getCustomName().contains("Délégateur"));
+        return entities;
+    }
+
+    public Collection<CustomEntity> getAllBandits() {
+        Collection<CustomEntity> entities = CustomName.getAll();
+        entities.removeIf(entity -> !entity.getEntity().getCustomName().contains("Bandit"));
         return entities;
     }
 
@@ -145,12 +152,12 @@ public class PlayerService {
     }
 
     public void testIfPlayerDamageVillager(EntityDamageByEntityEvent e) {
-        if(!(e.getDamager() instanceof Player)) {
+        if (!(e.getDamager() instanceof Player)) {
             return;
         }
         Player player;
-        if(e.getDamager() instanceof Projectile) {
-            if(!(((Projectile) e.getDamager()).getShooter() instanceof Player)) {
+        if (e.getDamager() instanceof Projectile) {
+            if (!(((Projectile) e.getDamager()).getShooter() instanceof Player)) {
                 return;
             }
             player = (Player) ((Projectile) e.getDamager()).getShooter();
@@ -158,7 +165,7 @@ public class PlayerService {
             player = (Player) e.getDamager();
         }
 
-        if(!(e.getEntity() instanceof Villager)) {
+        if (!(e.getEntity() instanceof Villager)) {
             return;
         }
 
@@ -170,12 +177,34 @@ public class PlayerService {
 
     public void resetAllWars() {
         Collection<EmpireModel> empires = EmpireRepository.getAll();
-        for(EmpireModel empire : empires) {
-            if(empire.getIsInWar()) {
+        for (EmpireModel empire : empires) {
+            if (empire.getIsInWar()) {
                 empire.setIsInWar(false);
                 empire.setEnemyName("");
                 EmpireRepository.update(empire);
             }
         }
+    }
+
+    @Nullable
+    public Player getNearestPlayerWhereNot(LivingEntity from, String ignoredPlayer) {
+        Collection<? extends Player> players = Bukkit.getOnlinePlayers();
+        Player returned = null;
+        double oldDist = 9999F;
+        for (Player player : players) {
+            if (player.getDisplayName().equals(ignoredPlayer)) {
+                continue;
+            }
+            double nDist = player.getLocation().distance(from.getLocation());
+            if (nDist < oldDist) {
+                returned = player;
+                oldDist = nDist;
+            }
+        }
+        return returned;
+    }
+
+    public void killAllBandits() {
+        this.getAllBandits().forEach(entity -> entity.getEntity().remove());
     }
 }

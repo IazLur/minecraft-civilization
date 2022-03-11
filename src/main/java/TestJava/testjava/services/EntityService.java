@@ -12,10 +12,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.entity.Pillager;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Skeleton;
-import org.bukkit.entity.Villager;
+import org.bukkit.entity.*;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
@@ -175,5 +172,45 @@ public class EntityService {
         if (sVillage.equals(tVillage)) {
             e.setCancelled(true);
         }
+    }
+
+    public void testIfPlaceBandit(BlockPlaceEvent e) {
+        if (e.getBlockPlaced().getType() != Material.GOLD_BLOCK) {
+            return;
+        }
+
+        Player player = e.getPlayer();
+        VillageModel village = VillageRepository.getNearestOf(player);
+        e.getBlockPlaced().setType(Material.AIR);
+        Zombie bandit = e.getBlockPlaced().getWorld().spawn(e.getBlockPlaced().getLocation(), Zombie.class);
+        bandit.setCustomNameVisible(true);
+        bandit.setCustomName("[" + village + "] Mercenaire");
+        bandit.setRemoveWhenFarAway(false);
+        bandit.setPersistent(true);
+        bandit.setBaby();
+        bandit.getEquipment().setHelmet(new ItemStack(Material.GOLDEN_HELMET));
+        Player enemy = TestJava.playerService.getNearestPlayerWhereNot(bandit, player.getDisplayName());
+        TestJava.banditTargets.put(bandit.getUniqueId(), enemy.getDisplayName());
+        bandit.setTarget(enemy);
+    }
+
+    public void testIfBanditTargetRight(EntityTargetLivingEntityEvent e) {
+        if (!(e.getEntity() instanceof Zombie zombie)) {
+            return;
+        }
+
+        if (!zombie.isCustomNameVisible() || !zombie.isBaby()) {
+            return;
+        }
+
+        if (!(e.getTarget() instanceof Player player)) {
+            e.setCancelled(true);
+            return;
+        }
+
+        if (TestJava.banditTargets.get(zombie.getUniqueId()).equals(player.getDisplayName())) {
+            return;
+        }
+        e.setCancelled(true);
     }
 }

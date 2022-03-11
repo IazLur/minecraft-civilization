@@ -53,6 +53,7 @@ public final class TestJava extends JavaPlugin implements Listener {
     public static VillagerService villagerService;
     public static World world;
 
+    public static HashMap<UUID, String> banditTargets = new HashMap<>();
     public TestJava() throws UnsupportedEncodingException {
     }
 
@@ -94,6 +95,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         TestJava.villagerService = new VillagerService();
 
         playerService.killAllDelegators();
+        playerService.killAllBandits();
         playerService.resetAllWars();
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerSpawnThread(), 0, 20 * 60);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerEatThread(), 0, 20 * 60 * 5);
@@ -105,6 +107,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         TestJava.playerService.cancelDelegatorTarget(e);
         TestJava.entityService.testIfSkeletonDamageSameVillage(e);
         TestJava.entityService.testIfPillagerDamageSameVillage(e);
+        TestJava.entityService.testIfBanditTargetRight(e);
     }
 
     @EventHandler
@@ -172,6 +175,7 @@ public final class TestJava extends JavaPlugin implements Listener {
             TestJava.villageService.testIfPlacingBed(e);
             TestJava.entityService.testIfPlaceDefender(e);
             TestJava.entityService.testIfPlaceAttacker(e);
+            TestJava.entityService.testIfPlaceBandit(e);
             return;
         }
         TestJava.blockProtectionService.protectRestOfTheWorld(e);
