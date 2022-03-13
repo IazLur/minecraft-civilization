@@ -10,16 +10,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f91b2139-194e-4538-850d-9d0cde70afca" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__io_papermc_paper_paper_api_1_18_2_R0_1_SNAPSHOT.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__io_papermc_paper_paper_api_1_18_2_R0_1_SNAPSHOT.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TestJava.iml" beforeDir="false" afterPath="$PROJECT_DIR$/TestJava.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/TestJava.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/TestJava.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/EntityService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/EntityService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/VillagerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/VillagerService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/VillagerEatThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/VillagerEatThread.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/PlayerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/PlayerService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/VillagerSpawnThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/VillagerSpawnThread.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/TestJava.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/TestJava.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/services/EntityService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/services/EntityService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/services/VillagerService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/services/VillagerService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/threads/VillagerEatThread.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/threads/VillagerEatThread.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/services/PlayerService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/services/PlayerService.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -82,21 +79,6 @@
     <key name="CopyClassDialog.RECENTS_KEY">
       <recent name="TestJava.testjava.commands" />
     </key>
-  </component>
-  <component name="RunManager">
-    <configuration default="true" type="JetRunConfigurationType">
-      <module name="edouard" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
-      <module name="edouard" />
-      <option name="filePath" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">

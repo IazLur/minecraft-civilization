@@ -201,6 +201,8 @@ public class PlayerService {
                 oldDist = nDist;
             }
         }
+        if(returned != null)
+            System.out.println(returned.getDisplayName());
         return returned;
     }
 

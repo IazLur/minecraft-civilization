@@ -202,7 +202,7 @@ public class EntityService {
             return;
         }
 
-        if (!zombie.isCustomNameVisible() || !zombie.isBaby()) {
+        if (!zombie.isCustomNameVisible()) {
             return;
         }
 
