@@ -150,7 +150,7 @@ public final class TestJava extends JavaPlugin implements Listener {
     }
 
     @EventHandler
-    public void on(BlockExplodeEvent e) {
+    public void onEntityExplode(EntityExplodeEvent e) {
         TestJava.warBlockService.testIfTNTExplode(e);
     }
 

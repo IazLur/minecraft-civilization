@@ -10,12 +10,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f91b2139-194e-4538-850d-9d0cde70afca" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/models/WarBlockModel.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/repositories/WarBlockRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/WarBlockService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/TestJava.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/TestJava.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/commands/RenameCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/commands/RenameCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/WarBlockService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/WarBlockService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/WarThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/WarThread.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -106,7 +103,7 @@
       <workItem from="1647245522519" duration="142000" />
       <workItem from="1647245669618" duration="157000" />
       <workItem from="1647245832118" duration="9550000" />
-      <workItem from="1647259502565" duration="1541000" />
+      <workItem from="1647259502565" duration="3122000" />
     </task>
     <servers />
   </component>
