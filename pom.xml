@@ -29,6 +29,7 @@
             <groupId>io.jsondb</groupId>
             <artifactId>jsondb-core</artifactId>
             <version>1.0.106</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
