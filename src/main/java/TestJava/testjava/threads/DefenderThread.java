@@ -14,7 +14,10 @@ public class DefenderThread implements Runnable {
     @Override
     public void run() {
         Collection<CustomEntity> entities = CustomName.getAll();
-        entities = entities.stream().filter(entity -> entity.getEntity() instanceof Skeleton).toList();
+        entities = entities.stream().filter(entity ->
+                entity.getEntity() instanceof Skeleton
+                        || entity.getEntity() instanceof Pillager
+        ).toList();
         entities.forEach(entity -> {
             AtomicBoolean haveTarget = new AtomicBoolean(false);
             Collection<Entity> targets = entity.getEntity().getNearbyEntities(20D, 20D, 20D);
@@ -22,6 +25,11 @@ public class DefenderThread implements Runnable {
                 if (target instanceof Mob t && !t.isCustomNameVisible() &&
                         !(target instanceof WanderingTrader) &&
                         !(target instanceof TraderLlama)) {
+                    haveTarget.set(true);
+                    ((Mob) entity.getEntity()).setTarget((LivingEntity) target);
+                    return;
+                }
+                if(target instanceof Wolf) {
                     haveTarget.set(true);
                     ((Mob) entity.getEntity()).setTarget((LivingEntity) target);
                     return;
