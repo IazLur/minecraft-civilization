@@ -7,6 +7,7 @@ import TestJava.testjava.models.VillagerModel;
 import TestJava.testjava.repositories.EatableRepository;
 import TestJava.testjava.repositories.VillagerRepository;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.entity.Villager;
@@ -39,9 +40,10 @@ public class VillagerGoEatThread implements Runnable {
             map.get(villager.getVillageName()).remove(first);
             if (eVillager.isSleeping())
                 eVillager.wakeup();
-            eVillager.getPathfinder().moveTo(first.getId());
+            Location loc = new Location(eVillager.getWorld(), first.getX(), first.getY(), first.getZ());
+            eVillager.getPathfinder().moveTo(loc);
             UUID uuid = UUID.randomUUID();
-            Block block = first.getId().getBlock();
+            Block block = loc.getBlock();
             TestJava.threads.put(uuid,
                     Bukkit.getScheduler().scheduleSyncRepeatingTask(TestJava.plugin,
                             () -> {
@@ -52,7 +54,8 @@ public class VillagerGoEatThread implements Runnable {
                                     Bukkit.getScheduler().cancelTask(TestJava.threads.get(uuid));
                                     TestJava.threads.remove(uuid);
                                 }
-                                if (eVillager.getLocation().distance(first.getId()) <= 2) {
+                                if (eVillager.getLocation().distance(loc) <= 2) {
+                                    System.out.println(eVillager.getCustomName() + " a mangé");
                                     Ageable age = (Ageable) block.getBlockData();
                                     age.setAge(1);
                                     block.setBlockData(age);

@@ -39,7 +39,8 @@ public class VillagerService {
                         return;
                     }
                     EatableModel eatable = new EatableModel();
-                    eatable.setId(e.getBlock().getLocation());
+                    UUID uniq = UUID.randomUUID();
+                    eatable.setId(uniq);
                     eatable.setVillage(nearby.getId());
                     EatableRepository.update(eatable);
                 }

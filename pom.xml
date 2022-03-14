@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>edouard</groupId>
+    <groupId>TestJava</groupId>
     <artifactId>TestJava</artifactId>
     <version>2.0-SNAPSHOT</version>
 
@@ -28,8 +28,7 @@
         <dependency>
             <groupId>io.jsondb</groupId>
             <artifactId>jsondb-core</artifactId>
-            <version>1.0.106</version>
-            <scope>provided</scope>
+            <version>1.0.115-j11</version>
         </dependency>
     </dependencies>
 </project>
