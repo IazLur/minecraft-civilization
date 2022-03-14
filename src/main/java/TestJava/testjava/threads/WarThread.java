@@ -70,6 +70,12 @@ public class WarThread implements Runnable {
                     loc.getBlock().setType(Material.matchMaterial(block.getType()));
                     WarBlockRepository.remove(block.getId());
                 }
+            } else {
+                String jxQuery = String.format("/.[village=\"%s\"]", other.getId());
+                Collection<WarBlockModel> blocks = TestJava.database.find(jxQuery, WarBlockModel.class);
+                for (WarBlockModel block : blocks) {
+                    WarBlockRepository.remove(block.getId());
+                }
             }
 
             EmpireRepository.update(empire);

@@ -14,3 +14,6 @@ commands:
   war:
     description: Déclarer la guerre
     usage: /war <villageName>
+  village:
+    description: Voir les infos d'un village
+    usage: /village <villageName>
