@@ -49,6 +49,7 @@ public class VillagerGoEatThread implements Runnable {
                                 eVillager.getPathfinder().moveTo(loc);
                                 if (!(block.getBlockData() instanceof Ageable age)
                                         || age.getAge() != age.getMaximumAge()) {
+                                    EatableRepository.remove(first);
                                     Bukkit.getServer().broadcastMessage(Colorize.name(eVillager.getCustomName())
                                             + " n'a rien à manger");
                                     Bukkit.getScheduler().cancelTask(TestJava.threads.get(uuid));
