@@ -10,9 +10,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f91b2139-194e-4538-850d-9d0cde70afca" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/artifacts/TestJava_jar.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/artifacts/TestJava_jar.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/WarThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/WarThread.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/plugin.yml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/plugin.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TestJava.iml" beforeDir="false" afterPath="$PROJECT_DIR$/TestJava.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/TestJava.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/TestJava.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/helpers/CustomName.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/helpers/CustomName.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/repositories/EatableRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/repositories/EatableRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/EntityService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/EntityService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/VillagerGoEatThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/VillagerGoEatThread.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/TestJava.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/TestJava.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/services/EntityService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/services/EntityService.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -76,6 +84,21 @@
       <recent name="TestJava.testjava.commands" />
       <recent name="TestJava.testjava.threads" />
     </key>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="edouard" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="edouard" />
+      <option name="filePath" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">

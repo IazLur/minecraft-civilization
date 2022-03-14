@@ -232,4 +232,10 @@ public class EntityService {
             e.setDamage(0D);
         }
     }
+
+    public void preventGolemFromSpawn(EntitySpawnEvent e) {
+        if(e.getEntity().getType() == EntityType.IRON_GOLEM) {
+            e.setCancelled(true);
+        }
+    }
 }

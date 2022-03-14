@@ -142,6 +142,7 @@ public final class TestJava extends JavaPlugin implements Listener {
     @EventHandler
     public void onEntitySpawn(EntitySpawnEvent e) {
         TestJava.entityService.testSpawnIfVillager(e);
+        TestJava.entityService.preventGolemFromSpawn(e);
     }
 
     @EventHandler

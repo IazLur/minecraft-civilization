@@ -61,7 +61,7 @@ public class CustomName {
     public static String generate() {
         String fullname = "";
 
-        while (fullname.equals("")) {
+        while (fullname.equals("") || fullname.equals(" ")) {
             URL url = null;
             try {
                 url = new URL("https://randomuser.me/api/");
