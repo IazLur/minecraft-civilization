@@ -3,8 +3,10 @@ package TestJava.testjava.threads;
 import TestJava.testjava.TestJava;
 import TestJava.testjava.helpers.Colorize;
 import TestJava.testjava.models.EatableModel;
+import TestJava.testjava.models.VillageModel;
 import TestJava.testjava.models.VillagerModel;
 import TestJava.testjava.repositories.EatableRepository;
+import TestJava.testjava.repositories.VillageRepository;
 import TestJava.testjava.repositories.VillagerRepository;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -42,6 +44,7 @@ public class VillagerGoEatThread implements Runnable {
             if (eVillager.isSleeping())
                 eVillager.wakeup();
             Location loc = new Location(eVillager.getWorld(), first.getX(), first.getY(), first.getZ());
+            VillageModel village = VillageRepository.get(villager.getVillageName());
             UUID uuid = UUID.randomUUID();
             Block block = loc.getBlock();
             Random rand = new Random();
@@ -69,6 +72,9 @@ public class VillagerGoEatThread implements Runnable {
                                     EatableRepository.remove(first);
                                     Bukkit.getScheduler().cancelTask(TestJava.threads.get(uuid));
                                     TestJava.threads.remove(uuid);
+                                    if (villager.getFood() >= 19) {
+                                        village.setProsperityPoints(village.getProsperityPoints() + 1);
+                                    }
                                 }
                             }, delay, 20 * 3));
         }

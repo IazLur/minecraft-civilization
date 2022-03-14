@@ -2,6 +2,7 @@ package TestJava.testjava;
 
 import TestJava.testjava.commands.DelegationCommand;
 import TestJava.testjava.commands.RenameCommand;
+import TestJava.testjava.commands.VillageCommand;
 import TestJava.testjava.commands.WarCommand;
 import TestJava.testjava.models.*;
 import TestJava.testjava.services.*;
@@ -65,6 +66,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         getCommand("rename").setExecutor(new RenameCommand());
         getCommand("delegation").setExecutor(new DelegationCommand());
         getCommand("war").setExecutor(new WarCommand());
+        getCommand("village").setExecutor(new VillageCommand());
 
         // Registering databases
         TestJava.database = new JsonDBTemplate(this.jsonLocation, this.baseScanPackage);
