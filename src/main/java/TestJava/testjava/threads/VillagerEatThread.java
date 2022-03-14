@@ -33,8 +33,9 @@ public class VillagerEatThread implements Runnable {
                 Collection<VillageModel> villages = VillageRepository.getAll();
                 VillageModel prosp = null;
                 for (VillageModel nVillage : villages) {
-                    if (prosp == null || (nVillage.getPopulation() > prosp.getPopulation() &&
-                            !nVillage.getId().equals(village.getId()))) {
+                    if(nVillage.getId().equals(village.getId()))
+                        continue;
+                    if (prosp == null || nVillage.getPopulation() > prosp.getPopulation()) {
                         prosp = nVillage;
                     }
                 }
