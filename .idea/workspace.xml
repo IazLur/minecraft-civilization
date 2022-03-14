@@ -10,19 +10,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f91b2139-194e-4538-850d-9d0cde70afca" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/artifacts/TestJava_jar.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__io_jsondb_jsondb_core_1_0_106.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TestJava.iml" beforeDir="false" afterPath="$PROJECT_DIR$/TestJava.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/models/EatableModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/models/EatableModel.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/VillagerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/VillagerService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/VillagerGoEatThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/VillagerGoEatThread.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/TestJava.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/TestJava.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/commands/RenameCommand.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/commands/RenameCommand.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/models/VillagerModel.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/models/VillagerModel.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/services/VillagerService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/services/VillagerService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/threads/VillagerGoEatThread.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/threads/VillagerGoEatThread.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -111,7 +102,7 @@
       <workItem from="1647245410289" duration="108000" />
       <workItem from="1647245522519" duration="142000" />
       <workItem from="1647245669618" duration="157000" />
-      <workItem from="1647245832118" duration="49000" />
+      <workItem from="1647245832118" duration="731000" />
     </task>
     <servers />
   </component>

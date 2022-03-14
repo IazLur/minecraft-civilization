@@ -41,12 +41,12 @@ public class VillagerGoEatThread implements Runnable {
             if (eVillager.isSleeping())
                 eVillager.wakeup();
             Location loc = new Location(eVillager.getWorld(), first.getX(), first.getY(), first.getZ());
-            eVillager.getPathfinder().moveTo(loc);
             UUID uuid = UUID.randomUUID();
             Block block = loc.getBlock();
             TestJava.threads.put(uuid,
                     Bukkit.getScheduler().scheduleSyncRepeatingTask(TestJava.plugin,
                             () -> {
+                                eVillager.getPathfinder().moveTo(loc);
                                 if (!(block.getBlockData() instanceof Ageable age)
                                         || age.getAge() != age.getMaximumAge()) {
                                     Bukkit.getServer().broadcastMessage(Colorize.name(eVillager.getCustomName())
@@ -65,7 +65,7 @@ public class VillagerGoEatThread implements Runnable {
                                     Bukkit.getScheduler().cancelTask(TestJava.threads.get(uuid));
                                     TestJava.threads.remove(uuid);
                                 }
-                            }, 0, 20));
+                            }, 0, 20 * 3));
         }
     }
 }
