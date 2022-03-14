@@ -28,6 +28,10 @@ public class VillagerGoEatThread implements Runnable {
         }
         for (VillagerModel villager : villagers) {
             Villager eVillager = (Villager) TestJava.world.getEntity(villager.getId());
+            if (eVillager == null) {
+                VillagerRepository.remove(villager.getId());
+                continue;
+            }
             if (!map.containsKey(villager.getVillageName())
                     || map.get(villager.getVillageName()).size() == 0) {
                 Bukkit.getServer().broadcastMessage(Colorize.name(eVillager.getCustomName()) + " n'a rien à manger");
