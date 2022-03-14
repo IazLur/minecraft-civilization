@@ -12,10 +12,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.entity.Villager;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.UUID;
+import java.util.*;
 
 public class VillagerGoEatThread implements Runnable {
     @Override
@@ -43,6 +40,9 @@ public class VillagerGoEatThread implements Runnable {
             Location loc = new Location(eVillager.getWorld(), first.getX(), first.getY(), first.getZ());
             UUID uuid = UUID.randomUUID();
             Block block = loc.getBlock();
+            Random rand = new Random();
+            int delay = rand.nextInt(20 * 25);
+            delay += 20 * 5;
             TestJava.threads.put(uuid,
                     Bukkit.getScheduler().scheduleSyncRepeatingTask(TestJava.plugin,
                             () -> {
@@ -66,7 +66,7 @@ public class VillagerGoEatThread implements Runnable {
                                     Bukkit.getScheduler().cancelTask(TestJava.threads.get(uuid));
                                     TestJava.threads.remove(uuid);
                                 }
-                            }, 0, 20 * 3));
+                            }, delay, 20 * 3));
         }
     }
 }
