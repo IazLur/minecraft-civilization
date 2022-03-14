@@ -43,7 +43,11 @@ public class VillagerEatThread implements Runnable {
                 Bukkit.getServer().broadcastMessage(Colorize.name(v.getCustomName()) + " s'est barré à "
                         + Colorize.name(prosp.getId()) + " car il n'avait pas assez à manger");
                 ce.setVillage(prosp);
+                village.setPopulation(village.getPopulation() - 1);
+                prosp.setPopulation(prosp.getPopulation() + 1);
                 v.teleport(VillageRepository.getBellLocation(prosp));
+                VillageRepository.update(village);
+                VillageRepository.update(prosp);
             }
             VillagerRepository.update(villagerModel);
         });
