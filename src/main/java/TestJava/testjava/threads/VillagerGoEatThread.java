@@ -91,7 +91,7 @@ public class VillagerGoEatThread implements Runnable {
                                     Bukkit.getScheduler().cancelTask(TestJava.threads.get(uuid));
                                     TestJava.threads.remove(uuid);
                                 }
-                            }, delay, 20 * 3));
+                            }, delay, 10));
         }
     }
 }
