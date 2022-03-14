@@ -12,6 +12,7 @@ import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockGrowEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
@@ -44,6 +45,7 @@ public final class TestJava extends JavaPlugin implements Listener {
     public static InventoryService inventoryService;
     public static EntityService entityService;
     public static VillagerService villagerService;
+    public static WarBlockService warBlockService;
     public static World world;
 
     public static HashMap<UUID, String> banditTargets = new HashMap<>();
@@ -81,6 +83,9 @@ public final class TestJava extends JavaPlugin implements Listener {
         if (!TestJava.database.collectionExists(EatableModel.class)) {
             TestJava.database.createCollection(EatableModel.class);
         }
+        if (!TestJava.database.collectionExists(WarBlockModel.class)) {
+            TestJava.database.createCollection(WarBlockModel.class);
+        }
 
         // Registering services
         TestJava.blockProtectionService = new BlockProtectionService();
@@ -90,6 +95,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         TestJava.inventoryService = new InventoryService();
         TestJava.entityService = new EntityService();
         TestJava.villagerService = new VillagerService();
+        TestJava.warBlockService = new WarBlockService();
 
         playerService.killAllDelegators();
         playerService.killAllBandits();
@@ -144,6 +150,11 @@ public final class TestJava extends JavaPlugin implements Listener {
     }
 
     @EventHandler
+    public void on(BlockExplodeEvent e) {
+        TestJava.warBlockService.testIfTNTExplode(e);
+    }
+
+    @EventHandler
     public void onBlockBreak(BlockBreakEvent e) {
         if (TestJava.blockProtectionService.isVillageCenterTypeGettingDestroyed(e)) return;
         if (TestJava.blockProtectionService.canPlayerBreakBlock(e)) {
@@ -161,6 +172,7 @@ public final class TestJava extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent e) {
+        if(TestJava.warBlockService.testIfCanPlaceTNT(e)) return;
         if (e.getBlockPlaced().getType() == Config.CONQUER_TYPE) {
             if (TestJava.villageService.canConquerVillage(e)) {
                 TestJava.villageService.conquer(e);

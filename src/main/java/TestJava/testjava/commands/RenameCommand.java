@@ -6,9 +6,11 @@ import TestJava.testjava.helpers.CustomName;
 import TestJava.testjava.models.EatableModel;
 import TestJava.testjava.models.VillageModel;
 import TestJava.testjava.models.VillagerModel;
+import TestJava.testjava.models.WarBlockModel;
 import TestJava.testjava.repositories.EatableRepository;
 import TestJava.testjava.repositories.VillageRepository;
 import TestJava.testjava.repositories.VillagerRepository;
+import TestJava.testjava.repositories.WarBlockRepository;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -70,6 +72,14 @@ public class RenameCommand implements CommandExecutor {
                 EatableRepository.update(eatable);
             }
         }
+        Collection<WarBlockModel> blocks = WarBlockRepository.getAll();
+        for (WarBlockModel block : blocks) {
+            if (Objects.equals(block.getVillage(), old.getId())) {
+                block.setVillage(args[0]);
+                WarBlockRepository.update(block);
+            }
+        }
+
 
         return true;
     }

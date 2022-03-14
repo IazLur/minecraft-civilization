@@ -6,10 +6,13 @@ import TestJava.testjava.helpers.Colorize;
 import TestJava.testjava.helpers.CustomName;
 import TestJava.testjava.models.EmpireModel;
 import TestJava.testjava.models.VillageModel;
+import TestJava.testjava.models.WarBlockModel;
 import TestJava.testjava.repositories.EmpireRepository;
 import TestJava.testjava.repositories.VillageRepository;
+import TestJava.testjava.repositories.WarBlockRepository;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Pillager;
 
 import java.util.Collection;
@@ -51,6 +54,18 @@ public class WarThread implements Runnable {
                     ((Pillager) entity.getEntity()).getPathfinder().moveTo(bell);
                 }
             }
+
+            // En cas de défaite de l'attaquant
+            if (entities.size() == 0) {
+                String jxQuery = String.format("/.[village=\"%s\"]", other.getId());
+                Collection<WarBlockModel> blocks = TestJava.database.find(jxQuery, WarBlockModel.class);
+                for (WarBlockModel block : blocks) {
+                    Location loc = new Location(TestJava.world, block.getX(), block.getY(), block.getZ());
+                    loc.getBlock().setType(Material.matchMaterial(block.getType()));
+                    WarBlockRepository.remove(block.getId());
+                }
+            }
+
             EmpireRepository.update(empire);
             TestJava.threads.remove(uniq);
         }
