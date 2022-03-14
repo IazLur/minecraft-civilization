@@ -3,13 +3,11 @@ package TestJava.testjava;
 import TestJava.testjava.commands.DelegationCommand;
 import TestJava.testjava.commands.RenameCommand;
 import TestJava.testjava.commands.WarCommand;
-import TestJava.testjava.models.DelegationModel;
-import TestJava.testjava.models.EmpireModel;
-import TestJava.testjava.models.VillageModel;
-import TestJava.testjava.models.VillagerModel;
+import TestJava.testjava.models.*;
 import TestJava.testjava.services.*;
 import TestJava.testjava.threads.DefenderThread;
 import TestJava.testjava.threads.VillagerEatThread;
+import TestJava.testjava.threads.VillagerGoEatThread;
 import TestJava.testjava.threads.VillagerSpawnThread;
 import io.jsondb.JsonDBTemplate;
 import org.bukkit.Bukkit;
@@ -84,6 +82,9 @@ public final class TestJava extends JavaPlugin implements Listener {
         if (!TestJava.database.collectionExists(VillagerModel.class)) {
             TestJava.database.createCollection(VillagerModel.class);
         }
+        if (!TestJava.database.collectionExists(EatableModel.class)) {
+            TestJava.database.createCollection(EatableModel.class);
+        }
 
         // Registering services
         TestJava.blockProtectionService = new BlockProtectionService();
@@ -99,6 +100,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         playerService.resetAllWars();
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerSpawnThread(), 0, 20 * 60);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerEatThread(), 0, 20 * 60 * 5);
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerGoEatThread(), 0, 20 * 60 * 2);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new DefenderThread(), 0, 20 * 5);
     }
 

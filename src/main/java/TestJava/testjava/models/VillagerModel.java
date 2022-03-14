@@ -12,6 +12,7 @@ public class VillagerModel {
     private UUID id;
     private String villageName;
     private Integer food;
+    private boolean isEating = false;
 
     public UUID getId() {
         return id;
@@ -35,5 +36,13 @@ public class VillagerModel {
 
     public void setFood(Integer food) {
         this.food = food;
+    }
+
+    public boolean isEating() {
+        return isEating;
+    }
+
+    public void setEating(boolean eating) {
+        isEating = eating;
     }
 }

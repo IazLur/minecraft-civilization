@@ -4,11 +4,12 @@ import TestJava.testjava.Config;
 import TestJava.testjava.TestJava;
 import TestJava.testjava.classes.CustomEntity;
 import TestJava.testjava.helpers.CustomName;
+import TestJava.testjava.models.EatableModel;
 import TestJava.testjava.models.VillageModel;
 import TestJava.testjava.models.VillagerModel;
+import TestJava.testjava.repositories.EatableRepository;
 import TestJava.testjava.repositories.VillageRepository;
 import TestJava.testjava.repositories.VillagerRepository;
-import TestJava.testjava.threads.VillagerGoEatThread;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -37,32 +38,10 @@ public class VillagerService {
                     if (distance > Config.VILLAGE_PROTECTION_RADIUS) {
                         return;
                     }
-                    Collection<CustomEntity> villagers = CustomName.whereVillage(nearby.getId());
-                    Villager v = null;
-                    int oldFood = 11;
-                    for (CustomEntity selecting : villagers) {
-                        if (selecting.getEntity() instanceof Villager villager) {
-                            VillagerModel current = VillagerRepository.find(villager.getUniqueId());
-                            if(current == null) {
-                                selecting.getEntity().remove();
-                                continue;
-                            }
-                            if (current.getFood() < oldFood) {
-                                v = (Villager) selecting.getEntity();
-                                oldFood = current.getFood();
-                            }
-                        }
-                    }
-                    if (v == null) {
-                        return;
-                    }
-                    Location newLoc = e.getBlock().getLocation();
-                    newLoc.setY(newLoc.getY());
-                    UUID uuid = UUID.randomUUID();
-                    v.getPathfinder().moveTo(newLoc);
-                    TestJava.threads.put(uuid, Bukkit.getScheduler().scheduleSyncRepeatingTask(TestJava.plugin, new VillagerGoEatThread(
-                            v, e.getBlock(), age, uuid
-                    ), 20, 20));
+                    EatableModel eatable = new EatableModel();
+                    eatable.setId(e.getBlock().getLocation());
+                    eatable.setVillage(nearby.getId());
+                    EatableRepository.update(eatable);
                 }
             }
         } catch (Exception ex) {

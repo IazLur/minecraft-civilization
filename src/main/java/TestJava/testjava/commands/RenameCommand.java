@@ -3,8 +3,10 @@ package TestJava.testjava.commands;
 import TestJava.testjava.classes.CustomEntity;
 import TestJava.testjava.helpers.Colorize;
 import TestJava.testjava.helpers.CustomName;
+import TestJava.testjava.models.EatableModel;
 import TestJava.testjava.models.VillageModel;
 import TestJava.testjava.models.VillagerModel;
+import TestJava.testjava.repositories.EatableRepository;
 import TestJava.testjava.repositories.VillageRepository;
 import TestJava.testjava.repositories.VillagerRepository;
 import org.bukkit.Bukkit;
@@ -59,6 +61,13 @@ public class RenameCommand implements CommandExecutor {
             if (Objects.equals(villager.getVillageName(), old.getId())) {
                 villager.setVillageName(args[0]);
                 VillagerRepository.update(villager);
+            }
+        }
+        Collection<EatableModel> eatables = EatableRepository.getAll();
+        for (EatableModel eatable : eatables) {
+            if (Objects.equals(eatable.getVillage(), old.getId())) {
+                eatable.setVillage(args[0]);
+                EatableRepository.update(eatable);
             }
         }
 
