@@ -19,7 +19,9 @@ public class DefenderThread implements Runnable {
             AtomicBoolean haveTarget = new AtomicBoolean(false);
             Collection<Entity> targets = entity.getEntity().getNearbyEntities(20D, 20D, 20D);
             targets.forEach(target -> {
-                if (target instanceof Mob t && !t.isCustomNameVisible()) {
+                if (target instanceof Mob t && !t.isCustomNameVisible() &&
+                        !(target instanceof WanderingTrader) &&
+                        !(target instanceof TraderLlama)) {
                     haveTarget.set(true);
                     ((Mob) entity.getEntity()).setTarget((LivingEntity) target);
                     return;

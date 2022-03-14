@@ -5,10 +5,7 @@ import TestJava.testjava.commands.RenameCommand;
 import TestJava.testjava.commands.WarCommand;
 import TestJava.testjava.models.*;
 import TestJava.testjava.services.*;
-import TestJava.testjava.threads.DefenderThread;
-import TestJava.testjava.threads.VillagerEatThread;
-import TestJava.testjava.threads.VillagerGoEatThread;
-import TestJava.testjava.threads.VillagerSpawnThread;
+import TestJava.testjava.threads.*;
 import io.jsondb.JsonDBTemplate;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -24,9 +21,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -52,6 +47,7 @@ public final class TestJava extends JavaPlugin implements Listener {
     public static World world;
 
     public static HashMap<UUID, String> banditTargets = new HashMap<>();
+
     public TestJava() throws UnsupportedEncodingException {
     }
 
@@ -102,6 +98,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerEatThread(), 0, 20 * 60 * 5);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerGoEatThread(), 0, 20 * 60 * 2);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new DefenderThread(), 0, 20 * 5);
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new TraderThread(), 0, 20 * 60);
     }
 
     @EventHandler
