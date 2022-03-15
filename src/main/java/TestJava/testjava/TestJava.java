@@ -118,6 +118,11 @@ public final class TestJava extends JavaPlugin implements Listener {
     }
 
     @EventHandler
+    public void onEntityPickupItem(EntityPickupItemEvent e) {
+        TestJava.itemService.testIfVillagerPickupFood(e);
+    }
+
+    @EventHandler
     public void onEntityTarget(EntityTargetLivingEntityEvent e) {
         TestJava.playerService.cancelDelegatorTarget(e);
         TestJava.entityService.testIfSkeletonDamageSameVillage(e);
