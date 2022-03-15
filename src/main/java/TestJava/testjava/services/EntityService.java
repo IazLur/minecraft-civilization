@@ -249,8 +249,8 @@ public class EntityService {
         golem.setCustomName(
                 ChatColor.AQUA + "[" + village.getId() + "] " + ChatColor.WHITE + name
         );
-        Bukkit.getServer().broadcastMessage(ChatColor.GRAY + "L'automate " + Colorize.name(name) +
-                " a vu le jour à " + Colorize.name(village.getId()));
+        Bukkit.getServer().broadcastMessage(ChatColor.GRAY + Colorize.name(name) +
+                " a rejoint la garde nationale à " + Colorize.name(village.getId()));
     }
 
     public void testIfGolemDamageSameVillage(EntityTargetLivingEntityEvent e) {
