@@ -108,4 +108,19 @@ public class VillageRepository {
         }
         return currentVillage;
     }
+
+    public static VillageModel getNearestPopulatedOfWhereNot(Location location, VillageModel ignore) {
+        double distance = 999D;
+        VillageModel currentVillage = null;
+        for (VillageModel village : VillageRepository.getAll()) {
+            Location bellLocation = VillageRepository.getBellLocation(village);
+            double testDistance = bellLocation.distance(location);
+            if (testDistance < distance && !village.getId().equals(ignore.getId())
+                    && village.getPopulation() > 0) {
+                currentVillage = village;
+                distance = testDistance;
+            }
+        }
+        return currentVillage;
+    }
 }

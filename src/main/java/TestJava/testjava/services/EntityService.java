@@ -259,4 +259,19 @@ public class EntityService {
         }
         testIfEntityDamageSameVillage(e, golem.isCustomNameVisible(), golem.getCustomName());
     }
+
+    public void testIfPlaceLocust(BlockPlaceEvent e) {
+        if(e.getBlockPlaced().getType() != Material.COAL_BLOCK) {
+            return;
+        }
+
+        e.getBlockPlaced().setType(Material.AIR);
+        Location position = e.getBlockPlaced().getLocation();
+        VillageModel village = VillageRepository.getNearestOf(position);
+        VillageModel enemy = VillageRepository.getNearestPopulatedOfWhereNot(position, village);
+        Bat locust = TestJava.world.spawn(position, Bat.class);
+        locust.setCustomNameVisible(true);
+        locust.setCustomName(ChatColor.DARK_RED + "[" + village.getId() + "] Criquet");
+        TestJava.locustTargets.put(locust.getUniqueId(), enemy);
+    }
 }

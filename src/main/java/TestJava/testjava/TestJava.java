@@ -52,6 +52,7 @@ public final class TestJava extends JavaPlugin implements Listener {
     public static World world;
 
     public static HashMap<UUID, String> banditTargets = new HashMap<>();
+    public static HashMap<UUID, VillageModel> locustTargets = new HashMap<>();
 
     public TestJava() throws UnsupportedEncodingException {
     }
@@ -209,6 +210,7 @@ public final class TestJava extends JavaPlugin implements Listener {
             TestJava.entityService.testIfPlaceDefender(e);
             TestJava.entityService.testIfPlaceAttacker(e);
             TestJava.entityService.testIfPlaceBandit(e);
+            TestJava.entityService.testIfPlaceLocust(e);
             return;
         }
         TestJava.blockProtectionService.protectRestOfTheWorld(e);

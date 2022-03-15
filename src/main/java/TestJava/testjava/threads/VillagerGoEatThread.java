@@ -68,7 +68,7 @@ public class VillagerGoEatThread implements Runnable {
                             () -> {
                                 if (eVillager.isSleeping())
                                     eVillager.wakeup();
-                                eVillager.getPathfinder().moveTo(finalLoc);
+                                eVillager.getPathfinder().moveTo(finalLoc, 1D);
                                 if (!(finalBlock.getBlockData() instanceof Ageable age)
                                         || age.getAge() != age.getMaximumAge()) {
                                     EatableRepository.remove(finalFirst);

@@ -57,7 +57,7 @@ public class WarThread implements Runnable {
             Location bell = VillageRepository.getBellLocation(meVillage);
             for (CustomEntity entity : entities) {
                 if (entity.getEntity() instanceof Pillager) {
-                    ((Pillager) entity.getEntity()).getPathfinder().moveTo(bell);
+                    ((Pillager) entity.getEntity()).getPathfinder().moveTo(bell, 1D);
                 }
             }
 
@@ -84,7 +84,7 @@ public class WarThread implements Runnable {
         Location bell = VillageRepository.getBellLocation(enemy);
         for (CustomEntity entity : entities) {
             if (entity.getEntity() instanceof Pillager) {
-                ((Pillager) entity.getEntity()).getPathfinder().moveTo(bell);
+                ((Pillager) entity.getEntity()).getPathfinder().moveTo(bell, 1D);
             }
         }
     }
