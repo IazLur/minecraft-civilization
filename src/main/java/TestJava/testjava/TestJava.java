@@ -110,6 +110,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerGoEatThread(), 0, 20 * 60 * 2);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new DefenderThread(), 0, 20 * 5);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new TraderThread(), 0, 20 * 60);
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new LocustThread(), 0, 20);
     }
 
     @EventHandler

@@ -13,15 +13,7 @@
       <change beforePath="$PROJECT_DIR$/.idea/artifacts/TestJava_jar.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/artifacts/TestJava_jar.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TestJava.iml" beforeDir="false" afterPath="$PROJECT_DIR$/TestJava.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/TestJava.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/TestJava.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/repositories/EatableRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/repositories/EatableRepository.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/repositories/VillageRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/repositories/VillageRepository.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/services/EntityService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/services/EntityService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/services/ItemService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/services/ItemService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/threads/TraderThread.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/threads/TraderThread.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/threads/VillagerGoEatThread.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/threads/VillagerGoEatThread.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/threads/WarThread.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/threads/WarThread.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/TestJava.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/TestJava.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -76,7 +68,7 @@
     <property name="extract.method.default.visibility" value="private" />
     <property name="last_opened_file_path" value="$USER_HOME$/Desktop/minecraft/plugins" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="project.structure.last.edited" value="Modules" />
+    <property name="project.structure.last.edited" value="Artifacts" />
     <property name="project.structure.proportion" value="0.15039062" />
     <property name="project.structure.side.proportion" value="0.2" />
   </component>
@@ -113,7 +105,8 @@
       <workItem from="1647245832118" duration="9550000" />
       <workItem from="1647259502565" duration="4964000" />
       <workItem from="1647326128085" duration="3507000" />
-      <workItem from="1647348769842" duration="63000" />
+      <workItem from="1647348769842" duration="104000" />
+      <workItem from="1647348878741" duration="492000" />
     </task>
     <servers />
   </component>
