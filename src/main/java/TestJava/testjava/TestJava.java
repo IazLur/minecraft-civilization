@@ -4,19 +4,21 @@ import TestJava.testjava.commands.DelegationCommand;
 import TestJava.testjava.commands.RenameCommand;
 import TestJava.testjava.commands.VillageCommand;
 import TestJava.testjava.commands.WarCommand;
+import TestJava.testjava.helpers.Colorize;
 import TestJava.testjava.models.*;
 import TestJava.testjava.services.*;
 import TestJava.testjava.threads.*;
 import io.jsondb.JsonDBTemplate;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockGrowEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
+import org.bukkit.event.player.PlayerCommandSendEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -110,10 +112,17 @@ public final class TestJava extends JavaPlugin implements Listener {
     }
 
     @EventHandler
+    public void onPlayerCommandSend(PlayerCommandSendEvent e) {
+        Bukkit.getServer().broadcastMessage(ChatColor.DARK_AQUA + "@" + e.getPlayer().getDisplayName() +
+                ChatColor.GRAY + " a executé la commande " + Colorize.name(String.join(" ", e.getCommands())));
+    }
+
+    @EventHandler
     public void onEntityTarget(EntityTargetLivingEntityEvent e) {
         TestJava.playerService.cancelDelegatorTarget(e);
         TestJava.entityService.testIfSkeletonDamageSameVillage(e);
         TestJava.entityService.testIfPillagerDamageSameVillage(e);
+        TestJava.entityService.testIfGolemDamageSameVillage(e);
         TestJava.entityService.testIfBanditTargetRight(e);
     }
 
@@ -142,7 +151,7 @@ public final class TestJava extends JavaPlugin implements Listener {
     @EventHandler
     public void onEntitySpawn(EntitySpawnEvent e) {
         TestJava.entityService.testSpawnIfVillager(e);
-        TestJava.entityService.preventGolemFromSpawn(e);
+        TestJava.entityService.testSpawnIfGolem(e);
     }
 
     @EventHandler
@@ -175,7 +184,7 @@ public final class TestJava extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent e) {
-        if(TestJava.warBlockService.testIfCanPlaceTNT(e)) return;
+        if (TestJava.warBlockService.testIfCanPlaceTNT(e)) return;
         if (e.getBlockPlaced().getType() == Config.CONQUER_TYPE) {
             if (TestJava.villageService.canConquerVillage(e)) {
                 TestJava.villageService.conquer(e);

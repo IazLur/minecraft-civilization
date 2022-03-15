@@ -21,26 +21,9 @@ public class TraderThread implements Runnable {
 
     Material[] buys = new Material[]{
             Material.DIAMOND,
-            Material.GOLD_INGOT,
-            Material.IRON_INGOT,
-            Material.GUNPOWDER,
-            Material.EMERALD
-    };
-
-    Material[] sells = new Material[]{
-            Material.STONE_BRICKS,
-            Material.POLISHED_DIORITE,
-            Material.POLISHED_ANDESITE,
-            Material.COAL_BLOCK,
-            Material.LAPIS_BLOCK,
-            Material.HAY_BLOCK,
-            Material.POLISHED_BASALT,
-            Material.POLISHED_BLACKSTONE,
-            Material.POLISHED_GRANITE,
-            Material.POLISHED_DEEPSLATE,
-            Material.BOOK,
-            Material.WHITE_WOOL,
-            Material.LEATHER,
+            Material.GOLD_BLOCK,
+            Material.IRON_BLOCK,
+            Material.TNT,
             Material.COPPER_BLOCK,
     };
 
@@ -62,11 +45,11 @@ public class TraderThread implements Runnable {
             llama1.setLeashHolder(wander);
             llama2.setLeashHolder(wander);
             MerchantRecipe trade = new MerchantRecipe(new ItemStack(buys[rand.nextInt(buys.length)]), 1);
-            ItemStack ing = new ItemStack(sells[rand.nextInt(sells.length)]);
-            ing.setAmount(rand.nextInt(56) + 8);
+            ItemStack ing = new ItemStack(Material.EMERALD);
+            ing.setAmount(rand.nextInt(5) + 4);
             trade.addIngredient(ing);
-            trade.setMaxUses(36);
-            trade.setDemand(36);
+            trade.setMaxUses(6);
+            trade.setDemand(6);
             trade.setIgnoreDiscounts(true);
             trade.setExperienceReward(false);
             trader.add(trade);

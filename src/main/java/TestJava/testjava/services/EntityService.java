@@ -176,7 +176,7 @@ public class EntityService {
     }
 
     public void testIfPlaceBandit(BlockPlaceEvent e) {
-        if (e.getBlockPlaced().getType() != Material.GOLD_BLOCK) {
+        if (e.getBlockPlaced().getType() != Material.COPPER_BLOCK) {
             return;
         }
 
@@ -192,6 +192,11 @@ public class EntityService {
         bandit.setCanBreakDoors(true);
         bandit.setSwimming(true);
         bandit.getEquipment().setHelmet(new ItemStack(Material.GOLDEN_HELMET));
+        bandit.getEquipment().setItemInMainHand(new ItemStack(Material.GOLDEN_SWORD));
+        bandit.getEquipment().setItemInOffHand(new ItemStack(Material.SHIELD));
+        bandit.getEquipment().setLeggings(new ItemStack(Material.CHAINMAIL_LEGGINGS));
+        bandit.getEquipment().setChestplate(new ItemStack(Material.CHAINMAIL_CHESTPLATE));
+        bandit.getEquipment().setBoots(new ItemStack(Material.LEATHER_BOOTS));
         Player enemy = TestJava.playerService.getNearestPlayerWhereNot(bandit, player.getDisplayName());
         TestJava.banditTargets.put(bandit.getUniqueId(), enemy.getDisplayName());
         bandit.setTarget(enemy);
@@ -233,9 +238,25 @@ public class EntityService {
         }
     }
 
-    public void preventGolemFromSpawn(EntitySpawnEvent e) {
-        if(e.getEntity().getType() == EntityType.IRON_GOLEM) {
-            e.setCancelled(true);
+    public void testSpawnIfGolem(EntitySpawnEvent e) {
+        if (!(e.getEntity() instanceof IronGolem golem)) {
+            return;
         }
+
+        VillageModel village = VillageRepository.getNearestOf(golem);
+        golem.setCustomNameVisible(true);
+        String name = CustomName.generate();
+        golem.setCustomName(
+                ChatColor.AQUA + "[" + village.getId() + "] " + ChatColor.WHITE + name
+        );
+        Bukkit.getServer().broadcastMessage(ChatColor.GRAY + "L'automate " + Colorize.name(name) +
+                " a vu le jour à " + Colorize.name(village.getId()));
+    }
+
+    public void testIfGolemDamageSameVillage(EntityTargetLivingEntityEvent e) {
+        if (!(e.getEntity() instanceof IronGolem golem)) {
+            return;
+        }
+        testIfEntityDamageSameVillage(e, golem.isCustomNameVisible(), golem.getCustomName());
     }
 }
