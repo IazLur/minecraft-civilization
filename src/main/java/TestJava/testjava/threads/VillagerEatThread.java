@@ -30,6 +30,9 @@ public class VillagerEatThread implements Runnable {
                         ChatColor.GRAY + "La famine sévit à " + Colorize.name(villagerModel.getVillageName())
                 );
             } else if (villagerModel.getFood() < 5) {
+                if (v == null) {
+                    return;
+                }
                 Collection<VillageModel> villages = VillageRepository.getAll();
                 VillageModel prosp = null;
                 for (VillageModel nVillage : villages) {

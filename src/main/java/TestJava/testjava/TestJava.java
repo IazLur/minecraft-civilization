@@ -62,7 +62,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         // Init
         Bukkit.getPluginManager().registerEvents(this, this);
         TestJava.plugin = this;
-        getLogger().log(Level.INFO, "Loading plugin v3.0");
+        getLogger().log(Level.INFO, "Loading plugin v3.1");
         TestJava.world = Bukkit.getWorld(TestJava.worldName);
 
         // Registering commands
@@ -115,8 +115,13 @@ public final class TestJava extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onPlayerCommandSend(PlayerCommandSendEvent e) {
-        Bukkit.getServer().broadcastMessage(ChatColor.DARK_AQUA + "@" + e.getPlayer().getDisplayName() +
-                ChatColor.GRAY + " a executé la commande " + Colorize.name(String.join(" ", e.getCommands())));
+        /* Bukkit.getServer().broadcastMessage(ChatColor.DARK_AQUA + "@" + e.getPlayer().getDisplayName() +
+                ChatColor.GRAY + " a executé la commande " + Colorize.name(String.join(" ", e.getCommands()))); */
+    }
+
+    @EventHandler
+    public void onEntityTransform(EntityTransformEvent e) {
+        TestJava.entityService.preventVillageEntityTransform(e);
     }
 
     @EventHandler
@@ -131,6 +136,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         TestJava.entityService.testIfPillagerDamageSameVillage(e);
         TestJava.entityService.testIfGolemDamageSameVillage(e);
         TestJava.entityService.testIfBanditTargetRight(e);
+        TestJava.entityService.testIfMobTargetSkeleton(e);
     }
 
     @EventHandler

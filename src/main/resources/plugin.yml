@@ -1,5 +1,5 @@
 name: TestJava
-version: '${version}'
+version: '3.1'
 main: TestJava.testjava.TestJava
 api-version: 1.18
 authors: [ Edouard ]

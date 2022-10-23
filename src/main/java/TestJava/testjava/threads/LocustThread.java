@@ -29,7 +29,7 @@ public class LocustThread implements Runnable {
             }
             EatableModel eatable = (EatableModel) eatables.toArray()[0];
             Location location = new Location(TestJava.world, eatable.getX(), eatable.getY(), eatable.getZ());
-            if (locust.getLocation().distance(location) <= 2) {
+            if (locust.getLocation().distance(location) <= 4) {
                 location.getBlock().setType(Material.AIR);
                 EatableRepository.remove(eatable);
                 TestJava.locustTargets.remove(uuid);

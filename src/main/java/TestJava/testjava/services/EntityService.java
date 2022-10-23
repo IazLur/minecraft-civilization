@@ -14,11 +14,10 @@ import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.*;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntitySpawnEvent;
-import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.Objects;
 
 public class EntityService {
     public void testSpawnIfVillager(EntitySpawnEvent e) {
@@ -144,6 +143,21 @@ public class EntityService {
         testIfEntityDamageSameVillage(e, skeleton.isCustomNameVisible(), skeleton.getCustomName());
     }
 
+    public void testIfMobTargetSkeleton(EntityTargetLivingEntityEvent e) {
+        if (
+                !(e.getEntity() instanceof Mob) ||
+                        e.getEntity() instanceof Pillager
+        ) {
+            return;
+        }
+        if (Objects.requireNonNull(e.getTarget()).isCustomNameVisible()) {
+            if (e.getTarget() instanceof Skeleton) {
+                e.setTarget(null);
+                e.setCancelled(true);
+            }
+        }
+    }
+
     public void testIfPillagerDamageSameVillage(EntityTargetLivingEntityEvent e) {
         if (!(e.getEntity() instanceof Pillager pillager)) {
             return;
@@ -261,7 +275,7 @@ public class EntityService {
     }
 
     public void testIfPlaceLocust(BlockPlaceEvent e) {
-        if(e.getBlockPlaced().getType() != Material.COAL_BLOCK) {
+        if (e.getBlockPlaced().getType() != Material.COAL_BLOCK) {
             return;
         }
 
@@ -271,7 +285,18 @@ public class EntityService {
         VillageModel enemy = VillageRepository.getNearestPopulatedOfWhereNot(position, village);
         Bat locust = TestJava.world.spawn(position, Bat.class);
         locust.setCustomNameVisible(true);
+        locust.setPersistent(true);
         locust.setCustomName(ChatColor.DARK_RED + "[" + village.getId() + "] Criquet");
         TestJava.locustTargets.put(locust.getUniqueId(), enemy);
+    }
+
+    public void preventVillageEntityTransform(EntityTransformEvent e) {
+        if (!(e.getEntity() instanceof Zombie) &&
+                !(e.getEntity() instanceof Skeleton)) {
+            return;
+        }
+        if (e.getEntity().isCustomNameVisible()) {
+            e.setCancelled(true);
+        }
     }
 }
