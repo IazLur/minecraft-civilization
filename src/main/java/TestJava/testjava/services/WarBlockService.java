@@ -34,10 +34,11 @@ public class WarBlockService {
     }
 
     public void testIfTNTExplode(EntityExplodeEvent e) {
-        System.out.println("Detected TNT explosion");
         VillageModel village = VillageRepository.getNearestOf(e.getEntity().getLocation());
         for (Block block : e.blockList()) {
-            System.out.println("Adding type " + block.getType().name());
+            if(block.getType() == Material.TNT) {
+                continue;
+            }
             WarBlockModel save = new WarBlockModel();
             save.setId(UUID.randomUUID());
             save.setType(block.getType().name());

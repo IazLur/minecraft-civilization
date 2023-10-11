@@ -4,13 +4,17 @@ import TestJava.testjava.TestJava;
 import TestJava.testjava.classes.CustomEntity;
 import TestJava.testjava.helpers.CustomName;
 import TestJava.testjava.models.EmpireModel;
+import TestJava.testjava.models.VillageModel;
 import TestJava.testjava.repositories.EmpireRepository;
+import TestJava.testjava.repositories.VillageRepository;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
@@ -18,6 +22,7 @@ import org.bukkit.util.Vector;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Optional;
 
 public class PlayerService {
     public void addEmpireIfNotOwnsOne(@Nonnull Player e) {
@@ -201,12 +206,22 @@ public class PlayerService {
                 oldDist = nDist;
             }
         }
-        if(returned != null)
+        if (returned != null)
             System.out.println(returned.getDisplayName());
         return returned;
     }
 
     public void killAllBandits() {
         this.getAllBandits().forEach(entity -> entity.getEntity().remove());
+    }
+
+    public void testIfPlayerHaveVillageToTeleport(PlayerRespawnEvent e) {
+        Optional<VillageModel> v = VillageRepository.getForPlayer(e.getPlayer().getName())
+                .stream().findFirst();
+        if (v.isEmpty()) {
+            return;
+        }
+        VillageModel village = v.get();
+        e.getPlayer().teleport(VillageRepository.getBellLocation(village));
     }
 }

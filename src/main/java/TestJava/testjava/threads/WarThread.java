@@ -61,21 +61,13 @@ public class WarThread implements Runnable {
                 }
             }
 
-            // En cas de défaite de l'attaquant
-            if (pillagers == 0) {
-                String jxQuery = String.format("/.[village=\"%s\"]", other.getId());
-                Collection<WarBlockModel> blocks = TestJava.database.find(jxQuery, WarBlockModel.class);
-                for (WarBlockModel block : blocks) {
-                    Location loc = new Location(TestJava.world, block.getX(), block.getY(), block.getZ());
-                    loc.getBlock().setType(Material.matchMaterial(block.getType()));
-                    WarBlockRepository.remove(block.getId());
-                }
-            } else {
-                String jxQuery = String.format("/.[village=\"%s\"]", other.getId());
-                Collection<WarBlockModel> blocks = TestJava.database.find(jxQuery, WarBlockModel.class);
-                for (WarBlockModel block : blocks) {
-                    WarBlockRepository.remove(block.getId());
-                }
+            // On répare le village dans tous les cas
+            String jxQuery = String.format("/.[village=\"%s\"]", other.getId());
+            Collection<WarBlockModel> blocks = TestJava.database.find(jxQuery, WarBlockModel.class);
+            for (WarBlockModel block : blocks) {
+                Location loc = new Location(TestJava.world, block.getX(), block.getY(), block.getZ());
+                loc.getBlock().setType(Material.matchMaterial(block.getType()));
+                WarBlockRepository.remove(block.getId());
             }
 
             EmpireRepository.update(empire);

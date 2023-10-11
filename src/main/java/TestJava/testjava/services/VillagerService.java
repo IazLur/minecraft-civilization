@@ -14,8 +14,9 @@ import java.util.UUID;
 public class VillagerService {
     public void testIfGrowIsEatable(BlockGrowEvent e) {
         try {
-            Ageable age = (Ageable) e.getNewState().getBlockData();
-            System.out.println(e.getBlock().getType().name());
+            if (!(e.getNewState().getBlockData() instanceof Ageable age)) {
+                return;
+            }
             if (
                     e.getBlock().getType() == Material.WHEAT ||
                             e.getBlock().getType() == Material.BEETROOTS ||

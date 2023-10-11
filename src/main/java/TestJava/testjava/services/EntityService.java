@@ -150,7 +150,7 @@ public class EntityService {
         ) {
             return;
         }
-        if (Objects.requireNonNull(e.getTarget()).isCustomNameVisible()) {
+        if (e.getTarget() != null && e.getTarget().isCustomNameVisible()) {
             if (e.getTarget() instanceof Skeleton) {
                 e.setTarget(null);
                 e.setCancelled(true);

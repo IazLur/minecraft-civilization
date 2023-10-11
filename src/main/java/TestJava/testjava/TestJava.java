@@ -20,6 +20,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.player.PlayerCommandSendEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -223,4 +224,9 @@ public final class TestJava extends JavaPlugin implements Listener {
         TestJava.blockProtectionService.protectRestOfTheWorld(e);
     }
 
+
+    @EventHandler
+    public void onPlayerRespawn(PlayerRespawnEvent e) {
+        TestJava.playerService.testIfPlayerHaveVillageToTeleport(e);
+    }
 }
