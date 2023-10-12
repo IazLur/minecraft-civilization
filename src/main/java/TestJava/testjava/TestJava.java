@@ -1,16 +1,16 @@
 package TestJava.testjava;
 
-import TestJava.testjava.commands.DelegationCommand;
-import TestJava.testjava.commands.RenameCommand;
-import TestJava.testjava.commands.VillageCommand;
-import TestJava.testjava.commands.WarCommand;
+import TestJava.testjava.commands.*;
 import TestJava.testjava.helpers.Colorize;
 import TestJava.testjava.models.*;
+import TestJava.testjava.repositories.EmpireRepository;
+import TestJava.testjava.repositories.ResourceRepository;
 import TestJava.testjava.services.*;
 import TestJava.testjava.threads.*;
 import io.jsondb.JsonDBTemplate;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -26,6 +26,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -63,7 +64,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         // Init
         Bukkit.getPluginManager().registerEvents(this, this);
         TestJava.plugin = this;
-        getLogger().log(Level.INFO, "Loading plugin v3.1");
+        getLogger().log(Level.INFO, "Loading plugin v3.2");
         TestJava.world = Bukkit.getWorld(TestJava.worldName);
 
         // Registering commands
@@ -71,6 +72,8 @@ public final class TestJava extends JavaPlugin implements Listener {
         getCommand("delegation").setExecutor(new DelegationCommand());
         getCommand("war").setExecutor(new WarCommand());
         getCommand("village").setExecutor(new VillageCommand());
+        getCommand("marketprice").setExecutor(new MarketPriceCommand());
+        getCommand("market").setExecutor(new MarketCommand());
 
         // Registering databases
         TestJava.database = new JsonDBTemplate(this.jsonLocation, this.baseScanPackage);
@@ -91,6 +94,19 @@ public final class TestJava extends JavaPlugin implements Listener {
         }
         if (!TestJava.database.collectionExists(WarBlockModel.class)) {
             TestJava.database.createCollection(WarBlockModel.class);
+        }
+        if (!TestJava.database.collectionExists(ResourceModel.class)) {
+            TestJava.database.createCollection(ResourceModel.class);
+        }
+
+        // Migration des juridictions
+        for (EmpireModel empire : EmpireRepository.getAll()) {
+            try {
+                empire.getJuridictionCount();
+            } catch (NullPointerException ex) {
+                empire.setJuridictionCount(0);
+                EmpireRepository.update(empire);
+            }
         }
 
         // Registering services
@@ -193,6 +209,7 @@ public final class TestJava extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
+        ResourceRepository.getAll();
         TestJava.playerService.addEmpireIfNotOwnsOne(e.getPlayer());
     }
 

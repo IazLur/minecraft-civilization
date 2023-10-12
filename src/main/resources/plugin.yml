@@ -1,7 +1,7 @@
 name: TestJava
-version: '3.1'
+version: '3.2'
 main: TestJava.testjava.TestJava
-api-version: 1.18
+api-version: 1.20
 authors: [ Edouard ]
 description: TestJava
 commands:
@@ -17,3 +17,9 @@ commands:
   village:
     description: Voir les infos d'un village
     usage: /village <villageName>
+  marketprice:
+    description: Voir les infos du cours du marché
+    usage: /marketprice <buy|sell> <resourceName>
+  market:
+    description: Acheter ou vendre une ressource tenue en main
+    usage: /market <buy|sell> <resourceQuantity>

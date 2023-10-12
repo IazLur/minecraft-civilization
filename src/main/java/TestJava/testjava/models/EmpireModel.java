@@ -13,6 +13,8 @@ public class EmpireModel {
     private Integer totalAttackerCount;
     private Integer totalDefenderCount;
 
+    private Float juridictionCount = 0.0f;
+
     public String getId() {
         return id;
     }
@@ -60,4 +62,13 @@ public class EmpireModel {
     public void setTotalDefenderCount(Integer totalDefenderCount) {
         this.totalDefenderCount = totalDefenderCount;
     }
+
+    public float getJuridictionCount() {
+        return Math.round(juridictionCount * 100.0f) / 100.0f;
+    }
+
+    public void setJuridictionCount(float juridictionCount) {
+        this.juridictionCount = Math.round(juridictionCount * 100.0f) / 100.0f;
+    }
+
 }
