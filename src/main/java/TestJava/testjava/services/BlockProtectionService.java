@@ -4,8 +4,12 @@ import TestJava.testjava.Config;
 import TestJava.testjava.models.VillageModel;
 import TestJava.testjava.repositories.VillageRepository;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.block.data.Ageable;
+import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
 
 import java.util.Objects;
 
@@ -53,5 +57,17 @@ public class BlockProtectionService {
 
     public boolean canPlayerPlaceBlock(BlockPlaceEvent e) {
         return VillageRepository.getCurrentVillageConstructibleIfOwn(e.getPlayer()) != null;
+    }
+
+    public boolean preventCultivableDestroy(EntityChangeBlockEvent e) {
+        Material toMaterial = e.getTo();
+        Material fromMaterial = e.getBlock().getType();
+
+        if (fromMaterial == Material.FARMLAND && (toMaterial == Material.DIRT || toMaterial == Material.GRASS_BLOCK)) {
+            e.setCancelled(true);
+            return true;
+        }
+
+        return false;
     }
 }

@@ -22,4 +22,7 @@ commands:
     usage: /marketprice <buy|sell> <resourceName>
   market:
     description: Acheter ou vendre une ressource tenue en main
-    usage: /market <buy|sell> <resourceQuantity>
+    usage: /market <buy|sell> <resourceName> <resourceQuantity>
+  money:
+    description: Voir son argent
+    usage: /money <playerName>

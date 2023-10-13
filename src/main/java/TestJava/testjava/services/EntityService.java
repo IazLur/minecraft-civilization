@@ -247,6 +247,9 @@ public class EntityService {
 
         if (e.getCause() == EntityDamageEvent.DamageCause.FIRE ||
                 e.getCause() == EntityDamageEvent.DamageCause.FIRE_TICK) {
+            if (e.getEntity() instanceof Skeleton skeleton) {
+                skeleton.getEquipment().setHelmet(new ItemStack(Material.LEATHER_HELMET, 1));
+            }
             e.setCancelled(true);
             e.setDamage(0D);
         }

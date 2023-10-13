@@ -74,6 +74,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         getCommand("village").setExecutor(new VillageCommand());
         getCommand("marketprice").setExecutor(new MarketPriceCommand());
         getCommand("market").setExecutor(new MarketCommand());
+        getCommand("money").setExecutor(new MoneyCommand());
 
         // Registering databases
         TestJava.database = new JsonDBTemplate(this.jsonLocation, this.baseScanPackage);
@@ -194,6 +195,12 @@ public final class TestJava extends JavaPlugin implements Listener {
     @EventHandler
     public void onEntityExplode(EntityExplodeEvent e) {
         TestJava.warBlockService.testIfTNTExplode(e);
+    }
+
+    @EventHandler
+    public void onEntityChangeBlock(EntityChangeBlockEvent e) {
+        if (TestJava.blockProtectionService.preventCultivableDestroy(e)) return;
+
     }
 
     @EventHandler

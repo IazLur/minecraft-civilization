@@ -10,29 +10,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f91b2139-194e-4538-850d-9d0cde70afca" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/commands/MarketCommand.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/commands/MarketPriceCommand.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/helpers/JuridictionHelper.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/models/ResourceModel.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/repositories/ResourceRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/resources.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/commands/MarketCommand.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/commands/MarketPriceCommand.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/helpers/JuridictionHelper.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/models/ResourceModel.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/repositories/ResourceRepository.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/resources.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/commands/MoneyCommand.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/TestJava.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/TestJava.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/models/EmpireModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/models/EmpireModel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/repositories/EmpireRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/repositories/EmpireRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/commands/MarketCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/commands/MarketCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/BlockProtectionService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/BlockProtectionService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/EntityService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/EntityService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/plugin.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/plugin.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/TestJava.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/TestJava.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/models/EmpireModel.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/models/EmpireModel.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/repositories/EmpireRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/repositories/EmpireRepository.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/services/PlayerService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/services/PlayerService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/services/WarBlockService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/services/WarBlockService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/threads/WarThread.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/threads/WarThread.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/commands/MarketCommand.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/commands/MarketCommand.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/plugin.yml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/plugin.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -76,24 +62,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "C:/Users/drago/IdeaProjects/Plugin/mctest/src/main/resources",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Artifacts",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/drago/IdeaProjects/Plugin/mctest/src/main/resources&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Artifacts&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\drago\IdeaProjects\Plugin\mctest\src\main\resources" />
