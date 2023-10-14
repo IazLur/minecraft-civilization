@@ -3,6 +3,7 @@ package TestJava.testjava.repositories;
 import TestJava.testjava.Config;
 import TestJava.testjava.TestJava;
 import TestJava.testjava.models.VillageModel;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -11,6 +12,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
 public class VillageRepository {
 
@@ -77,6 +79,23 @@ public class VillageRepository {
             }
         }
         return result;
+    }
+
+    @Nullable
+    public static VillageModel getNearestVillageOfPlayer(String p, int maxDistance) {
+        Player player = Bukkit.getPlayerExact(p);
+        Collection<VillageModel> villages = getForPlayer(p);
+        double minDistance = maxDistance;
+        VillageModel nearestVillage = null;
+        for (VillageModel village : villages) {
+            double currDistance = Objects.requireNonNull(player).getLocation().distance(getBellLocation(village));
+            if (currDistance < minDistance && currDistance <= maxDistance) {
+                minDistance = currDistance;
+                nearestVillage = village;
+            }
+        }
+
+        return nearestVillage;
     }
 
     public static void update(@Nonnull VillageModel village) {
