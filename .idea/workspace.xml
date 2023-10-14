@@ -10,8 +10,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f91b2139-194e-4538-850d-9d0cde70afca" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/commands/NearestCommand.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/repositories/VillageRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/repositories/VillageRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/TestJava.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/TestJava.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/plugin.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/plugin.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -120,7 +122,7 @@
       <workItem from="1697100389626" duration="8154000" />
       <workItem from="1697269744853" duration="1144000" />
       <workItem from="1697301234303" duration="40000" />
-      <workItem from="1697301287793" duration="503000" />
+      <workItem from="1697301287793" duration="1170000" />
     </task>
     <servers />
   </component>

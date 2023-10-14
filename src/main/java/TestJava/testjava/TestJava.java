@@ -75,6 +75,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         getCommand("marketprice").setExecutor(new MarketPriceCommand());
         getCommand("market").setExecutor(new MarketCommand());
         getCommand("money").setExecutor(new MoneyCommand());
+        getCommand("nearest").setExecutor(new NearestCommand());
 
         // Registering databases
         TestJava.database = new JsonDBTemplate(this.jsonLocation, this.baseScanPackage);

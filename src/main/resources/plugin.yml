@@ -26,3 +26,6 @@ commands:
   money:
     description: Voir son argent
     usage: /money <playerName>
+  nearest:
+    description: Voir le village près de soi
+    usage: /nearest
