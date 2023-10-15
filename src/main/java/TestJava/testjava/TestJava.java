@@ -1,7 +1,6 @@
 package TestJava.testjava;
 
 import TestJava.testjava.commands.*;
-import TestJava.testjava.helpers.Colorize;
 import TestJava.testjava.models.*;
 import TestJava.testjava.repositories.EmpireRepository;
 import TestJava.testjava.repositories.ResourceRepository;
@@ -9,8 +8,6 @@ import TestJava.testjava.services.*;
 import TestJava.testjava.threads.*;
 import io.jsondb.JsonDBTemplate;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -26,7 +23,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -168,6 +164,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         TestJava.playerService.testIfDelegatorDamagePlayer(e);
         TestJava.playerService.testIfPlayerDamageDelegator(e);
         TestJava.playerService.testIfPlayerDamageVillager(e);
+        TestJava.playerService.testIfEntityDamageSameVillage(e);
     }
 
     @EventHandler

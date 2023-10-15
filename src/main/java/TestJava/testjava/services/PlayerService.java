@@ -13,7 +13,6 @@ import org.bukkit.Material;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -22,6 +21,7 @@ import org.bukkit.util.Vector;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
 
 public class PlayerService {
@@ -223,5 +223,25 @@ public class PlayerService {
         }
         VillageModel village = v.get();
         e.getPlayer().teleport(VillageRepository.getBellLocation(village));
+    }
+
+    public void testIfEntityDamageSameVillage(EntityDamageByEntityEvent e) {
+        Entity damager = e.getDamager();
+        Entity damagee = e.getEntity();
+
+        // Vérifier si les deux entités sont des LivingEntity et ont un nom personnalisé
+        if (damager instanceof LivingEntity livingDamager && damagee instanceof LivingEntity livingDamagee) {
+
+            if (livingDamager.isCustomNameVisible() && livingDamagee.isCustomNameVisible()) {
+                String damagerVillage = CustomName.squareBrackets(Objects.requireNonNull(livingDamager.getCustomName()), 0);
+                String damageeVillage = CustomName.squareBrackets(Objects.requireNonNull(livingDamagee.getCustomName()), 0);
+
+                // Si les deux entités sont du même village, annuler les dégâts
+                if (damagerVillage.equals(damageeVillage)) {
+                    e.setCancelled(true);
+                    e.setDamage(0);
+                }
+            }
+        }
     }
 }
