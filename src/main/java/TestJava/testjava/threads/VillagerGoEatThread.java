@@ -41,7 +41,7 @@ public class VillagerGoEatThread implements Runnable {
             Bukkit.getLogger().info("Testing food for " + villager.getId());
             try {
                 Bukkit.getScheduler().runTask(TestJava.plugin, () -> handleHungryVillager(villager, villageEatablesMap));
-            } catch(Exception ex) {
+            } catch (Exception ex) {
                 System.out.println(ex.getMessage());
             }
         }
@@ -114,12 +114,21 @@ public class VillagerGoEatThread implements Runnable {
         Location loc = new Location(TestJava.world, targetEatable.getX(), targetEatable.getY(), targetEatable.getZ());
         Block block = loc.getBlock();
 
+        final int[] attempts = {0};
+        final double[] increasedDistance = {2.0};
+
         TestJava.threads.put(uuid, Bukkit.getScheduler().scheduleSyncRepeatingTask(TestJava.plugin, () -> {
-            performScheduledTask(eVillager, villager, targetEatable, block, loc, uuid);
+            attempts[0] += 1;
+
+            if (attempts[0] % 3 == 0) {
+                increasedDistance[0] += 1.0;
+            }
+
+            performScheduledTask(eVillager, villager, targetEatable, block, loc, uuid, increasedDistance[0]);
         }, delay, 10));
     }
 
-    private void performScheduledTask(Villager eVillager, VillagerModel villager, EatableModel targetEatable, Block block, Location loc, UUID uuid) {
+    private void performScheduledTask(Villager eVillager, VillagerModel villager, EatableModel targetEatable, Block block, Location loc, UUID uuid, double increasedDistance) {
         if (eVillager.isSleeping()) {
             eVillager.wakeup();
         }
@@ -131,7 +140,7 @@ public class VillagerGoEatThread implements Runnable {
             return;
         }
 
-        if (eVillager.getLocation().distance(loc) <= 2) {
+        if (eVillager.getLocation().distance(loc) <= increasedDistance) {
             handleEating(eVillager, villager, block, targetEatable, uuid);
         }
     }
