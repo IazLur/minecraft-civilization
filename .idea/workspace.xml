@@ -11,13 +11,8 @@
   <component name="ChangeListManager">
     <list default="true" id="f91b2139-194e-4538-850d-9d0cde70afca" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/Config.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/Config.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/commands/MarketCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/commands/MarketCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/commands/NearestCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/commands/NearestCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/repositories/VillageRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/repositories/VillageRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/VillagerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/VillagerService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/VillagerEatThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/VillagerEatThread.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/VillagerGoEatThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/VillagerGoEatThread.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/helpers/JuridictionHelper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/helpers/JuridictionHelper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/resources.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/resources.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

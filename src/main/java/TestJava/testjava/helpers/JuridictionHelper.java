@@ -22,12 +22,12 @@ public class JuridictionHelper {
 
         float rarity;
         if (totalResources == 0) {
-            rarity = 0;
+            rarity = 1;
         } else {
-            rarity = 1 - ((float) specificResource / (float) totalResources);
+            rarity = ((float) totalResources / (float) specificResource);
         }
 
-        return (1 + rarity);
+        return rarity;
     }
 
     public static float calculatePriceForSell(
@@ -45,12 +45,12 @@ public class JuridictionHelper {
 
         float rarity;
         if (totalResources == 0) {
-            rarity = 0;
+            rarity = 1;
         } else {
-            rarity = 1 - ((float) specificResource / (float) totalResources);
+            rarity = ((float) totalResources / (float) specificResource);
         }
 
-        return (1 + rarity);
+        return rarity;
     }
 
 }

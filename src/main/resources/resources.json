@@ -1,4 +1,15 @@
 {"schemaVersion":"1.0"}
-{"id":"1","name":"HAY_BLOCK","quantity":1}
-{"id":"2","name":"IRON_INGOT","quantity":1}
-{"id":"3","name":"COAL_BLOCK","quantity":1}
+{"id":"1","name":"DIAMOND_BLOCK","quantity":1}
+{"id":"2","name":"EMERALD_BLOCK","quantity":3}
+{"id":"3","name":"GOLD_BLOCK","quantity":12}
+{"id":"4","name":"IRON_BLOCK","quantity":24}
+{"id":"5","name":"COAL_BLOCK","quantity":128}
+{"id":"6","name":"STONE","quantity":256}
+{"id":"12","name":"REDSTONE_BLOCK","quantity":256}
+{"id":"13","name":"HAY_BLOCK","quantity":256}
+{"id":"14","name":"WHITE_WOOL","quantity":256}
+{"id":"8","name":"COBBLESTONE","quantity":512}
+{"id":"11","name":"SLIME_BLOCK","quantity": 512}
+{"id":"9","name":"DIRT","quantity":1024}
+{"id":"7","name":"SAND","quantity":1024}
+{"id":"10","name":"GRAVEL","quantity":1024}
