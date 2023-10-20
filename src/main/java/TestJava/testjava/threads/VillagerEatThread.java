@@ -25,10 +25,10 @@ public class VillagerEatThread implements Runnable {
                 if (v == null) {
                     return;
                 }
-                v.setHealth(0D);
                 TestJava.plugin.getServer().broadcastMessage(
                         ChatColor.GRAY + "La famine sévit à " + Colorize.name(villagerModel.getVillageName())
                 );
+                v.setHealth(0D);
             } else if (villagerModel.getFood() < 5) {
                 if (v == null) {
                     return;
@@ -44,8 +44,8 @@ public class VillagerEatThread implements Runnable {
                 }
                 CustomEntity ce = new CustomEntity(v);
                 villagerModel.setVillageName(prosp.getId());
-                Bukkit.getServer().broadcastMessage(Colorize.name(v.getCustomName()) + " s'est barré à "
-                        + Colorize.name(prosp.getId()) + " car il n'avait pas assez à manger");
+                Bukkit.getServer().broadcastMessage(Colorize.name(v.getCustomName()) + " est parti à "
+                        + Colorize.name(prosp.getId()) + " par famine");
                 ce.setVillage(prosp);
                 village.setPopulation(village.getPopulation() - 1);
                 prosp.setPopulation(prosp.getPopulation() + 1);

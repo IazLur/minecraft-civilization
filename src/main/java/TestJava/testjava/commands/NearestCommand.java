@@ -1,7 +1,6 @@
 package TestJava.testjava.commands;
 
 import TestJava.testjava.Config;
-import TestJava.testjava.TestJava;
 import TestJava.testjava.helpers.Colorize;
 import TestJava.testjava.models.VillageModel;
 import TestJava.testjava.repositories.VillageRepository;
@@ -32,7 +31,7 @@ public class NearestCommand implements CommandExecutor {
      */
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         VillageModel nearestVillage = VillageRepository.getNearestVillageOfPlayer(sender.getName(),
-                Config.VILLAGE_CONSTRUCTIBLE_RADIUS * 2);
+                Config.VILLAGE_CONSTRUCTION_RADIUS * 2);
         if(nearestVillage != null){
             sender.sendMessage(Colorize.name(sender.getName()) + " is near " + nearestVillage.getId());
         } else {

@@ -34,15 +34,15 @@ public class VillageRepository {
     }
 
     @Nullable
-    public static VillageModel getCurrentVillageConstructible(@Nonnull LivingEntity livingEntity) {
+    public static VillageModel getCurrentVillageConstruction(@Nonnull LivingEntity livingEntity) {
         VillageModel nearest = VillageRepository.getNearestOf(livingEntity);
         if (nearest == null) return null;
         Location bell = getBellLocation(nearest);
         Location loc = livingEntity.getLocation();
-        if (bell.getBlockX() - Config.VILLAGE_CONSTRUCTIBLE_RADIUS / 2 < loc.getBlockX()
-                && bell.getBlockX() + Config.VILLAGE_CONSTRUCTIBLE_RADIUS / 2 > loc.getBlockX()
-                && bell.getBlockZ() - Config.VILLAGE_CONSTRUCTIBLE_RADIUS / 2 < loc.getBlockZ()
-                && bell.getBlockZ() + Config.VILLAGE_CONSTRUCTIBLE_RADIUS / 2 > loc.getBlockZ()) {
+        if (bell.getBlockX() - Config.VILLAGE_CONSTRUCTION_RADIUS / 2 < loc.getBlockX()
+                && bell.getBlockX() + Config.VILLAGE_CONSTRUCTION_RADIUS / 2 > loc.getBlockX()
+                && bell.getBlockZ() - Config.VILLAGE_CONSTRUCTION_RADIUS / 2 < loc.getBlockZ()
+                && bell.getBlockZ() + Config.VILLAGE_CONSTRUCTION_RADIUS / 2 > loc.getBlockZ()) {
             return nearest;
         }
         return null;
@@ -65,7 +65,7 @@ public class VillageRepository {
 
     @Nullable
     public static VillageModel getCurrentVillageConstructibleIfOwn(@Nonnull Player player) {
-        VillageModel village = VillageRepository.getCurrentVillageConstructible(player);
+        VillageModel village = VillageRepository.getCurrentVillageConstruction(player);
         if (village == null) return null;
         return village.getPlayerName().equals(player.getDisplayName()) ? village : null;
     }

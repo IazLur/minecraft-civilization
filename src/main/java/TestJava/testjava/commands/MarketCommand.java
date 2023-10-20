@@ -54,6 +54,11 @@ public class MarketCommand implements CommandExecutor {
             return false;
         }
 
+        if(match.getQuantity() <= 0) {
+            sender.sendMessage(ChatColor.RED + "La banque n'a pas assez de cette ressource.");
+            return false;
+        }
+
         if (isBuy) {
             float buyPrice = JuridictionHelper.calculatePriceForSell(match) * quantity;
             buyPrice = Math.round(buyPrice * 100.0f) / 100.0f;

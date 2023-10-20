@@ -8,17 +8,13 @@ import TestJava.testjava.models.VillagerModel;
 import TestJava.testjava.repositories.EatableRepository;
 import TestJava.testjava.repositories.VillageRepository;
 import TestJava.testjava.repositories.VillagerRepository;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Villager;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class VillagerGoEatThread implements Runnable {
 
@@ -39,11 +35,7 @@ public class VillagerGoEatThread implements Runnable {
 
         for (VillagerModel villager : hungryVillagers) {
             Bukkit.getLogger().info("Testing food for " + villager.getId());
-            try {
-                Bukkit.getScheduler().runTask(TestJava.plugin, () -> handleHungryVillager(villager, villageEatablesMap));
-            } catch (Exception ex) {
-                System.out.println(ex.getMessage());
-            }
+            Bukkit.getScheduler().runTask(TestJava.plugin, () -> handleHungryVillager(villager, villageEatablesMap));
         }
     }
 
@@ -56,20 +48,58 @@ public class VillagerGoEatThread implements Runnable {
     }
 
     private void handleHungryVillager(VillagerModel villager, HashMap<String, Collection<EatableModel>> villageEatablesMap) {
-        Villager eVillager = fetchEntityVillager(villager.getId());
+        Villager eVillager = fetchEntityVillager(villager.getId(), villager);
 
         EatableModel targetEatable = findEatable(villager, villageEatablesMap);
 
+        if(eVillager == null) {
+            Bukkit.getServer().getLogger().info("Impossible de trouver l'entité de " + villager.getId());
+            return;
+        }
+
         if (targetEatable != null) {
             targetedEatables.add(targetEatable.getId());
-            moveVillagerToFood(eVillager, villager, targetEatable);
+            moveVillagerToFood(eVillager, villager, targetEatable, villageEatablesMap);
         } else {
             broadcastNoFoodMessage(eVillager);
         }
     }
 
-    private Villager fetchEntityVillager(UUID uuid) {
-        Entity entity = TestJava.world.getEntity(uuid);
+    private Villager fetchEntityVillager(UUID uuid, VillagerModel villager) {
+        Entity entity = TestJava.plugin.getServer().getEntity(uuid);
+
+        if (entity == null) {
+            Location location = VillageRepository.getBellLocation(VillageRepository.get(villager.getVillageName()));
+            World world = location.getWorld();
+
+            // Récupère les coordonnées du chunk central
+            int chunkX = location.getChunk().getX();
+            int chunkZ = location.getChunk().getZ();
+
+            // Boucle pour charger les chunks dans un carré de 3x3
+            for (int x = chunkX - 1; x <= chunkX + 1; x++) {
+                for (int z = chunkZ - 1; z <= chunkZ + 1; z++) {
+                    Chunk chunk = world.getChunkAt(x, z);
+
+                    if (!chunk.isLoaded()) {
+                        boolean success = chunk.load(true);
+
+                        if (success) {
+                            entity = TestJava.plugin.getServer().getEntity(uuid);
+                            if (entity != null) {
+                                break;
+                            }
+                        } else {
+                            Bukkit.getServer().getLogger().warning("Impossible de charger le chunk en [" + x + ", " + z + "].");
+                        }
+                    }
+                }
+                if (entity != null) {
+                    break;
+                }
+            }
+        }
+
         return (entity instanceof Villager) ? (Villager) entity : null;
     }
 
@@ -78,27 +108,25 @@ public class VillagerGoEatThread implements Runnable {
         Block block = loc.getBlock();
         boolean exists = (block.getBlockData() instanceof Ageable age) && (age.getMaximumAge() == age.getAge());
 
-        if (block.getBlockData().getMaterial() != Material.FARMLAND) {
+        if (block.getBlockData().getMaterial() != Material.WHEAT) {
             EatableRepository.remove(eatable);
+            return false;
         }
 
         return exists;
     }
 
     private EatableModel findEatable(VillagerModel villager, HashMap<String, Collection<EatableModel>> villageEatablesMap) {
-        Villager eVillager = fetchEntityVillager(villager.getId());
+        Villager eVillager = fetchEntityVillager(villager.getId(), villager);
         if (eVillager == null) {
+            Bukkit.getServer().broadcastMessage("ERROR A1");
             return null;
         }
 
         Location villagerLocation = eVillager.getLocation();
         Collection<EatableModel> eatables = villageEatablesMap.getOrDefault(villager.getVillageName(), Collections.emptyList());
 
-        return eatables.stream()
-                .filter(this::eatableExistsInWorld)
-                .filter(eatable -> !targetedEatables.contains(eatable.getId()))
-                .min(Comparator.comparingDouble(eatable -> calculateDistance(villagerLocation, eatable)))
-                .orElse(null);
+        return eatables.stream().filter(this::eatableExistsInWorld).filter(eatable -> !targetedEatables.contains(eatable.getId())).min(Comparator.comparingDouble(eatable -> calculateDistance(villagerLocation, eatable))).orElse(null);
     }
 
     private double calculateDistance(Location villagerLocation, EatableModel eatable) {
@@ -106,7 +134,7 @@ public class VillagerGoEatThread implements Runnable {
         return villagerLocation.distance(eatableLocation);
     }
 
-    private void moveVillagerToFood(Villager eVillager, VillagerModel villager, EatableModel targetEatable) {
+    private void moveVillagerToFood(Villager eVillager, VillagerModel villager, EatableModel targetEatable, HashMap<String, Collection<EatableModel>> villageEatablesMap) {
         Random rand = new Random();
         int delay = MIN_DELAY + rand.nextInt(RANGE_DELAY);
         UUID uuid = UUID.randomUUID();
@@ -124,11 +152,11 @@ public class VillagerGoEatThread implements Runnable {
                 increasedDistance[0] += 1.0;
             }
 
-            performScheduledTask(eVillager, villager, targetEatable, block, loc, uuid, increasedDistance[0]);
+            performScheduledTask(eVillager, villager, targetEatable, block, loc, uuid, increasedDistance[0], villageEatablesMap);
         }, delay, 10));
     }
 
-    private void performScheduledTask(Villager eVillager, VillagerModel villager, EatableModel targetEatable, Block block, Location loc, UUID uuid, double increasedDistance) {
+    private void performScheduledTask(Villager eVillager, VillagerModel villager, EatableModel targetEatable, Block block, Location loc, UUID uuid, double increasedDistance, HashMap<String, Collection<EatableModel>> villageEatablesMap) {
         if (eVillager.isSleeping()) {
             eVillager.wakeup();
         }
@@ -136,12 +164,12 @@ public class VillagerGoEatThread implements Runnable {
         eVillager.getPathfinder().moveTo(loc, MOVE_SPEED);
 
         if (isFoodGone(block)) {
-            handleFoodGone(eVillager, targetEatable, uuid);
+            handleFoodGone(targetEatable, uuid, villager, villageEatablesMap);
             return;
         }
 
         if (eVillager.getLocation().distance(loc) <= increasedDistance) {
-            handleEating(eVillager, villager, block, targetEatable, uuid);
+            handleEating(villager, block, targetEatable, uuid);
         }
     }
 
@@ -149,14 +177,13 @@ public class VillagerGoEatThread implements Runnable {
         return !(block.getBlockData() instanceof Ageable age) || age.getAge() != age.getMaximumAge();
     }
 
-    private void handleFoodGone(Villager eVillager, EatableModel targetEatable, UUID uuid) {
+    private void handleFoodGone(EatableModel targetEatable, UUID uuid, VillagerModel villager, HashMap<String, Collection<EatableModel>> villageEatablesMap) {
         targetedEatables.remove(targetEatable.getId());
-        EatableRepository.remove(targetEatable);
-        broadcastNoFoodMessage(eVillager);
+        handleHungryVillager(villager, villageEatablesMap);
         cancelTask(uuid);
     }
 
-    private void handleEating(Villager eVillager, VillagerModel villager, Block block, EatableModel targetEatable, UUID uuid) {
+    private void handleEating(VillagerModel villager, Block block, EatableModel targetEatable, UUID uuid) {
         Ageable age = (Ageable) block.getBlockData();
         age.setAge(1);
         block.setBlockData(age);
