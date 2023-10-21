@@ -29,3 +29,6 @@ commands:
   nearest:
     description: Voir le village près de soi
     usage: /nearest
+  build:
+    description: Créer un bâtiment
+    usage: /nearest <buildingName[bergerie]>

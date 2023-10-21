@@ -10,14 +10,26 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f91b2139-194e-4538-850d-9d0cde70afca" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/commands/BuildCommand.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/models/BuildingModel.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/repositories/BuildingRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/threads/DailyBuildingCostThread.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/helpers/JuridictionHelper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/helpers/JuridictionHelper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/resources.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/resources.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/TestJava.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/TestJava.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/PlayerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/TestJava/testjava/services/PlayerService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/plugin.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/plugin.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/TestJava.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/TestJava.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/TestJava/testjava/services/PlayerService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/TestJava/testjava/services/PlayerService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/plugin.yml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/plugin.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CodyActiveAccount">
+    <option name="activeAccountId" value="5222316e-2be7-4d3c-8824-755a3230f42e" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -129,6 +141,7 @@
       <workItem from="1697313582852" duration="28000" />
       <workItem from="1697313619339" duration="224000" />
       <workItem from="1697313853495" duration="5055000" />
+      <workItem from="1697884511326" duration="10092000" />
     </task>
     <servers />
   </component>

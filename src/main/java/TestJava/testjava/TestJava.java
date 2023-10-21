@@ -9,6 +9,7 @@ import TestJava.testjava.threads.*;
 import io.jsondb.JsonDBTemplate;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -72,6 +73,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         getCommand("market").setExecutor(new MarketCommand());
         getCommand("money").setExecutor(new MoneyCommand());
         getCommand("nearest").setExecutor(new NearestCommand());
+        getCommand("build").setExecutor(new BuildCommand());
 
         // Registering databases
         TestJava.database = new JsonDBTemplate(this.jsonLocation, this.baseScanPackage);
@@ -95,6 +97,9 @@ public final class TestJava extends JavaPlugin implements Listener {
         }
         if (!TestJava.database.collectionExists(ResourceModel.class)) {
             TestJava.database.createCollection(ResourceModel.class);
+        }
+        if (!TestJava.database.collectionExists(BuildingModel.class)) {
+            TestJava.database.createCollection(BuildingModel.class);
         }
 
         // Migration des juridictions
@@ -126,6 +131,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new DefenderThread(), 0, 20 * 5);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new TraderThread(), 0, 20 * 60);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new LocustThread(), 0, 20);
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new DailyBuildingCostThread(), 0,  20 * 60 * 20);
     }
 
     @EventHandler
@@ -165,6 +171,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         TestJava.playerService.testIfPlayerDamageDelegator(e);
         TestJava.playerService.testIfPlayerDamageVillager(e);
         TestJava.playerService.testIfEntityDamageSameVillage(e);
+        TestJava.playerService.testIfEntityDamageArmorStand(e);
     }
 
     @EventHandler
@@ -246,6 +253,12 @@ public final class TestJava extends JavaPlugin implements Listener {
         TestJava.blockProtectionService.protectRestOfTheWorld(e);
     }
 
+    @EventHandler
+    public void onEntityBreed(EntityBreedEvent event) {
+        // Prevent breeding
+        if (!(event.getFather() instanceof Villager))
+            event.setCancelled(true);
+    }
 
     @EventHandler
     public void onPlayerRespawn(PlayerRespawnEvent e) {

@@ -244,4 +244,11 @@ public class PlayerService {
             }
         }
     }
+
+    public void testIfEntityDamageArmorStand(EntityDamageByEntityEvent e) {
+        if(e.getEntity() instanceof ArmorStand) {
+            e.setCancelled(true);
+            e.setDamage(0D);
+        }
+    }
 }
