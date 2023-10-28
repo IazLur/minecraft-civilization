@@ -175,6 +175,11 @@ public final class TestJava extends JavaPlugin implements Listener {
     }
 
     @EventHandler
+    public void onCreatureSpawn(CreatureSpawnEvent event) {
+        TestJava.entityService.testAnimalSpawn(event);
+    }
+
+    @EventHandler
     public void onBlockGrow(BlockGrowEvent e) {
         TestJava.villagerService.testIfGrowIsEatable(e);
     }

@@ -35,7 +35,7 @@ public class EntityService {
         // Creating new model entity
         VillagerModel nVillager = new VillagerModel();
         nVillager.setVillageName(village.getId());
-        nVillager.setFood(10);
+        nVillager.setFood(1);
         nVillager.setId(villager.getUniqueId());
         VillagerRepository.update(nVillager);
     }
@@ -300,6 +300,24 @@ public class EntityService {
         }
         if (e.getEntity().isCustomNameVisible()) {
             e.setCancelled(true);
+        }
+    }
+
+    public void testAnimalSpawn(CreatureSpawnEvent event) {
+        // Obtenez la raison de l'apparition de la créature
+        CreatureSpawnEvent.SpawnReason reason = event.getSpawnReason();
+
+        switch (reason) {
+            // Les raisons acceptables pour lesquelles un animal peut apparaître
+            case SPAWNER_EGG: // Apparu à partir d'un œuf d'apparition
+            case BREEDING:    // Résultat de l'accouplement
+            case CUSTOM:      // Instancié par un plugin ou un code
+                // Ne faites rien, laissez l'animal apparaître
+                break;
+            default:
+                // Pour toutes les autres raisons, annulez l'événement
+                event.setCancelled(true);
+                break;
         }
     }
 }
