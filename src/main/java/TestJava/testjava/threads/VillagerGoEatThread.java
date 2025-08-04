@@ -8,6 +8,7 @@ import TestJava.testjava.models.VillagerModel;
 import TestJava.testjava.repositories.EatableRepository;
 import TestJava.testjava.repositories.VillageRepository;
 import TestJava.testjava.repositories.VillagerRepository;
+import TestJava.testjava.services.SocialClassService;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
@@ -50,12 +51,13 @@ public class VillagerGoEatThread implements Runnable {
     private void handleHungryVillager(VillagerModel villager, HashMap<String, Collection<EatableModel>> villageEatablesMap) {
         Villager eVillager = fetchEntityVillager(villager.getId(), villager);
 
-        EatableModel targetEatable = findEatable(villager, villageEatablesMap);
-
         if(eVillager == null) {
-            Bukkit.getServer().getLogger().info("Impossible de trouver l'entité de " + villager.getId());
+            // Villageois fantôme détecté - nettoyage automatique
+            handleGhostVillager(villager);
             return;
         }
+
+        EatableModel targetEatable = findEatable(villager, villageEatablesMap);
 
         if (targetEatable != null) {
             targetedEatables.add(targetEatable.getId());
@@ -119,7 +121,7 @@ public class VillagerGoEatThread implements Runnable {
     private EatableModel findEatable(VillagerModel villager, HashMap<String, Collection<EatableModel>> villageEatablesMap) {
         Villager eVillager = fetchEntityVillager(villager.getId(), villager);
         if (eVillager == null) {
-            Bukkit.getServer().broadcastMessage("ERROR A1");
+            // Villageois fantôme - sera géré par handleHungryVillager
             return null;
         }
 
@@ -191,6 +193,9 @@ public class VillagerGoEatThread implements Runnable {
         villager.setFood(villager.getFood() + 1);
         VillagerRepository.update(villager);
 
+        // Évaluation de la classe sociale après l'alimentation
+        SocialClassService.evaluateAndUpdateSocialClass(villager);
+
         VillageModel village = VillageRepository.get(villager.getVillageName());
         if (villager.getFood() >= MAX_FOOD) {
             village.setProsperityPoints(village.getProsperityPoints() + 1);
@@ -211,6 +216,44 @@ public class VillagerGoEatThread implements Runnable {
     private void broadcastNoFoodMessage(Villager eVillager) {
         if (eVillager != null) {
             Bukkit.getServer().broadcastMessage(Colorize.name(eVillager.getCustomName()) + " n'a rien à manger");
+        }
+    }
+
+    /**
+     * Gère les villageois fantômes (en DB mais pas dans le monde)
+     */
+    private void handleGhostVillager(VillagerModel villager) {
+        try {
+            // Log détaillé pour diagnostic
+            Bukkit.getLogger().warning("[GhostVillager] Villageois fantôme détecté: " + 
+                                     villager.getId() + " dans village " + villager.getVillageName());
+            
+            // Supprime le villageois de la base de données
+            VillagerRepository.remove(villager.getId());
+            
+            // Met à jour la population du village
+            VillageModel village = VillageRepository.get(villager.getVillageName());
+            if (village != null && village.getPopulation() > 0) {
+                village.setPopulation(village.getPopulation() - 1);
+                VillageRepository.update(village);
+                
+                Bukkit.getLogger().info("[GhostVillager] Population de " + village.getId() + 
+                                       " mise à jour: " + village.getPopulation());
+            }
+            
+            // Broadcast informatif
+            Bukkit.getServer().broadcastMessage(
+                ChatColor.GRAY + "🧹 Nettoyage automatique: villageois fantôme supprimé de " + 
+                Colorize.name(villager.getVillageName())
+            );
+            
+            Bukkit.getLogger().info("[GhostVillager] ✅ Villageois fantôme " + villager.getId() + 
+                                   " supprimé avec succès");
+            
+        } catch (Exception e) {
+            Bukkit.getLogger().severe("[GhostVillager] Erreur lors du nettoyage de " + 
+                                     villager.getId() + ": " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

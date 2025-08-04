@@ -92,7 +92,7 @@ public class PlayerService {
         e.setCancelled(true);
         Player damaged = (Player) e.getEntity();
 
-        String name = CustomName.squareBrackets(base.getCustomName(), 0);
+        String name = CustomName.extractVillageName(base.getCustomName());
         InventoryHolder damager = (InventoryHolder) base;
         ItemStack letter = TestJava.inventoryService.get(damager.getInventory(), Material.WRITTEN_BOOK);
         if (letter == null && name.equals(damaged.getName())) {
@@ -129,7 +129,7 @@ public class PlayerService {
         // Si un joueur frappe un délégateur
         Player damager = (Player) e.getDamager();
         InventoryHolder damaged = (InventoryHolder) e.getEntity();
-        String name = CustomName.squareBrackets(e.getEntity().getCustomName(), 0);
+                    String name = CustomName.extractVillageName(e.getEntity().getCustomName());
         ItemStack book = null;
         if (damager.getInventory().getItemInMainHand().getType() == Material.WRITTEN_BOOK) {
             book = damager.getInventory().getItemInMainHand();
@@ -233,8 +233,8 @@ public class PlayerService {
         if (damager instanceof LivingEntity livingDamager && damagee instanceof LivingEntity livingDamagee) {
 
             if (livingDamager.isCustomNameVisible() && livingDamagee.isCustomNameVisible()) {
-                String damagerVillage = CustomName.squareBrackets(Objects.requireNonNull(livingDamager.getCustomName()), 0);
-                String damageeVillage = CustomName.squareBrackets(Objects.requireNonNull(livingDamagee.getCustomName()), 0);
+                            String damagerVillage = CustomName.extractVillageName(Objects.requireNonNull(livingDamager.getCustomName()));
+            String damageeVillage = CustomName.extractVillageName(Objects.requireNonNull(livingDamagee.getCustomName()));
 
                 // Si les deux entités sont du même village, annuler les dégâts
                 if (damagerVillage.equals(damageeVillage)) {

@@ -7,6 +7,7 @@ import TestJava.testjava.models.VillageModel;
 import TestJava.testjava.models.VillagerModel;
 import TestJava.testjava.repositories.VillageRepository;
 import TestJava.testjava.repositories.VillagerRepository;
+import TestJava.testjava.services.SocialClassService;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Villager;
@@ -53,6 +54,10 @@ public class VillagerEatThread implements Runnable {
                 VillageRepository.update(village);
                 VillageRepository.update(prosp);
             }
+            
+            // Évaluation de la classe sociale après changement de nourriture
+            SocialClassService.evaluateAndUpdateSocialClass(villagerModel);
+            
             VillagerRepository.update(villagerModel);
         });
     }

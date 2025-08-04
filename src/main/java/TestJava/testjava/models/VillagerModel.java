@@ -1,5 +1,6 @@
 package TestJava.testjava.models;
 
+import TestJava.testjava.enums.SocialClass;
 import io.jsondb.annotation.Document;
 import io.jsondb.annotation.Id;
 
@@ -13,6 +14,7 @@ public class VillagerModel {
     private String villageName;
     private Integer food;
     private boolean isEating = false;
+    private Integer socialClass = 0; // 0 = Misérable par défaut
 
     public UUID getId() {
         return id;
@@ -44,5 +46,27 @@ public class VillagerModel {
 
     public void setEating(boolean eating) {
         isEating = eating;
+    }
+
+    public Integer getSocialClass() {
+        return socialClass;
+    }
+
+    public void setSocialClass(Integer socialClass) {
+        this.socialClass = socialClass;
+    }
+
+    /**
+     * Retourne l'enum SocialClass correspondant au niveau actuel
+     */
+    public SocialClass getSocialClassEnum() {
+        return SocialClass.fromLevel(this.socialClass != null ? this.socialClass : 0);
+    }
+
+    /**
+     * Définit la classe sociale via l'enum
+     */
+    public void setSocialClassEnum(SocialClass socialClass) {
+        this.socialClass = socialClass.getLevel();
     }
 }

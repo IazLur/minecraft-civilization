@@ -3,6 +3,7 @@ package TestJava.testjava.services;
 import TestJava.testjava.helpers.Colorize;
 import TestJava.testjava.models.VillagerModel;
 import TestJava.testjava.repositories.VillagerRepository;
+import TestJava.testjava.services.SocialClassService;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Villager;
@@ -49,5 +50,8 @@ public class ItemService {
         VillagerModel villagerModel = VillagerRepository.find(villager.getUniqueId());
         villagerModel.setFood(villagerModel.getFood() + food);
         VillagerRepository.update(villagerModel);
+        
+        // Évaluation de la classe sociale après l'alimentation
+        SocialClassService.evaluateAndUpdateSocialClass(villagerModel);
     }
 }

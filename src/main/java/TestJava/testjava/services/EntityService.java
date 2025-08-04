@@ -7,6 +7,7 @@ import TestJava.testjava.models.VillageModel;
 import TestJava.testjava.models.VillagerModel;
 import TestJava.testjava.repositories.VillageRepository;
 import TestJava.testjava.repositories.VillagerRepository;
+import TestJava.testjava.services.SocialClassService;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -38,6 +39,9 @@ public class EntityService {
         nVillager.setFood(1);
         nVillager.setId(villager.getUniqueId());
         VillagerRepository.update(nVillager);
+        
+        // Mise à jour du nom avec le tag de classe sociale
+        SocialClassService.updateVillagerDisplayName(nVillager);
     }
 
     public void testDeathIfVillager(EntityDeathEvent e) {
@@ -48,7 +52,7 @@ public class EntityService {
             return;
         }
 
-        VillageModel village = VillageRepository.get(CustomName.squareBrackets(e.getEntity().getCustomName(), 0));
+        VillageModel village = VillageRepository.get(CustomName.extractVillageName(e.getEntity().getCustomName()));
         village.setPopulation(village.getPopulation() - 1);
         VillageRepository.update(village);
         VillagerRepository.remove(e.getEntity().getUniqueId());
@@ -114,7 +118,7 @@ public class EntityService {
             return;
         }
 
-        VillageModel village = VillageRepository.get(CustomName.squareBrackets(e.getEntity().getCustomName(), 0));
+        VillageModel village = VillageRepository.get(CustomName.extractVillageName(e.getEntity().getCustomName()));
         village.setGarrison(village.getGarrison() - 1);
         VillageRepository.update(village);
 
@@ -129,7 +133,7 @@ public class EntityService {
             return;
         }
 
-        VillageModel village = VillageRepository.get(CustomName.squareBrackets(e.getEntity().getCustomName(), 0));
+        VillageModel village = VillageRepository.get(CustomName.extractVillageName(e.getEntity().getCustomName()));
         village.setGroundArmy(village.getGroundArmy() - 1);
         VillageRepository.update(village);
 
@@ -182,7 +186,7 @@ public class EntityService {
             return;
         }
 
-        String tVillage = CustomName.squareBrackets(e.getEntity().getCustomName(), 0);
+        String tVillage = CustomName.extractVillageName(e.getEntity().getCustomName());
 
         if (sVillage.equals(tVillage)) {
             e.setCancelled(true);

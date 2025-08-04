@@ -31,4 +31,13 @@ commands:
     usage: /nearest
   build:
     description: Créer un bâtiment
-    usage: /nearest <buildingName[bergerie]>
+    usage: /build <buildingName[bergerie]>
+  social:
+    description: Gérer les classes sociales
+    usage: /social <village|villager|stats|refresh|migrate|cleanup|refreshnames|sync|testnames|migrateformat>
+  emptyvillage:
+    description: Vider votre village de tous ses villageois
+    usage: /emptyvillage
+  forcespawnat:
+    description: Forcer le spawn d'un villageois dans un village (admin)
+    usage: /forcespawnat <villageName>

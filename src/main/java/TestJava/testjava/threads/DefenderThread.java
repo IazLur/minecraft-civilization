@@ -37,7 +37,7 @@ public class DefenderThread implements Runnable {
                 if (!target.isCustomNameVisible() && !(target instanceof Player)) {
                     return;
                 }
-                String entityVillage = CustomName.squareBrackets(entity.getEntity().getCustomName(), 0);
+                String entityVillage = CustomName.extractVillageName(entity.getEntity().getCustomName());
                 if (target instanceof Player) {
                     VillageModel village = VillageRepository.get(entityVillage);
                     if (Objects.equals(village.getPlayerName(), ((Player) target).getName())) {
@@ -47,7 +47,7 @@ public class DefenderThread implements Runnable {
                     ((Mob) entity.getEntity()).setTarget((LivingEntity) target);
                     return;
                 }
-                String targetVillage = CustomName.squareBrackets(target.getCustomName(), 0);
+                String targetVillage = CustomName.extractVillageName(target.getCustomName());
                 if (!targetVillage.equals(entityVillage)) {
                     haveTarget.set(true);
                     ((Mob) entity.getEntity()).setTarget((LivingEntity) target);

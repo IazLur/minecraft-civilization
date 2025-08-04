@@ -42,6 +42,49 @@ public class CustomName {
         return arr.get(index);
     }
 
+    /**
+     * Extrait le nom du village d'un customName en utilisant la convention robuste
+     * avec classes sociales dans des accolades {0} et villages dans des crochets [Village]
+     * 
+     * Formats supportés :
+     * - Standard : "[VillageName] Prénom Nom"
+     * - Avec classe sociale : "{0} [VillageName] Prénom Nom" 
+     * - Avec couleurs : "§e{0}§r [VillageName] Prénom Nom"
+     * - Ancien format (migration) : "[0][VillageName] Prénom Nom"
+     */
+    @Nonnull
+    public static String extractVillageName(@Nonnull String customName) {
+        if (customName == null || customName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Le nom personnalisé ne peut pas être null ou vide");
+        }
+        
+        // Supprime les codes de couleur pour l'analyse
+        String cleanName = org.bukkit.ChatColor.stripColor(customName);
+        
+        // Nouveau système robuste : Le village est TOUJOURS le premier élément entre crochets []
+        // Les classes sociales sont dans des accolades {} et ne posent plus de problème
+        Pattern pattern = Pattern.compile("\\[(.*?)\\]");
+        Matcher matcher = pattern.matcher(cleanName);
+        
+        if (matcher.find()) {
+            String villageName = matcher.group(1);
+            
+            // Vérification de sécurité : s'assurer que ce n'est pas un ancien tag classe sociale
+            if (villageName.matches("^[0-4]$")) {
+                // Ancien format détecté, chercher le second élément
+                if (matcher.find()) {
+                    return matcher.group(1);
+                } else {
+                    throw new IllegalArgumentException("Format ancien détecté mais village manquant dans: " + customName);
+                }
+            }
+            
+            return villageName;
+        }
+        
+        throw new IllegalArgumentException("Aucun village trouvé entre crochets dans: " + customName);
+    }
+
     public static Collection<CustomEntity> getAll() {
         Collection<CustomEntity> cEntities = new ArrayList<>();
         
@@ -64,8 +107,16 @@ public class CustomName {
 
     public static Collection<CustomEntity> whereVillage(String oldId) {
         Collection<CustomEntity> entities = CustomName.getAll();
-        entities.removeIf(entity ->
-                !CustomName.squareBrackets(entity.getEntity().getCustomName(), 0).equals(oldId));
+        entities.removeIf(entity -> {
+            try {
+                return !CustomName.extractVillageName(entity.getEntity().getCustomName()).equals(oldId);
+            } catch (Exception e) {
+                // En cas d'erreur d'extraction, on considère que l'entité ne correspond pas
+                TestJava.plugin.getLogger().warning("Erreur extraction village pour " + 
+                    entity.getEntity().getCustomName() + ": " + e.getMessage());
+                return true; // Retirer l'entité de la liste
+            }
+        });
         return entities;
     }
 

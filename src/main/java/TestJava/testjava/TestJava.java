@@ -1,6 +1,7 @@
 package TestJava.testjava;
 
 import TestJava.testjava.commands.*;
+import TestJava.testjava.listeners.SocialClassJobListener;
 import TestJava.testjava.models.*;
 import TestJava.testjava.repositories.EmpireRepository;
 import TestJava.testjava.repositories.ResourceRepository;
@@ -71,6 +72,7 @@ public final class TestJava extends JavaPlugin implements Listener {
     public void onEnable() {
         // Init
         Bukkit.getPluginManager().registerEvents(this, this);
+        Bukkit.getPluginManager().registerEvents(new SocialClassJobListener(), this);
         TestJava.plugin = this;
         getLogger().log(Level.INFO, "Loading plugin v3.2");
         TestJava.world = Bukkit.getWorld(TestJava.worldName);
@@ -94,6 +96,9 @@ public final class TestJava extends JavaPlugin implements Listener {
         getCommand("money").setExecutor(new MoneyCommand());
         getCommand("nearest").setExecutor(new NearestCommand());
         getCommand("build").setExecutor(new BuildCommand());
+        getCommand("social").setExecutor(new SocialCommand());
+        getCommand("emptyvillage").setExecutor(new EmptyVillageCommand());
+        getCommand("forcespawnat").setExecutor(new ForceSpawnAtCommand());
 
         // Registering databases
         TestJava.database = new JsonDBTemplate(this.jsonLocation, this.baseScanPackage);
@@ -124,6 +129,15 @@ public final class TestJava extends JavaPlugin implements Listener {
 
         // Initialisation des ressources depuis resources.json
         ResourceInitializationService.initializeResourcesIfEmpty();
+        
+                // Synchronisation des villageois du monde avec la base de données
+        VillagerSynchronizationService.synchronizeWorldVillagersWithDatabase();
+
+        // Migration format tags classes sociales ([0] vers {0})
+        SocialClassService.migrateSocialClassTagsToNewFormat();
+
+        // Initialisation des classes sociales pour les villageois existants
+        SocialClassService.initializeSocialClassForExistingVillagers();
 
         // Migration des juridictions
         for (EmpireModel empire : EmpireRepository.getAll()) {
@@ -165,6 +179,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new TraderThread(), 0, 20 * 60);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new LocustThread(), 0, 20);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new DailyBuildingCostThread(), 0,  20 * 60 * 20);
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new SocialClassEnforcementThread(), 0, 20 * 60 * 2); // Toutes les 2 minutes
     }
 
     @EventHandler
