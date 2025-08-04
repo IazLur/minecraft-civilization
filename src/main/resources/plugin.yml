@@ -41,3 +41,9 @@ commands:
   forcespawnat:
     description: Forcer le spawn d'un villageois dans un village (admin)
     usage: /forcespawnat <villageName>
+  reactivate:
+    description: Réactiver un bâtiment inactif à proximité
+    usage: /reactivate
+  distance:
+    description: Gérer et consulter les distances de placement des métiers et bâtiments
+    usage: /distance <metiers|batiments|check|info|reload>

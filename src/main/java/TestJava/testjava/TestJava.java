@@ -2,6 +2,8 @@ package TestJava.testjava;
 
 import TestJava.testjava.commands.*;
 import TestJava.testjava.listeners.SocialClassJobListener;
+import TestJava.testjava.listeners.SheepManagementListener;
+import TestJava.testjava.listeners.JobBlockPlacementListener;
 import TestJava.testjava.models.*;
 import TestJava.testjava.repositories.EmpireRepository;
 import TestJava.testjava.repositories.ResourceRepository;
@@ -73,6 +75,8 @@ public final class TestJava extends JavaPlugin implements Listener {
         // Init
         Bukkit.getPluginManager().registerEvents(this, this);
         Bukkit.getPluginManager().registerEvents(new SocialClassJobListener(), this);
+        Bukkit.getPluginManager().registerEvents(new SheepManagementListener(), this);
+        Bukkit.getPluginManager().registerEvents(new JobBlockPlacementListener(), this);
         TestJava.plugin = this;
         getLogger().log(Level.INFO, "Loading plugin v3.2");
         TestJava.world = Bukkit.getWorld(TestJava.worldName);
@@ -99,6 +103,8 @@ public final class TestJava extends JavaPlugin implements Listener {
         getCommand("social").setExecutor(new SocialCommand());
         getCommand("emptyvillage").setExecutor(new EmptyVillageCommand());
         getCommand("forcespawnat").setExecutor(new ForceSpawnAtCommand());
+        getCommand("reactivate").setExecutor(new ReactivateCommand());
+        getCommand("distance").setExecutor(new DistanceCommand());
 
         // Registering databases
         TestJava.database = new JsonDBTemplate(this.jsonLocation, this.baseScanPackage);
@@ -126,9 +132,15 @@ public final class TestJava extends JavaPlugin implements Listener {
         if (!TestJava.database.collectionExists(BuildingModel.class)) {
             TestJava.database.createCollection(BuildingModel.class);
         }
+        if (!TestJava.database.collectionExists(SheepModel.class)) {
+            TestJava.database.createCollection(SheepModel.class);
+        }
 
         // Initialisation des ressources depuis resources.json
         ResourceInitializationService.initializeResourcesIfEmpty();
+        
+        // Chargement des configurations de distance pour métiers et bâtiments
+        DistanceConfigService.loadAllConfigurations();
         
                 // Synchronisation des villageois du monde avec la base de données
         VillagerSynchronizationService.synchronizeWorldVillagersWithDatabase();
@@ -165,6 +177,7 @@ public final class TestJava extends JavaPlugin implements Listener {
                 playerService.killAllDelegators();
                 playerService.killAllBandits();
                 playerService.resetAllWars();
+                SheepService.removeNaturalSheep();
                 getLogger().info("Nettoyage des entités terminé");
             } catch (Exception e) {
                 getLogger().warning("Erreur lors du nettoyage des entités : " + e.getMessage());
@@ -180,6 +193,8 @@ public final class TestJava extends JavaPlugin implements Listener {
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new LocustThread(), 0, 20);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new DailyBuildingCostThread(), 0,  20 * 60 * 20);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new SocialClassEnforcementThread(), 0, 20 * 60 * 2); // Toutes les 2 minutes
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new SheepSpawnThread(), 0, 20 * 60 * 20); // Même fréquence que DailyBuildingCostThread
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new SheepMovementThread(), 0, 20 * 60 * 5); // Toutes les 5 minutes
     }
 
     @EventHandler

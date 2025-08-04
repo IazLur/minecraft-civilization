@@ -1,0 +1,12 @@
+[
+  {
+    "buildingType": "bergerie",
+    "distanceMin": 20,
+    "distanceMax": 100,
+    "description": "Bergerie pour élever des moutons - doit être construite à distance respectable du centre",
+    "costToBuild": 2500,
+    "costPerDay": 50,
+    "costPerUpgrade": 1500,
+    "costUpgradeMultiplier": 1.2
+  }
+]

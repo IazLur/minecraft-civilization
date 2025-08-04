@@ -16,6 +16,7 @@ public class BuildingModel {
     private String buildingType;
 
     private int level;
+    private boolean active;
     private int costToBuild;
     private int costPerDay;
     private int costPerUpgrade;
@@ -54,6 +55,14 @@ public class BuildingModel {
 
     public void setLevel(int level) {
         this.level = level;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public int getCostToBuild() {

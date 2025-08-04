@@ -1,0 +1,107 @@
+[
+  {
+    "material": "CARTOGRAPHY_TABLE",
+    "jobName": "Cartographe",
+    "distanceMin": 10,
+    "distanceMax": 50,
+    "description": "Table de cartographie pour le métier de cartographe"
+  },
+  {
+    "material": "BREWING_STAND",
+    "jobName": "Alchimiste", 
+    "distanceMin": 15,
+    "distanceMax": 60,
+    "description": "Alambic pour le métier d'alchimiste"
+  },
+  {
+    "material": "SMITHING_TABLE",
+    "jobName": "Forgeron d'Outils",
+    "distanceMin": 5,
+    "distanceMax": 40,
+    "description": "Table de forgeron pour améliorer les outils"
+  },
+  {
+    "material": "FLETCHING_TABLE",
+    "jobName": "Archer",
+    "distanceMin": 20,
+    "distanceMax": 80,
+    "description": "Table d'archerie pour fabriquer arcs et flèches"
+  },
+  {
+    "material": "LOOM",
+    "jobName": "Tisserand",
+    "distanceMin": 8,
+    "distanceMax": 35,
+    "description": "Métier à tisser pour créer des bannières"
+  },
+  {
+    "material": "STONECUTTER",
+    "jobName": "Tailleur de Pierre",
+    "distanceMin": 10,
+    "distanceMax": 45,
+    "description": "Scie circulaire pour tailler la pierre"
+  },
+  {
+    "material": "COMPOSTER",
+    "jobName": "Fermier",
+    "distanceMin": 5,
+    "distanceMax": 30,
+    "description": "Composteur pour recycler les déchets organiques"
+  },
+  {
+    "material": "BARREL",
+    "jobName": "Pêcheur",
+    "distanceMin": 15,
+    "distanceMax": 70,
+    "description": "Tonneau pour stocker le poisson"
+  },
+  {
+    "material": "SMOKER",
+    "jobName": "Boucher",
+    "distanceMin": 8,
+    "distanceMax": 25,
+    "description": "Fumoir pour cuire la viande"
+  },
+  {
+    "material": "BLAST_FURNACE",
+    "jobName": "Armurier",
+    "distanceMin": 12,
+    "distanceMax": 50,
+    "description": "Haut fourneau pour forger les armures"
+  },
+  {
+    "material": "LECTERN",
+    "jobName": "Bibliothécaire",
+    "distanceMin": 10,
+    "distanceMax": 40,
+    "description": "Pupitre pour étudier et enchanter les livres"
+  },
+  {
+    "material": "GRINDSTONE",
+    "jobName": "Réparateur d'Armes",
+    "distanceMin": 15,
+    "distanceMax": 45,
+    "description": "Meule pour réparer et désenchanter les équipements"
+  },
+  {
+    "material": "ANVIL",
+    "jobName": "Maître Forgeron",
+    "distanceMin": 5,
+    "distanceMax": 30,
+    "description": "Enclume pour forger et réparer les équipements"
+  },
+  {
+    "material": "ENCHANTING_TABLE",
+    "jobName": "Enchanteur",
+    "distanceMin": 20,
+    "distanceMax": 60,
+    "description": "Table d'enchantement pour améliorer magiquement les objets"
+  },
+  {
+    "material": "CAULDRON",
+    "jobName": "Apothicaire",
+    "distanceMin": 12,
+    "distanceMax": 45,
+    "description": "Chaudron pour préparer potions et remèdes"
+  }
+]
