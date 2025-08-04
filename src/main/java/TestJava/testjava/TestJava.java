@@ -55,6 +55,17 @@ public final class TestJava extends JavaPlugin implements Listener {
 
     public TestJava() throws UnsupportedEncodingException {
     }
+    
+    /**
+     * Méthode utilitaire pour changer de monde ou réessayer de charger le monde spécifique
+     */
+    public static void tryLoadSpecificWorld() {
+        World specificWorld = Bukkit.getWorld(worldName);
+        if (specificWorld != null && !specificWorld.equals(world)) {
+            world = specificWorld;
+            plugin.getLogger().info("Monde spécifique '" + worldName + "' maintenant chargé et utilisé.");
+        }
+    }
 
     @Override
     public void onEnable() {
@@ -63,6 +74,15 @@ public final class TestJava extends JavaPlugin implements Listener {
         TestJava.plugin = this;
         getLogger().log(Level.INFO, "Loading plugin v3.2");
         TestJava.world = Bukkit.getWorld(TestJava.worldName);
+        
+        // Vérification et fallback pour le monde
+        if (TestJava.world == null) {
+            getLogger().warning("Le monde '" + TestJava.worldName + "' n'existe pas ou n'est pas encore chargé.");
+            TestJava.world = Bukkit.getWorlds().get(0); // Utiliser le monde principal
+            getLogger().info("Utilisation du monde par défaut : " + TestJava.world.getName());
+        } else {
+            getLogger().info("Monde chargé avec succès : " + TestJava.world.getName());
+        }
 
         // Registering commands
         getCommand("rename").setExecutor(new RenameCommand());
@@ -102,6 +122,9 @@ public final class TestJava extends JavaPlugin implements Listener {
             TestJava.database.createCollection(BuildingModel.class);
         }
 
+        // Initialisation des ressources depuis resources.json
+        ResourceInitializationService.initializeResourcesIfEmpty();
+
         // Migration des juridictions
         for (EmpireModel empire : EmpireRepository.getAll()) {
             try {
@@ -122,9 +145,19 @@ public final class TestJava extends JavaPlugin implements Listener {
         TestJava.villagerService = new VillagerService();
         TestJava.warBlockService = new WarBlockService();
 
-        playerService.killAllDelegators();
-        playerService.killAllBandits();
-        playerService.resetAllWars();
+        // Nettoyage des entités (seulement si le monde est disponible)
+        if (TestJava.world != null) {
+            try {
+                playerService.killAllDelegators();
+                playerService.killAllBandits();
+                playerService.resetAllWars();
+                getLogger().info("Nettoyage des entités terminé");
+            } catch (Exception e) {
+                getLogger().warning("Erreur lors du nettoyage des entités : " + e.getMessage());
+            }
+        } else {
+            getLogger().warning("Nettoyage des entités ignoré - monde non disponible");
+        }
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerSpawnThread(), 0, 20 * 60);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerEatThread(), 0, 20 * 60 * 5);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerGoEatThread(), 0, 20 * 60 * 2);

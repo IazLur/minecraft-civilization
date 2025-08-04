@@ -34,6 +34,12 @@ public class MoneyCommand implements CommandExecutor {
         if (isMe) {
             sender.sendMessage(Colorize.name(sender.getName() + " a " + Colorize.name(me.getJuridictionCount() + "µ")));
         } else {
+            // Vérification de sécurité pour l'argument
+            if (args.length == 0) {
+                sender.sendMessage(ChatColor.RED + "Usage: /money <playerName>");
+                return true;
+            }
+            
             EmpireModel e = EmpireRepository.getForPlayer(args[0]);
             if (e == null) {
                 sender.sendMessage(ChatColor.RED + "Player '" + args[0] + "' does not exists or haven't an empire");

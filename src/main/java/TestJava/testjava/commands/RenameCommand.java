@@ -35,6 +35,12 @@ public class RenameCommand implements CommandExecutor {
             return false;
         }
 
+        // Vérification des arguments
+        if (args.length == 0) {
+            sender.sendMessage(ChatColor.RED + "Usage: /rename <newVillageName>");
+            return true;
+        }
+        
         if (Arrays.stream(args).count() > 1) {
             sender.sendMessage(ChatColor.RED + "Le nouveau nom ne doit pas contenir d'espace");
             return false;
@@ -54,7 +60,7 @@ public class RenameCommand implements CommandExecutor {
             entity.setVillage(village);
         }
 
-        Bukkit.getServer().broadcastMessage(Colorize.name(((Player) sender).getDisplayName()) +
+        Bukkit.getServer().broadcastMessage(Colorize.name(((Player) sender).getName()) +
                 " a renommé son village " + Colorize.name(old.getId()) + " par " + Colorize.name(args[0]));
 
         // Updating model

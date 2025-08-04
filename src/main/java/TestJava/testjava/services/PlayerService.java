@@ -26,17 +26,17 @@ import java.util.Optional;
 
 public class PlayerService {
     public void addEmpireIfNotOwnsOne(@Nonnull Player e) {
-        EmpireModel empire = EmpireRepository.get(e.getPlayer().getDisplayName());
+        EmpireModel empire = EmpireRepository.get(e.getPlayer().getName());
 
         if (empire != null) {
             return;
         }
 
         empire = new EmpireModel();
-        empire.setEmpireName("Empire de " + e.getPlayer().getDisplayName());
+        empire.setEmpireName("Empire de " + e.getPlayer().getName());
         empire.setEnemyName("");
         empire.setIsInWar(false);
-        empire.setId(e.getPlayer().getDisplayName());
+        empire.setId(e.getPlayer().getName());
         empire.setTotalAttackerCount(0);
         empire.setTotalDefenderCount(0);
         EmpireRepository.update(empire);
@@ -95,7 +95,7 @@ public class PlayerService {
         String name = CustomName.squareBrackets(base.getCustomName(), 0);
         InventoryHolder damager = (InventoryHolder) base;
         ItemStack letter = TestJava.inventoryService.get(damager.getInventory(), Material.WRITTEN_BOOK);
-        if (letter == null && name.equals(damaged.getDisplayName())) {
+        if (letter == null && name.equals(damaged.getName())) {
             e.getDamager().remove();
             damaged.sendMessage(ChatColor.GOLD + "Ce délégateur n'a pas de lettre");
             base.setTarget(null);
@@ -146,7 +146,7 @@ public class PlayerService {
             damaged.getInventory().addItem(book.clone());
             book.setAmount(0);
             damager.sendMessage(ChatColor.GREEN + "Vous avez envoyé une lettre");
-        } else if (name.equals(damager.getDisplayName())) {
+        } else if (name.equals(damager.getName())) {
             damager.sendMessage(ChatColor.RED + "Votre délégateur est en mission");
             return;
         }
@@ -197,7 +197,7 @@ public class PlayerService {
         Player returned = null;
         double oldDist = 9999F;
         for (Player player : players) {
-            if (player.getDisplayName().equals(ignoredPlayer)) {
+            if (player.getName().equals(ignoredPlayer)) {
                 continue;
             }
             double nDist = player.getLocation().distance(from.getLocation());
@@ -207,7 +207,7 @@ public class PlayerService {
             }
         }
         if (returned != null)
-            System.out.println(returned.getDisplayName());
+            System.out.println(returned.getName());
         return returned;
     }
 

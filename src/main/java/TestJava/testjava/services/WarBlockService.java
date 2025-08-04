@@ -20,7 +20,7 @@ public class WarBlockService {
             return false;
         }
         VillageModel enemy = VillageRepository.getNearestOf(e.getPlayer());
-        EmpireModel monEmpire = EmpireRepository.get(e.getPlayer().getDisplayName());
+        EmpireModel monEmpire = EmpireRepository.get(e.getPlayer().getName());
         EmpireModel sonEmpire = EmpireRepository.get(enemy.getPlayerName());
 
         if (!monEmpire.getIsInWar() || !monEmpire.getEnemyName().equals(enemy.getId())) {

@@ -23,6 +23,12 @@ public class DelegationCommand implements CommandExecutor {
             return false;
         }
 
+        // Vérification des arguments
+        if (args.length == 0) {
+            sender.sendMessage(ChatColor.RED + "Usage: /delegation <pseudo>");
+            return true;
+        }
+
         Player receiver = Bukkit.getPlayer(args[0]);
         Player player = ((Player) sender);
         if (receiver == null || !receiver.isOnline()) {
@@ -45,7 +51,7 @@ public class DelegationCommand implements CommandExecutor {
         Animals delegator = player.getWorld().spawn(VillageRepository.getBellLocation(village), Llama.class);
         delegator.setRemoveWhenFarAway(false);
         delegator.setCustomNameVisible(true);
-        delegator.setCustomName("[" + player.getDisplayName() + "] Délégateur");
+        delegator.setCustomName("[" + player.getName() + "] Délégateur");
         delegator.setCanPickupItems(false);
         delegator.damage(0D, receiver);
         delegator.setVelocity(new Vector());
@@ -55,8 +61,8 @@ public class DelegationCommand implements CommandExecutor {
         book.setAmount(0);
 
         try {
-            delegator.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(1D);
-            delegator.getAttribute(Attribute.GENERIC_ATTACK_SPEED).setBaseValue(1D);
+            delegator.getAttribute(Attribute.ATTACK_DAMAGE).setBaseValue(1D);
+            delegator.getAttribute(Attribute.ATTACK_SPEED).setBaseValue(1D);
         } catch (NullPointerException ignored) {
         }
 

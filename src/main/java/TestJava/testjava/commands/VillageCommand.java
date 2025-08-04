@@ -14,6 +14,12 @@ public class VillageCommand implements CommandExecutor {
             return false;
         }
 
+        // Vérification des arguments
+        if (args.length == 0) {
+            sender.sendMessage(ChatColor.RED + "Usage: /village <villageName>");
+            return true;
+        }
+
         VillageModel village = VillageRepository.get(args[0]);
         if (village == null) {
             sender.sendMessage(ChatColor.RED + "Ce village n'existe pas");

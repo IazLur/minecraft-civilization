@@ -23,7 +23,7 @@ public class WarCommand implements CommandExecutor {
         }
 
         VillageModel village = VillageRepository.getCurrentVillageConstructibleIfOwn((Player) sender);
-        EmpireModel empire = EmpireRepository.get(((Player) sender).getDisplayName());
+        EmpireModel empire = EmpireRepository.get(((Player) sender).getName());
         if (village == null) {
             sender.sendMessage(ChatColor.RED + "Vous devez être dans un de vos villages");
             return false;
@@ -32,6 +32,12 @@ public class WarCommand implements CommandExecutor {
         if (empire.getIsInWar()) {
             sender.sendMessage(ChatColor.RED + "Vous êtes déjà en guerre");
             return false;
+        }
+
+        // Vérification des arguments
+        if (args.length == 0) {
+            sender.sendMessage(ChatColor.RED + "Usage: /war <villageName>");
+            return true;
         }
 
         VillageModel enemy = VillageRepository.get(args[0]);
@@ -49,7 +55,7 @@ public class WarCommand implements CommandExecutor {
         UUID uuid = UUID.randomUUID();
         TestJava.threads.put(uuid,
                 Bukkit.getScheduler().scheduleSyncRepeatingTask(TestJava.plugin,
-                        new WarThread(village.getId(), uuid, enemy, empire, ((Player) sender).getDisplayName()), 0, 20 * 10));
+                        new WarThread(village.getId(), uuid, enemy, empire, ((Player) sender).getName()), 0, 20 * 10));
 
         return true;
     }

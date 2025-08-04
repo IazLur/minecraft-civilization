@@ -43,10 +43,21 @@ public class CustomName {
     }
 
     public static Collection<CustomEntity> getAll() {
-        Collection<LivingEntity> entities = CustomName.filter(TestJava.world.getLivingEntities());
         Collection<CustomEntity> cEntities = new ArrayList<>();
-        for (LivingEntity entity : entities) {
-            cEntities.add(new CustomEntity(entity));
+        
+        // Vérification de sécurité pour le monde
+        if (TestJava.world == null) {
+            TestJava.plugin.getLogger().warning("TestJava.world est null dans CustomName.getAll()");
+            return cEntities; // Retourner une collection vide
+        }
+        
+        try {
+            Collection<LivingEntity> entities = CustomName.filter(TestJava.world.getLivingEntities());
+            for (LivingEntity entity : entities) {
+                cEntities.add(new CustomEntity(entity));
+            }
+        } catch (Exception e) {
+            TestJava.plugin.getLogger().warning("Erreur lors de la récupération des entités : " + e.getMessage());
         }
         return cEntities;
     }

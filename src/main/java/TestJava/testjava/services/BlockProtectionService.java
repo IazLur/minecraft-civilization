@@ -16,7 +16,7 @@ import java.util.Objects;
 public class BlockProtectionService {
     public void protectRestOfTheWorld(BlockBreakEvent e) {
         VillageModel village = VillageRepository.getCurrentVillageTerritory(e.getPlayer());
-        if (village != null && !Objects.equals(village.getPlayerName(), e.getPlayer().getDisplayName())) {
+        if (village != null && !Objects.equals(village.getPlayerName(), e.getPlayer().getName())) {
             e.setCancelled(true);
             e.setDropItems(false);
             e.getPlayer().sendMessage(ChatColor.RED + "Ce terrain n'est pas dans votre territoire");
@@ -25,7 +25,7 @@ public class BlockProtectionService {
 
     public void protectRestOfTheWorld(BlockPlaceEvent e) {
         VillageModel village = VillageRepository.getCurrentVillageTerritory(e.getPlayer());
-        if (village != null && !Objects.equals(village.getPlayerName(), e.getPlayer().getDisplayName())) {
+        if (village != null && !Objects.equals(village.getPlayerName(), e.getPlayer().getName())) {
             e.setCancelled(true);
             e.setBuild(false);
             e.getPlayer().sendMessage(ChatColor.RED + "Ce terrain n'est pas dans votre territoire");

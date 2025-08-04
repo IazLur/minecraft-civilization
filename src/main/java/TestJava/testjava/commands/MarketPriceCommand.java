@@ -2,6 +2,7 @@ package TestJava.testjava.commands;
 
 import TestJava.testjava.helpers.Colorize;
 import TestJava.testjava.helpers.JuridictionHelper;
+import TestJava.testjava.helpers.ResourceHelper;
 import TestJava.testjava.models.ResourceModel;
 import TestJava.testjava.repositories.ResourceRepository;
 import org.bukkit.Bukkit;
@@ -19,6 +20,12 @@ public class MarketPriceCommand implements CommandExecutor {
             return false;
         }
 
+        // Vérification des arguments
+        if (args.length < 2) {
+            sender.sendMessage(ChatColor.RED + "Usage: /marketprice <buy|sell> <resourceName>");
+            return true;
+        }
+
         boolean isBuy = args[0].equals("buy");
         boolean isSell = args[0].equals("sell");
 
@@ -27,20 +34,16 @@ public class MarketPriceCommand implements CommandExecutor {
             return false;
         }
 
-        Collection<ResourceModel> resources = ResourceRepository.getAll();
-        ResourceModel match = null;
-
-        for (ResourceModel resource : resources) {
-            if (resource.getName().toLowerCase().contains(args[1].toLowerCase())) {
-                match = resource;
-                break;
-            }
+        // Recherche intelligente avec suggestions
+        ResourceHelper.ResourceSearchResult searchResult = ResourceHelper.findResourceWithSuggestions(args[1]);
+        
+        if (!searchResult.isFound()) {
+            sender.sendMessage(ResourceHelper.formatResourceNotFoundMessage(args[1], searchResult.getSuggestions()));
+            sender.sendMessage(ResourceHelper.formatAllResourcesList());
+            return true; // ✅ Éviter l'affichage d'usage automatique
         }
-
-        if (match == null) {
-            sender.sendMessage(ChatColor.RED + "Impossible de trouver la resource '" + args[1] + "'");
-            return false;
-        }
+        
+        ResourceModel match = searchResult.getResource();
 
         if (isBuy) {
             float sellPrice = JuridictionHelper.calculatePriceForBuy(match.getName());

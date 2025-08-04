@@ -51,7 +51,7 @@ public class VillageService {
         village.setY(location.getBlockY());
         village.setZ(location.getBlockZ());
         village.setBedsCount(0);
-        village.setPlayerName(e.getPlayer().getDisplayName());
+        village.setPlayerName(e.getPlayer().getName());
         VillageRepository.update(village);
         Bukkit.getServer().broadcastMessage(Colorize.name(village.getPlayerName()) +
                 " a créé " + Colorize.name(village.getId()));
@@ -69,7 +69,7 @@ public class VillageService {
         village.setBedsCount(village.getBedsCount() + 1);
         VillageRepository.update(village);
 
-        Bukkit.getServer().broadcastMessage(Colorize.name(e.getPlayer().getDisplayName()) +
+        Bukkit.getServer().broadcastMessage(Colorize.name(e.getPlayer().getName()) +
                 " a ajouté un lit à " + Colorize.name(village.getId()));
     }
 
@@ -82,7 +82,7 @@ public class VillageService {
         village.setBedsCount(village.getBedsCount() - 1);
         VillageRepository.update(village);
 
-        Bukkit.getServer().broadcastMessage(Colorize.name(e.getPlayer().getDisplayName()) +
+        Bukkit.getServer().broadcastMessage(Colorize.name(e.getPlayer().getName()) +
                 " a détruit un lit à " + Colorize.name(village.getId()));
     }
 
@@ -101,9 +101,9 @@ public class VillageService {
     public void conquer(BlockPlaceEvent e) {
         VillageModel village = VillageRepository.getNearestOf(e.getPlayer());
         Player loser = Bukkit.getPlayer(village.getPlayerName());
-        village.setPlayerName(e.getPlayer().getDisplayName());
+        village.setPlayerName(e.getPlayer().getName());
         VillageRepository.update(village);
-        Bukkit.getServer().broadcastMessage(Colorize.name(e.getPlayer().getDisplayName()) + " a conquis " +
+        Bukkit.getServer().broadcastMessage(Colorize.name(e.getPlayer().getName()) + " a conquis " +
                 Colorize.name(village.getId()));
         e.getBlock().setType(Material.AIR);
         EmpireModel empire = EmpireRepository.get(village.getPlayerName());

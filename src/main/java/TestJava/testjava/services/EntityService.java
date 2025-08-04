@@ -66,9 +66,9 @@ public class EntityService {
         VillageModel village = VillageRepository.getNearestOf(skeleton);
         skeleton.setCanPickupItems(false);
         skeleton.getEquipment().setHelmet(new ItemStack(Material.LEATHER_HELMET));
-        skeleton.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(0D);
-        skeleton.getAttribute(Attribute.GENERIC_FOLLOW_RANGE).setBaseValue(10D);
-        skeleton.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(1D);
+        skeleton.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(0D);
+        skeleton.getAttribute(Attribute.FOLLOW_RANGE).setBaseValue(10D);
+        skeleton.getAttribute(Attribute.KNOCKBACK_RESISTANCE).setBaseValue(1D);
         skeleton.setCustomNameVisible(true);
         skeleton.setRemoveWhenFarAway(false);
         skeleton.setPersistent(true);
@@ -94,7 +94,7 @@ public class EntityService {
         pillager.getEquipment().setBoots(new ItemStack(Material.IRON_BOOTS));
         pillager.getEquipment().setChestplate(new ItemStack(Material.IRON_CHESTPLATE));
         pillager.getEquipment().setLeggings(new ItemStack(Material.IRON_LEGGINGS));
-        pillager.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(1D);
+        pillager.getAttribute(Attribute.KNOCKBACK_RESISTANCE).setBaseValue(1D);
         pillager.setCustomNameVisible(true);
         pillager.setRemoveWhenFarAway(false);
         assert village != null;
@@ -172,7 +172,7 @@ public class EntityService {
         String sVillage = CustomName.squareBrackets(customName, 0);
         VillageModel village = VillageRepository.get(sVillage);
         if (e.getTarget() instanceof Player) {
-            if (village.getPlayerName().equals(((Player) e.getTarget()).getDisplayName())) {
+            if (village.getPlayerName().equals(((Player) e.getTarget()).getName())) {
                 e.setCancelled(true);
                 return;
             }
@@ -211,8 +211,8 @@ public class EntityService {
         bandit.getEquipment().setLeggings(new ItemStack(Material.CHAINMAIL_LEGGINGS));
         bandit.getEquipment().setChestplate(new ItemStack(Material.CHAINMAIL_CHESTPLATE));
         bandit.getEquipment().setBoots(new ItemStack(Material.LEATHER_BOOTS));
-        Player enemy = TestJava.playerService.getNearestPlayerWhereNot(bandit, player.getDisplayName());
-        TestJava.banditTargets.put(bandit.getUniqueId(), enemy.getDisplayName());
+        Player enemy = TestJava.playerService.getNearestPlayerWhereNot(bandit, player.getName());
+        TestJava.banditTargets.put(bandit.getUniqueId(), enemy.getName());
         bandit.setTarget(enemy);
     }
 
@@ -230,7 +230,7 @@ public class EntityService {
             return;
         }
 
-        if (TestJava.banditTargets.get(zombie.getUniqueId()).equals(player.getDisplayName())) {
+        if (TestJava.banditTargets.get(zombie.getUniqueId()).equals(player.getName())) {
             return;
         }
         e.setCancelled(true);

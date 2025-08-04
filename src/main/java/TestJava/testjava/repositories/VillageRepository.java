@@ -67,7 +67,7 @@ public class VillageRepository {
     public static VillageModel getCurrentVillageConstructibleIfOwn(@Nonnull Player player) {
         VillageModel village = VillageRepository.getCurrentVillageConstruction(player);
         if (village == null) return null;
-        return village.getPlayerName().equals(player.getDisplayName()) ? village : null;
+        return village.getPlayerName().equals(player.getName()) ? village : null;
     }
 
     public static Collection<VillageModel> getForPlayer(String p) {

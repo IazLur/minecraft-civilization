@@ -40,7 +40,7 @@ public class DefenderThread implements Runnable {
                 String entityVillage = CustomName.squareBrackets(entity.getEntity().getCustomName(), 0);
                 if (target instanceof Player) {
                     VillageModel village = VillageRepository.get(entityVillage);
-                    if (Objects.equals(village.getPlayerName(), ((Player) target).getDisplayName())) {
+                    if (Objects.equals(village.getPlayerName(), ((Player) target).getName())) {
                         return;
                     }
                     haveTarget.set(true);
