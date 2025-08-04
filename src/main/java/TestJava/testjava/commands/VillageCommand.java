@@ -26,11 +26,11 @@ public class VillageCommand implements CommandExecutor {
             return false;
         }
         sender.sendMessage(
-                ChatColor.GOLD + village.getId() + "\r\n" +
-                        ChatColor.DARK_PURPLE + "Lits: " + ChatColor.GRAY + village.getBedsCount() + "\r\n" +
-                        ChatColor.DARK_PURPLE + "Armée: " + ChatColor.GRAY + village.getGroundArmy() + "\r\n" +
-                        ChatColor.DARK_PURPLE + "Garnison: " + ChatColor.GRAY + village.getGarrison() + "\r\n" +
-                        ChatColor.DARK_PURPLE + "Population: " + ChatColor.GRAY + village.getPopulation() + "\r\n" +
+                ChatColor.GOLD + village.getId() + "\n" +
+                        ChatColor.DARK_PURPLE + "Lits: " + ChatColor.GRAY + village.getBedsCount() + "\n" +
+                        ChatColor.DARK_PURPLE + "Armée: " + ChatColor.GRAY + village.getGroundArmy() + "\n" +
+                        ChatColor.DARK_PURPLE + "Garnison: " + ChatColor.GRAY + village.getGarrison() + "\n" +
+                        ChatColor.DARK_PURPLE + "Population: " + ChatColor.GRAY + village.getPopulation() + "\n" +
                         ChatColor.DARK_PURPLE + "PDP: " + ChatColor.GRAY + village.getProsperityPoints()
         );
         return true;

@@ -524,6 +524,30 @@ ResourceInitializationService.initializeResourcesIfEmpty();
 - ✅ **Base de données cohérente** avec les ressources définies
 - ✅ **Maintenance simplifiée** : modification de `resources.json` = auto-sync
 
+#### Correction Affichage Commande Village ✅ CORRIGÉ
+**Problème résolu :** Caractères carrés indésirables dans l'affichage de `/village`
+
+**Cause :** Utilisation de `\r\n` (retour chariot + nouvelle ligne) au lieu de `\n` simple
+- Minecraft n'affiche pas correctement les caractères `\r`
+- Ces caractères apparaissaient comme des carrés dans l'interface
+
+**Solution :**
+```java
+// Avant (affichait des carrés)
+ChatColor.GOLD + village.getId() + "\r\n" +
+
+// Après (affichage propre)
+ChatColor.GOLD + village.getId() + "\n" +
+```
+
+**Fichier corrigé :**
+- `VillageCommand.java` : Remplacement de tous les `\r\n` par `\n`
+
+**Résultat :**
+- ✅ **Affichage propre** de la commande `/village`
+- ✅ **Plus de carrés indésirables** dans les statistiques
+- ✅ **Interface utilisateur améliorée**
+
 ### Futures Migrations
 
 Pour les prochaines mises à jour d'API :
