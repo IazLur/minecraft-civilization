@@ -9,6 +9,9 @@ import TestJava.testjava.repositories.EatableRepository;
 import TestJava.testjava.repositories.VillageRepository;
 import TestJava.testjava.repositories.VillagerRepository;
 import TestJava.testjava.services.SocialClassService;
+import TestJava.testjava.services.VillagerInventoryService;
+import TestJava.testjava.services.VillagerInventoryService.FeedResult;
+import TestJava.testjava.services.HistoryService;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
@@ -22,6 +25,7 @@ public class VillagerGoEatThread implements Runnable {
     private static final int MIN_DELAY = 20;
     private static final int RANGE_DELAY = 20 * 10;
     private static final int MAX_FOOD = 19;
+    private static final int FULL_FOOD = 20;
     private static final double MOVE_SPEED = 1D;
 
     private final Set<UUID> targetedEatables = Collections.synchronizedSet(new HashSet<>());
@@ -31,13 +35,34 @@ public class VillagerGoEatThread implements Runnable {
         Collection<EatableModel> eatables = EatableRepository.getAll();
         HashMap<String, Collection<EatableModel>> villageEatablesMap = prepareEatablesMap(eatables);
 
-        String query = String.format("/.[food<'%s']", MAX_FOOD);
-        Collection<VillagerModel> hungryVillagers = TestJava.database.find(query, VillagerModel.class);
+        String queryHungry = String.format("/.[food<'%s']", MAX_FOOD);
+        Collection<VillagerModel> hungryVillagers = TestJava.database.find(queryHungry, VillagerModel.class);
+        
+        String queryFull = String.format("/.[food>='%s']", FULL_FOOD);
+        Collection<VillagerModel> fullVillagers = TestJava.database.find(queryFull, VillagerModel.class);
 
+        // Compteurs par village
+        Map<String, VillageStats> villageStatsMap = new HashMap<>();
+        
+        // Compter les villageois rassasiés (nourriture >= 20) qui ne consomment que des points de nourriture
+        for (VillagerModel villager : fullVillagers) {
+            villageStatsMap.putIfAbsent(villager.getVillageName(), new VillageStats());
+            villageStatsMap.get(villager.getVillageName()).rassasies++;
+        }
+        
         for (VillagerModel villager : hungryVillagers) {
             Bukkit.getLogger().info("Testing food for " + villager.getId());
-            Bukkit.getScheduler().runTask(TestJava.plugin, () -> handleHungryVillager(villager, villageEatablesMap));
+            
+            // Initialiser les statistiques du village si nécessaire
+            villageStatsMap.putIfAbsent(villager.getVillageName(), new VillageStats());
+            
+            Bukkit.getScheduler().runTask(TestJava.plugin, () -> 
+                handleHungryVillager(villager, villageEatablesMap, villageStatsMap.get(villager.getVillageName()))
+            );
         }
+        
+        // Attendre que toutes les tâches se terminent et afficher les résultats
+        Bukkit.getScheduler().runTaskLater(TestJava.plugin, () -> displayDistributionResults(villageStatsMap), 100L);
     }
 
     private HashMap<String, Collection<EatableModel>> prepareEatablesMap(Collection<EatableModel> eatables) {
@@ -48,7 +73,7 @@ public class VillagerGoEatThread implements Runnable {
         return map;
     }
 
-    private void handleHungryVillager(VillagerModel villager, HashMap<String, Collection<EatableModel>> villageEatablesMap) {
+    private void handleHungryVillager(VillagerModel villager, HashMap<String, Collection<EatableModel>> villageEatablesMap, VillageStats stats) {
         Villager eVillager = fetchEntityVillager(villager.getId(), villager);
 
         if(eVillager == null) {
@@ -57,13 +82,25 @@ public class VillagerGoEatThread implements Runnable {
             return;
         }
 
+        // NOUVELLE LOGIQUE : Priorité à l'inventaire et aux achats avant d'aller aux champs
+        FeedResult feedResult = VillagerInventoryService.attemptToFeedVillager(villager);
+        if (feedResult == FeedResult.SELF_FED) {
+            stats.autosuffisants++;
+            return;
+        } else if (feedResult == FeedResult.BOUGHT_FOOD) {
+            stats.clients++;
+            return;
+        }
+
+        // LOGIQUE ORIGINALE : En dernier recours, aller manger dans les champs
         EatableModel targetEatable = findEatable(villager, villageEatablesMap);
 
         if (targetEatable != null) {
             targetedEatables.add(targetEatable.getId());
+            stats.voleurs++;
             moveVillagerToFood(eVillager, villager, targetEatable, villageEatablesMap);
         } else {
-            broadcastNoFoodMessage(eVillager);
+            stats.affames++;
         }
     }
 
@@ -181,7 +218,8 @@ public class VillagerGoEatThread implements Runnable {
 
     private void handleFoodGone(EatableModel targetEatable, UUID uuid, VillagerModel villager, HashMap<String, Collection<EatableModel>> villageEatablesMap) {
         targetedEatables.remove(targetEatable.getId());
-        handleHungryVillager(villager, villageEatablesMap);
+        // Note: On ne relance pas handleHungryVillager ici pour éviter les boucles infinies
+        // et parce que le villageois sera traité au prochain cycle
         cancelTask(uuid);
     }
 
@@ -192,6 +230,9 @@ public class VillagerGoEatThread implements Runnable {
 
         villager.setFood(villager.getFood() + 1);
         VillagerRepository.update(villager);
+
+        // Enregistrer la consommation dans l'historique (vol de blé)
+        HistoryService.recordFoodConsumption(villager, "blé");
 
         // Évaluation de la classe sociale après l'alimentation
         SocialClassService.evaluateAndUpdateSocialClass(villager);
@@ -213,9 +254,56 @@ public class VillagerGoEatThread implements Runnable {
         TestJava.threads.remove(uuid);
     }
 
-    private void broadcastNoFoodMessage(Villager eVillager) {
-        if (eVillager != null) {
-            Bukkit.getServer().broadcastMessage(Colorize.name(eVillager.getCustomName()) + " n'a rien à manger");
+    /**
+     * Classe pour stocker les statistiques de distribution par village
+     */
+    private static class VillageStats {
+        public int autosuffisants = 0;
+        public int clients = 0;
+        public int voleurs = 0;
+        public int affames = 0;
+        public int rassasies = 0; // NOUVEAU: villageois avec 20+ nourriture
+    }
+    
+    /**
+     * Affiche les résultats de distribution de nourriture par village
+     */
+    private void displayDistributionResults(Map<String, VillageStats> villageStatsMap) {
+        for (Map.Entry<String, VillageStats> entry : villageStatsMap.entrySet()) {
+            String villageName = entry.getKey();
+            VillageStats stats = entry.getValue();
+            
+            // CORRECTION BUG: Envoyer le message seulement au propriétaire du village
+            sendDistributionMessageToVillageOwner(villageName, stats);
+        }
+    }
+    
+    /**
+     * Envoie le message de distribution seulement au propriétaire du village
+     */
+    private void sendDistributionMessageToVillageOwner(String villageName, VillageStats stats) {
+        try {
+            VillageModel village = VillageRepository.get(villageName);
+            if (village == null) {
+                return;
+            }
+            
+            // Trouver le joueur propriétaire
+            org.bukkit.entity.Player owner = Bukkit.getPlayerExact(village.getPlayerName());
+            if (owner == null || !owner.isOnline()) {
+                return; // Propriétaire pas connecté, pas de message
+            }
+            
+            // Envoyer le message de distribution seulement au propriétaire
+            owner.sendMessage("Distribution de nourriture à " + Colorize.name(villageName));
+            owner.sendMessage("Villageois rassasiés: " + Colorize.name(stats.rassasies + " villageois"));
+            owner.sendMessage("Villageois autosuffisants: " + Colorize.name(stats.autosuffisants + " villageois"));
+            owner.sendMessage("Villageois clients: " + Colorize.name(stats.clients + " villageois"));
+            owner.sendMessage("Villageois voleurs: " + Colorize.name(stats.voleurs + " villageois"));
+            owner.sendMessage("Villageois affamés: " + Colorize.name(stats.affames + " villageois"));
+            
+        } catch (Exception e) {
+            Bukkit.getLogger().warning("[VillagerGoEat] Erreur envoi message: " + e.getMessage());
         }
     }
 

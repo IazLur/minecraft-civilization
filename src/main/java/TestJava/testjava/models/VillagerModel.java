@@ -15,6 +15,13 @@ public class VillagerModel {
     private Integer food;
     private boolean isEating = false;
     private Integer socialClass = 0; // 0 = Misérable par défaut
+    private Float richesse = 0.0f; // Richesse personnelle en juridictions
+    
+    // Gestion des métiers
+    private String currentJobType; // "native" ou "custom" ou null
+    private String currentJobName; // Nom du métier (pour custom) ou null pour natif
+    private UUID currentBuildingId; // ID du bâtiment custom où il travaille (null pour métier natif)
+    private boolean hasLeatherArmor = false; // Indicateur si le villageois porte une armure de cuir (métier custom)
 
     public UUID getId() {
         return id;
@@ -68,5 +75,100 @@ public class VillagerModel {
      */
     public void setSocialClassEnum(SocialClass socialClass) {
         this.socialClass = socialClass.getLevel();
+    }
+
+    public Float getRichesse() {
+        return richesse != null ? Math.round(richesse * 100.0f) / 100.0f : 0.0f;
+    }
+
+    public void setRichesse(Float richesse) {
+        this.richesse = richesse != null ? Math.round(richesse * 100.0f) / 100.0f : 0.0f;
+    }
+
+    // ========== Getters/Setters pour les métiers ==========
+    
+    public String getCurrentJobType() {
+        return currentJobType;
+    }
+
+    public void setCurrentJobType(String currentJobType) {
+        this.currentJobType = currentJobType;
+    }
+
+    public String getCurrentJobName() {
+        return currentJobName;
+    }
+
+    public void setCurrentJobName(String currentJobName) {
+        this.currentJobName = currentJobName;
+    }
+
+    public UUID getCurrentBuildingId() {
+        return currentBuildingId;
+    }
+
+    public void setCurrentBuildingId(UUID currentBuildingId) {
+        this.currentBuildingId = currentBuildingId;
+    }
+
+    public boolean hasLeatherArmor() {
+        return hasLeatherArmor;
+    }
+
+    public void setHasLeatherArmor(boolean hasLeatherArmor) {
+        this.hasLeatherArmor = hasLeatherArmor;
+    }
+
+    // ========== Méthodes utilitaires pour les métiers ==========
+    
+    /**
+     * Vérifie si le villageois a un métier (natif ou custom)
+     */
+    public boolean hasJob() {
+        return currentJobType != null && !currentJobType.isEmpty();
+    }
+
+    /**
+     * Vérifie si le villageois a un métier natif
+     */
+    public boolean hasNativeJob() {
+        return "native".equals(currentJobType);
+    }
+
+    /**
+     * Vérifie si le villageois a un métier custom
+     */
+    public boolean hasCustomJob() {
+        return "custom".equals(currentJobType);
+    }
+
+    /**
+     * Remet à zéro toutes les informations de métier
+     */
+    public void clearJob() {
+        this.currentJobType = null;
+        this.currentJobName = null;
+        this.currentBuildingId = null;
+        this.hasLeatherArmor = false;
+    }
+
+    /**
+     * Assigne un métier natif au villageois
+     */
+    public void assignNativeJob() {
+        this.currentJobType = "native";
+        this.currentJobName = null; // Pour les métiers natifs, le nom est déterminé par la profession Minecraft
+        this.currentBuildingId = null;
+        this.hasLeatherArmor = false;
+    }
+
+    /**
+     * Assigne un métier custom au villageois
+     */
+    public void assignCustomJob(String jobName, UUID buildingId) {
+        this.currentJobType = "custom";
+        this.currentJobName = jobName;
+        this.currentBuildingId = buildingId;
+        this.hasLeatherArmor = true; // Les métiers custom portent une armure de cuir
     }
 }

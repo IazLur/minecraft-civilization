@@ -44,12 +44,40 @@ public class ItemService {
             return;
         }
 
-        Integer food = map.get(item.getType().name());
-        Bukkit.getServer().broadcastMessage(Colorize.name(villager.getCustomName()) + " a été nourri");
-        item.setAmount(0);
+        Integer foodValue = map.get(item.getType().name());
         VillagerModel villagerModel = VillagerRepository.find(villager.getUniqueId());
-        villagerModel.setFood(villagerModel.getFood() + food);
+        
+        // CORRECTION BUG: Limiter la nourriture à 20 max et garder le surplus
+        int currentFood = villagerModel.getFood();
+        int maxFood = 20;
+        int totalItemAmount = item.getAmount();
+        int itemsNeeded = Math.max(0, (maxFood - currentFood + foodValue - 1) / foodValue); // Calcul arrondi vers le haut
+        int itemsToConsume = Math.min(itemsNeeded, totalItemAmount);
+        int surplus = totalItemAmount - itemsToConsume;
+        
+        if (currentFood >= maxFood) {
+            // Villageois rassasié, garde tout dans l'inventaire
+            Bukkit.getServer().broadcastMessage(Colorize.name(villager.getCustomName()) + " est rassasié et garde la nourriture");
+            return; // Ne pas consommer, laisser dans l'inventaire
+        }
+        
+        // Consommer seulement ce qui est nécessaire
+        int foodToAdd = itemsToConsume * foodValue;
+        int newFoodTotal = Math.min(currentFood + foodToAdd, maxFood);
+        
+        villagerModel.setFood(newFoodTotal);
         VillagerRepository.update(villagerModel);
+        
+        // Mettre à jour l'item : consommer la quantité nécessaire, garder le surplus
+        if (surplus > 0) {
+            item.setAmount(surplus);
+            Bukkit.getServer().broadcastMessage(Colorize.name(villager.getCustomName()) + " a mangé " + 
+                                              itemsToConsume + " " + item.getType().name().toLowerCase() + 
+                                              " et garde " + surplus + " en réserve");
+        } else {
+            item.setAmount(0);
+            Bukkit.getServer().broadcastMessage(Colorize.name(villager.getCustomName()) + " a été nourri");
+        }
         
         // Évaluation de la classe sociale après l'alimentation
         SocialClassService.evaluateAndUpdateSocialClass(villagerModel);

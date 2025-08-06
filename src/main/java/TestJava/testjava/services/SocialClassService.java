@@ -4,6 +4,7 @@ import TestJava.testjava.TestJava;
 import TestJava.testjava.enums.SocialClass;
 import TestJava.testjava.models.VillagerModel;
 import TestJava.testjava.repositories.VillagerRepository;
+import TestJava.testjava.services.HistoryService;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Entity;
@@ -74,6 +75,11 @@ public class SocialClassService {
         if (newClass != currentClass) {
             updateVillagerSocialClass(villager, newClass);
         }
+        
+        // CORRECTION BUG: Vérification forcée si le villageois est misérable mais a un métier
+        if (villager.getSocialClassEnum() == SocialClass.MISERABLE) {
+            forceJobRemovalForMiserable(villager);
+        }
     }
 
     /**
@@ -91,6 +97,9 @@ public class SocialClassService {
         
         // Gère les restrictions de métier
         handleJobRestrictions(villager, oldClass, newClass);
+        
+        // Enregistre le changement dans l'historique
+        HistoryService.recordSocialClassChange(villager, newClass);
         
         Bukkit.getLogger().info("[SocialClass] Changement de classe pour " + villager.getId() + 
                                ": " + oldClass.getName() + " → " + newClass.getName());
@@ -208,7 +217,7 @@ public class SocialClassService {
     }
 
     /**
-     * Retire le métier d'un villageois
+     * Retire le métier d'un villageois (natif ou custom)
      */
     private static void removeJobFromVillager(VillagerModel villager) {
         if (TestJava.world == null) return;
@@ -218,18 +227,57 @@ public class SocialClassService {
                 if (entity instanceof Villager bukkit_villager && 
                     entity.getUniqueId().equals(villager.getId())) {
                     
-                    // Retire la profession
-                    bukkit_villager.setProfession(Villager.Profession.NONE);
+                    // Retirer d'abord le métier custom si présent
+                    if (villager.hasCustomJob()) {
+                        CustomJobAssignmentService.removeCustomJobFromVillager(villager);
+                        Bukkit.getLogger().info("[SocialClass] Métier custom retiré pour villageois " + villager.getId());
+                    }
+                    // Puis retirer le métier natif
+                    else if (bukkit_villager.getProfession() != Villager.Profession.NONE) {
+                        bukkit_villager.setProfession(Villager.Profession.NONE);
+                        villager.clearJob(); // Nettoyer les données de métier
+                        Bukkit.getLogger().info("[SocialClass] Métier natif retiré pour villageois " + villager.getId());
+                    }
                     
                     // Annule les déplacements vers les blocs de métier
                     bukkit_villager.getPathfinder().stopPathfinding();
                     
-                    Bukkit.getLogger().info("[SocialClass] Métier retiré pour villageois " + villager.getId());
                     break;
                 }
             }
         } catch (Exception e) {
             Bukkit.getLogger().warning("[SocialClass] Erreur lors du retrait du métier: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Force le retrait du métier pour un villageois misérable (correction bug)
+     */
+    private static void forceJobRemovalForMiserable(VillagerModel villager) {
+        if (TestJava.world == null) return;
+        
+        try {
+            for (Entity entity : TestJava.world.getEntities()) {
+                if (entity instanceof Villager bukkit_villager && 
+                    entity.getUniqueId().equals(villager.getId())) {
+                    
+                    if (bukkit_villager.getProfession() != Villager.Profession.NONE) {
+                        Bukkit.getLogger().warning("[SocialClass] 🚨 BUG DÉTECTÉ: Villageois misérable avec métier " + 
+                                                 bukkit_villager.getProfession() + " - Retrait forcé immédiat");
+                        
+                        bukkit_villager.setProfession(Villager.Profession.NONE);
+                        bukkit_villager.getPathfinder().stopPathfinding();
+                        
+                        // Enregistrer dans l'historique
+                        HistoryService.recordJobChange(villager, "Sans emploi");
+                        
+                        Bukkit.getLogger().info("[SocialClass] ✅ Métier retiré pour villageois misérable " + villager.getId());
+                    }
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            Bukkit.getLogger().severe("[SocialClass] Erreur lors du retrait forcé: " + e.getMessage());
         }
     }
 

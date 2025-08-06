@@ -7,6 +7,7 @@ import TestJava.testjava.models.VillagerModel;
 import TestJava.testjava.repositories.VillageRepository;
 import TestJava.testjava.repositories.VillagerRepository;
 import TestJava.testjava.services.SocialClassService;
+import TestJava.testjava.services.HistoryService;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -67,8 +68,12 @@ public class ForceSpawnAtCommand implements CommandExecutor {
             VillagerModel villagerModel = new VillagerModel();
             villagerModel.setId(newVillager.getUniqueId());
             villagerModel.setVillageName(village.getId());
-            villagerModel.setFood(1); // Commence avec 1 point de nourriture
+            villagerModel.setFood(10); // Commence avec 10 points de nourriture (évite la mort immédiate)
             villagerModel.setSocialClass(0); // Classe 0 par défaut (Misérable)
+            villagerModel.setRichesse(0.0f); // Richesse par défaut
+            
+            // Enregistrer la naissance dans l'historique
+            HistoryService.recordVillagerBirth(villagerModel, village.getId());
             
             // Sauvegarde le villageois
             VillagerRepository.update(villagerModel);

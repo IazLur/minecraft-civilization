@@ -47,3 +47,9 @@ commands:
   distance:
     description: Gérer et consulter les distances de placement des métiers et bâtiments
     usage: /distance <metiers|batiments|check|info|reload>
+  data:
+    description: Consulter l'historique d'un village ou villageois
+    usage: /data <village <nom>|villager>
+  refreshplugin:
+    description: Rafraîchir le plugin et équiper les armures des employés custom
+    usage: /refreshplugin

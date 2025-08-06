@@ -78,6 +78,11 @@ public class EntityService {
         skeleton.setPersistent(true);
         assert village != null;
         String customName = CustomName.generate();
+        
+        // CORRECTION BUG: Incrémenter la garnison lors de la création
+        village.setGarrison(village.getGarrison() + 1);
+        VillageRepository.update(village);
+        
         skeleton.setCustomName(ChatColor.DARK_GREEN + "[" + village.getId() + "] " + ChatColor.WHITE
                 + customName);
         Bukkit.getServer().broadcastMessage(Colorize.name(customName) + " a rejoint la milice à " + Colorize.name(village.getId()));
@@ -95,9 +100,13 @@ public class EntityService {
         pillager.setCanJoinRaid(false);
         pillager.setPatrolLeader(false);
         pillager.getEquipment().setHelmet(new ItemStack(Material.IRON_HELMET));
-        pillager.getEquipment().setBoots(new ItemStack(Material.IRON_BOOTS));
         pillager.getEquipment().setChestplate(new ItemStack(Material.IRON_CHESTPLATE));
         pillager.getEquipment().setLeggings(new ItemStack(Material.IRON_LEGGINGS));
+        
+        // Ajouter des bottes de givre pour la mobilité sur glace
+        ItemStack frostBoots = new ItemStack(Material.IRON_BOOTS);
+        frostBoots.addEnchantment(org.bukkit.enchantments.Enchantment.FROST_WALKER, 2);
+        pillager.getEquipment().setBoots(frostBoots);
         pillager.getAttribute(Attribute.KNOCKBACK_RESISTANCE).setBaseValue(1D);
         pillager.setCustomNameVisible(true);
         pillager.setRemoveWhenFarAway(false);
@@ -215,6 +224,11 @@ public class EntityService {
         bandit.getEquipment().setLeggings(new ItemStack(Material.CHAINMAIL_LEGGINGS));
         bandit.getEquipment().setChestplate(new ItemStack(Material.CHAINMAIL_CHESTPLATE));
         bandit.getEquipment().setBoots(new ItemStack(Material.LEATHER_BOOTS));
+        
+        // Ajouter des bottes de givre pour la mobilité sur glace
+        ItemStack frostBoots = new ItemStack(Material.LEATHER_BOOTS);
+        frostBoots.addEnchantment(org.bukkit.enchantments.Enchantment.FROST_WALKER, 2);
+        bandit.getEquipment().setBoots(frostBoots);
         Player enemy = TestJava.playerService.getNearestPlayerWhereNot(bandit, player.getName());
         TestJava.banditTargets.put(bandit.getUniqueId(), enemy.getName());
         bandit.setTarget(enemy);
@@ -310,18 +324,45 @@ public class EntityService {
     public void testAnimalSpawn(CreatureSpawnEvent event) {
         // Obtenez la raison de l'apparition de la créature
         CreatureSpawnEvent.SpawnReason reason = event.getSpawnReason();
-
-        switch (reason) {
-            // Les raisons acceptables pour lesquelles un animal peut apparaître
-            case SPAWNER_EGG: // Apparu à partir d'un œuf d'apparition
-            case BREEDING:    // Résultat de l'accouplement
-            case CUSTOM:      // Instancié par un plugin ou un code
-                // Ne faites rien, laissez l'animal apparaître
-                break;
-            default:
-                // Pour toutes les autres raisons, annulez l'événement
-                event.setCancelled(true);
-                break;
+        
+        // Ne traiter que les animaux passifs, pas les monstres
+        if (event.getEntityType() == EntityType.SHEEP ||
+            event.getEntityType() == EntityType.COW ||
+            event.getEntityType() == EntityType.PIG ||
+            event.getEntityType() == EntityType.CHICKEN ||
+            event.getEntityType() == EntityType.RABBIT ||
+            event.getEntityType() == EntityType.HORSE ||
+            event.getEntityType() == EntityType.DONKEY ||
+            event.getEntityType() == EntityType.MULE ||
+            event.getEntityType() == EntityType.LLAMA ||
+            event.getEntityType() == EntityType.GOAT ||
+            event.getEntityType() == EntityType.FOX ||
+            event.getEntityType() == EntityType.WOLF ||
+            event.getEntityType() == EntityType.CAT ||
+            event.getEntityType() == EntityType.OCELOT ||
+            event.getEntityType() == EntityType.PARROT ||
+            event.getEntityType() == EntityType.BEE ||
+            event.getEntityType() == EntityType.DOLPHIN ||
+            event.getEntityType() == EntityType.SQUID ||
+            event.getEntityType() == EntityType.GLOW_SQUID ||
+            event.getEntityType() == EntityType.TURTLE ||
+            event.getEntityType() == EntityType.PANDA ||
+            event.getEntityType() == EntityType.POLAR_BEAR ||
+            event.getEntityType() == EntityType.IRON_GOLEM) {
+            
+            switch (reason) {
+                // Les raisons acceptables pour lesquelles un animal peut apparaître
+                case SPAWNER_EGG: // Apparu à partir d'un œuf d'apparition
+                case BREEDING:    // Résultat de l'accouplement
+                case CUSTOM:      // Instancié par un plugin ou un code
+                    // Ne faites rien, laissez l'animal apparaître
+                    break;
+                default:
+                    // Pour toutes les autres raisons, annulez l'événement
+                    event.setCancelled(true);
+                    break;
+            }
         }
+        // Pour tous les autres types d'entités (monstres, etc.), laisser faire
     }
 }

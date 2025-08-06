@@ -6,6 +6,7 @@ import TestJava.testjava.models.VillageModel;
 import TestJava.testjava.models.VillagerModel;
 import TestJava.testjava.repositories.VillageRepository;
 import TestJava.testjava.repositories.VillagerRepository;
+import TestJava.testjava.services.HistoryService;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Entity;
@@ -161,9 +162,13 @@ public class VillagerSynchronizationService {
             VillagerModel villagerModel = new VillagerModel();
             villagerModel.setId(villager.getUniqueId());
             villagerModel.setVillageName(villageName);
-            villagerModel.setFood(1); // Valeur par défaut
+            villagerModel.setFood(10); // Valeur par défaut (évite la mort immédiate)
             villagerModel.setSocialClass(0); // Classe 0 par défaut
             villagerModel.setEating(false);
+            villagerModel.setRichesse(0.0f); // Richesse par défaut
+            
+            // Enregistrer la naissance dans l'historique
+            HistoryService.recordVillagerBirth(villagerModel, villageName);
             
             return villagerModel;
             

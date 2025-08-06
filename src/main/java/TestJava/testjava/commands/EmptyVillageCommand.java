@@ -92,14 +92,20 @@ public class EmptyVillageCommand implements CommandExecutor {
                 dbRemoved++;
             }
             
-            // Met à jour la population du village à 0
+            // CORRECTION BUG: Supprimer aussi l'armée, garnison et gardes
+            int militaryKilled = removeMilitaryEntities(village);
+            
+            // Met à jour la population du village à 0 et réinitialise les forces militaires
             village.setPopulation(0);
+            village.setGroundArmy(0);
+            village.setGarrison(0);
             VillageRepository.update(village);
             
             // Message de succès
             player.sendMessage(ChatColor.GREEN + "✅ Village vidé avec succès !");
             player.sendMessage(ChatColor.WHITE + "- " + worldKilled + " villageois tués dans le monde");
             player.sendMessage(ChatColor.WHITE + "- " + dbRemoved + " entrées supprimées de la base");
+            player.sendMessage(ChatColor.WHITE + "- " + militaryKilled + " unités militaires supprimées");
             player.sendMessage(ChatColor.WHITE + "- Population mise à jour : " + ChatColor.YELLOW + "0");
             
             // Broadcast global
@@ -120,5 +126,44 @@ public class EmptyVillageCommand implements CommandExecutor {
         }
         
         return true;
+    }
+    
+    /**
+     * Supprime toutes les entités militaires (armée, garnison, gardes) d'un village
+     */
+    private int removeMilitaryEntities(VillageModel village) {
+        int removed = 0;
+        
+        if (TestJava.world == null) {
+            return 0;
+        }
+        
+        try {
+            // Parcourir toutes les entités du monde
+            for (Entity entity : TestJava.world.getEntities()) {
+                // Vérifier si l'entité est une unité militaire avec un nom personnalisé
+                if ((entity instanceof org.bukkit.entity.Skeleton || 
+                     entity instanceof org.bukkit.entity.Pillager) && 
+                    entity.getCustomName() != null) {
+                    
+                    // Extraire le nom du village depuis le nom personnalisé
+                    String entityVillageName = CustomName.extractVillageName(entity.getCustomName());
+                    
+                    // Si l'entité appartient au village à vider
+                    if (village.getId().equals(entityVillageName)) {
+                        entity.remove();
+                        removed++;
+                        
+                        Bukkit.getLogger().info("[EmptyVillage] Suppression entité militaire: " + 
+                                               entity.getType() + " - " + entity.getCustomName());
+                    }
+                }
+            }
+            
+        } catch (Exception e) {
+            Bukkit.getLogger().warning("[EmptyVillage] Erreur suppression entités militaires: " + e.getMessage());
+        }
+        
+        return removed;
     }
 }

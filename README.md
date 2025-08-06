@@ -38,10 +38,12 @@ src/main/java/TestJava/testjava/
 
 ### Systèmes Gameplay
 - **Territoire** : Protection avec rayon défini par `VILLAGE_PROTECTION_RADIUS`
-- **Commerce** : Marché mondial avec ressources et prix
+- **Commerce** : Marché mondial avec ressources et prix + échanges entre villageois
 - **Classes Sociales** : Hiérarchie villageois basée sur alimentation
 - **Distance** : Contraintes de placement pour métiers et bâtiments
 - **Guerre** : Conflits entre empires avec mécaniques TNT
+- **Économie Villageois** : Richesse personnelle, salaires et impôts par métier
+- **Inventaire Intelligent** : Système d'achat/vente entre villageois avec déplacement physique
 
 ## 📊 Modèles de Données (JsonDB)
 
@@ -79,6 +81,7 @@ private UUID id;                   // UUID entité Minecraft
 private String village;           // Village d'appartenance
 private Integer food;             // Points nourriture
 private Integer socialClass;      // Classe sociale (0-4)
+private Float richesse;           // Richesse personnelle en juridictions
 ```
 
 **BuildingModel** - Bâtiments avec économie
@@ -194,6 +197,27 @@ public static boolean spawnSheepForBuilding(BuildingModel building) {
 }
 ```
 
+**TaxService** - Système d'impôts villageois
+```java
+public static void collectTaxes() {
+    // Pour chaque villageois avec métier:
+    // 1. Payer salaire selon JobDistanceConfig
+    // 2. Collecter impôts (% du salaire)
+    // 3. Verser impôts à l'empire
+    // 4. Message global de collecte
+}
+```
+
+**VillagerInventoryService** - Commerce entre villageois
+```java
+public static boolean attemptToFeedVillager(VillagerModel hungryVillager) {
+    // 1. Consommer depuis inventaire personnel (priorité)
+    // 2. Acheter auprès du fermier le plus proche
+    // 3. Déplacement physique vers le vendeur
+    // 4. Transaction avec échange richesse/items
+}
+```
+
 ## 🎮 Système d'Événements
 
 ### Listeners Pattern
@@ -277,14 +301,16 @@ for (VillagerModel villager : VillagerRepository.getAll()) {
 }
 ```
 
-**DailyBuildingCostThread** (20 min) - Coûts quotidiens
+**DailyBuildingCostThread** (4 min) - Coûts quotidiens (coût divisé par 5)
 ```java
 for (BuildingModel building : BuildingRepository.getAll()) {
     if (!building.isActive()) continue;
     
-    if (empire.getJuridictionCount() >= building.getCostPerDay()) {
+    int adjustedCost = building.getCostPerDay() / 5; // Coût divisé par 5
+    
+    if (empire.getJuridictionCount() >= adjustedCost) {
         // Paiement normal
-        empire.setJuridictionCount(empire.getJuridictionCount() - building.getCostPerDay());
+        empire.setJuridictionCount(empire.getJuridictionCount() - adjustedCost);
     } else {
         // Désactivation par manque de fonds
         building.setActive(false);
@@ -293,6 +319,7 @@ for (BuildingModel building : BuildingRepository.getAll()) {
         }
     }
 }
+// Message personnalisé au propriétaire: "Votre village a payé Xµ pour maintenir X bâtiments."
 ```
 
 **SheepSpawnThread** (20 min) - Production moutons
@@ -302,6 +329,35 @@ for (BuildingModel building : BuildingRepository.getAll()) {
         SheepService.spawnSheepForBuilding(building);
     }
 }
+```
+
+**VillagerTaxThread** (5 min) - Collecte d'impôts
+```java
+// Collecte automatique d'impôts des villageois avec métier
+TaxService.collectTaxes();
+// Message: "💰 Collecte d'impôts terminée: XXXµ collectés auprès de X villageois"
+```
+
+**VillagerGoEatThread** (2 min) - Recherche nourriture intelligente
+```java
+// Nouvelle logique prioritaire avec compteurs:
+FeedResult result = VillagerInventoryService.attemptToFeedVillager(villager);
+if (result == FeedResult.SELF_FED) {
+    stats.autosuffisants++; // Mangé depuis inventaire
+} else if (result == FeedResult.BOUGHT_FOOD) {
+    stats.clients++; // Acheté auprès fermier
+} else {
+    // Fallback vers EatableModel (champs publics)
+    stats.voleurs++ // ou stats.affames++ si échec
+}
+// Affichage global par village à la fin du cycle
+```
+
+**FarmerSupplyThread** (10 min) - Approvisionnement fermiers
+```java
+// Donne des stocks alimentaires aux fermiers pour qu'ils puissent vendre
+// Blé: production régulière, Pain: 30% chance, Bloc foin: 10% chance
+VillagerInventoryService.giveFoodToFarmers();
 ```
 
 ## 🎲 Commandes
@@ -370,7 +426,9 @@ switch (subCommand) {
     "jobName": "Cartographe",
     "distanceMin": 10,
     "distanceMax": 50,
-    "description": "Table de cartographie pour le métier de cartographe"
+    "description": "Table de cartographie pour le métier de cartographe",
+    "salaire": 15,
+    "tauxImpot": 0.25
   }
 ]
 ```
@@ -469,6 +527,44 @@ if (food >= 19 && currentClass == SocialClass.MISERABLE) {
 {2} [VillageName] Prénom Nom    // Classe 2 - Bleu
 ```
 
+### Attribution Automatique des Métiers
+
+Quand un joueur place un bloc de métier :
+1. **Validation** : Distance village vérifiée par `JobBlockPlacementListener`
+2. **Recherche** : `JobAssignmentService` trouve le villageois inactif le plus proche (rayon 100 blocs)
+3. **Attribution** : Le villageois inactif se dirige vers le bloc et prend automatiquement le métier
+4. **Protection** : Les villageois misérables sont empêchés de prendre des métiers (pathfinding bloqué)
+
+```java
+// Flux d'attribution
+BlockPlaceEvent → JobAssignmentService.assignJobToNearestInactiveVillager()
+→ findInactiveVillagersNearby() → directVillagerToJobBlock() 
+→ villager.getPathfinder().moveTo() → VillagerCareerChangeEvent
+```
+
+### Restrictions par Classe
+- **Misérable (0)** : Ne peut **PAS** avoir de métier
+- **Inactive (1)** : Peut obtenir un métier → promotion automatique vers Ouvrière
+- **Ouvrière (2)** : Possède un métier, génère des impôts
+
+### Corrections de Bugs (v2.1)
+
+#### Bug Villageois Misérable avec Métier
+**Problème** : Timing entre `VillagerEatThread` (5 min) et `SocialClassEnforcementThread` (2 min) permettait aux misérables de garder leur métier.
+
+**Solution** :
+- ✅ **Vérification immédiate** dans `SocialClassService.evaluateAndUpdateSocialClass()`
+- ✅ **Double contrôle** dans `SocialClassEnforcementThread.enforceStrictJobRestrictions()`
+- ✅ **Logs de détection** : `🚨 BUG DÉTECTÉ: Villageois misérable avec métier`
+
+#### Bug Retour Village d'Origine
+**Problème** : Villageois migrés retournaient automatiquement à leur village d'origine (données navigation Minecraft).
+
+**Solution** :
+- ✅ **Réinitialisation navigation** : `resetVillagerHome()` avant téléportation
+- ✅ **Reset profession temporaire** pour vider les données internes
+- ✅ **Arrêt pathfinding** pour empêcher le retour automatique
+
 ## 🐑 Système Bergerie
 
 ### Architecture Moutons
@@ -560,19 +656,85 @@ public void onEnable() {
     
     // 6. Démarrage threads
     Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerEatThread(), 0, 20 * 60 * 5);
+    Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerTaxThread(), 0, 20 * 60 * 5);
+    Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new FarmerSupplyThread(), 0, 20 * 60 * 10);
+    Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerGoEatThread(), 0, 20 * 60 * 2);
     Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new DailyBuildingCostThread(), 0, 20 * 60 * 20);
     Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new SheepSpawnThread(), 0, 20 * 60 * 20);
 }
 ```
 
+## 💰 Système Économique Villageois
+
+### Richesse Personnelle
+- **Chaque villageois** possède une richesse en juridictions (µ)
+- **Affichage** via `/social villager` : `"Richesse: X.XXµ"`
+- **Initialisation** : 0µ par défaut pour nouveaux villageois
+
+### Salaires et Impôts par Métier
+```java
+// Configuration dans metiers.json
+"salaire": 15,        // Reçu toutes les 5 minutes
+"tauxImpot": 0.25     // 25% prélevé pour l'empire
+```
+
+#### Barème des Métiers (13 métiers officiels Minecraft)
+| Métier | Salaire | Taux Impôt | Revenus Net |
+|--------|---------|------------|-------------|
+| Pêcheur | 3µ | 10% | 2.7µ / 5min |
+| Fermier | 6µ | 15% | 5.1µ / 5min |
+| Boucher | 6µ | 15% | 5.1µ / 5min |
+| Tisserand | 9µ | 20% | 7.2µ / 5min |
+| Tailleur de Pierre | 9µ | 20% | 7.2µ / 5min |
+| Travailleur du Cuir | 9µ | 20% | 7.2µ / 5min |
+| Archer | 12µ | 25% | 9µ / 5min |
+| Forgeron d'Outils | 12µ | 25% | 9µ / 5min |
+| Armurier | 12µ | 25% | 9µ / 5min |
+| Réparateur d'Armes | 12µ | 25% | 9µ / 5min |
+| Cartographe | 15µ | 30% | 10.5µ / 5min |
+| Bibliothécaire | 15µ | 30% | 10.5µ / 5min |
+| **Clerc** | 18µ | 35% | 11.7µ / 5min |
+
+### Commerce Alimentaire Intelligent
+
+#### Hiérarchie de Recherche Nourriture
+1. **Inventaire Personnel** (immédiat)
+   - Bloc de foin (+9 nourriture)
+   - Pain (+3 nourriture) 
+   - Blé (+1 nourriture)
+
+2. **Achat auprès Fermiers** (avec déplacement physique)
+   - Prix : Blé 1µ, Pain 3µ, Bloc foin 9µ
+   - Déplacement vers fermier le plus proche
+   - Transaction richesse + transfert item
+
+3. **Récolte Champs** (fallback original)
+   - Si aucun achat possible
+   - Déplacement vers EatableModel
+
+#### Messages Système
+**Messages Globaux par Village** (toutes les 2 minutes)
+```java
+"Distribution de nourriture à VillageName"
+"Villageois autosuffisants: X villageois" // Mangé depuis inventaire personnel
+"Villageois clients: X villageois"        // Acheté auprès d'un fermier
+"Villageois voleurs: X villageois"        // Mangé dans les champs publics
+"Villageois affamés: X villageois"        // N'ont rien trouvé
+```
+
+### Approvisionnement Automatique
+- **FarmerSupplyThread** (10 min) : Donne stocks aux fermiers
+- **Production** : Blé régulier, Pain 30%, Bloc foin 10%
+
 ## 📊 Métriques Système
 
-- **Modèles de données** : 10 classes principales
-- **Services** : 15+ services métier
-- **Commandes** : 13 commandes utilisateur
-- **Threads** : 8 threads de simulation
+- **Modèles de données** : 13 classes principales (+ VillagerHistoryModel, VillageHistoryModel)
+- **Services** : 19+ services métier (TaxService, VillagerInventoryService, HistoryService)
+- **Commandes** : 14 commandes utilisateur (+ /data)
+- **Threads** : 10 threads de simulation (nouveaux: Tax, FarmerSupply)
 - **Listeners** : 5+ event handlers
-- **Configurations JSON** : 2 fichiers (15 métiers + 1 bâtiment)
+- **Configurations JSON** : 2 fichiers (13 métiers officiels + salaires/impôts + 1 bâtiment)
+- **Historique JSON** : Fichiers individuels par villageois/village avec archivage automatique
 
 ## 🚀 Développement
 
@@ -599,4 +761,66 @@ public void onEnable() {
 - **Performance** : Les threads tournent en permanence
 - **Persistence** : Toujours sauvegarder après modification
 
+## 📚 Système d'Historique (v3.4+)
+
+### 📖 **Enregistrement Automatique**
+Toutes les actions importantes des villageois et villages sont automatiquement enregistrées dans des fichiers JSON individuels :
+
+**Villageois** (`/plugins/TestJava/history/villagers/{UUID}.json`) :
+- Naissance dans un village
+- Consommation de nourriture (propre inventaire ou achat)
+- Changements de classe sociale
+- Changements de métier
+- Achats effectués auprès d'autres villageois
+- Épisodes de famine
+- Échecs de déplacement
+
+**Villages** (`/plugins/TestJava/history/villages/{nom}.json`) :
+- Naissances de villageois
+- Statistiques de population par classe sociale
+- Collectes d'impôts et richesse de l'empire
+- Morts de villageois
+
+### 🗂️ **Gestion des Fichiers**
+- **Compression par templates** : Évite la répétition des phrases similaires
+- **Archivage automatique** : Villageois morts → `/dead/{UUID}_dead.json`
+- **Gestion des renommages** : Mise à jour automatique des fichiers villages
+- **Timestamps** : Chaque entrée avec date/heure `[dd/MM/yyyy HH:mm]`
+
+### 📖 **Commandes d'Historique**
+```bash
+/data village <nom>     # Historique complet du village dans un livre
+/data villager          # Historique du villageois le plus proche dans un livre
+```
+
+**Fonctionnalités des livres** :
+- Pagination automatique (12 lignes par page)
+- Historique inversé (plus récent en premier)
+- Titre personnalisé avec nom du village/villageois
+- Ajout direct à l'inventaire du joueur
+
+## 🎯 Nouvelles Fonctionnalités Majeures (v3.3+)
+
+### 💰 Économie Villageois Complète
+- **Richesse personnelle** : Chaque villageois accumule des juridictions
+- **Salaires automatiques** : Revenus selon le métier toutes les 5 minutes
+- **Système d'impôts** : Prélèvement au profit de l'empire du village
+- **Messages publics** : Collecte d'impôts visible par tous
+
+### 🛒 Commerce Inter-Villageois
+- **Inventaire personnel** : Villageois mangent leurs propres stocks d'abord
+- **Achat intelligent** : Recherche et achat auprès des fermiers proches
+- **Déplacement physique** : Villageois se déplacent vers les vendeurs
+- **Transaction complète** : Échange argent ↔ nourriture avec consommation
+
+### 🎮 Expérience Gameplay Enrichie
+- **Interactions visuelles** : Déplacements et échanges visibles
+- **Économie dynamique** : Circulation monétaire entre villageois  
+- **Spécialisation métiers** : Fermiers deviennent vendeurs alimentaires
+- **Gestion stratégique** : Équilibrer population/métiers/ressources
+
+---
+
 Ce plugin implémente un système de civilisation complexe avec une architecture modulaire, une base de données JSON intégrée et des mécaniques de jeu avancées. L'architecture est conçue pour être extensible et maintenable.
+
+**🔄 Auto-Update README Policy** : Ce document est automatiquement maintenu à jour selon `.readme-update-policy.md`

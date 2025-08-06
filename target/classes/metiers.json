@@ -2,106 +2,118 @@
   {
     "material": "CARTOGRAPHY_TABLE",
     "jobName": "Cartographe",
-    "distanceMin": 10,
-    "distanceMax": 50,
-    "description": "Table de cartographie pour le métier de cartographe"
+    "distanceMin": 0,
+    "distanceMax": 13,
+    "description": "Table de cartographie pour le métier de cartographe",
+    "salaire": 15,
+    "tauxImpot": 0.3
   },
   {
     "material": "BREWING_STAND",
-    "jobName": "Alchimiste", 
-    "distanceMin": 15,
-    "distanceMax": 60,
-    "description": "Alambic pour le métier d'alchimiste"
+    "jobName": "Clerc", 
+    "distanceMin": 0,
+    "distanceMax": 13,
+    "description": "Alambic pour le métier de clerc",
+    "salaire": 18,
+    "tauxImpot": 0.35
   },
   {
     "material": "SMITHING_TABLE",
     "jobName": "Forgeron d'Outils",
-    "distanceMin": 5,
-    "distanceMax": 40,
-    "description": "Table de forgeron pour améliorer les outils"
+    "distanceMin": 13,
+    "distanceMax": 34,
+    "description": "Table de forgeron pour améliorer les outils",
+    "salaire": 12,
+    "tauxImpot": 0.25
   },
   {
     "material": "FLETCHING_TABLE",
     "jobName": "Archer",
-    "distanceMin": 20,
-    "distanceMax": 80,
-    "description": "Table d'archerie pour fabriquer arcs et flèches"
+    "distanceMin": 13,
+    "distanceMax": 34,
+    "description": "Table d'archerie pour fabriquer arcs et flèches",
+    "salaire": 12,
+    "tauxImpot": 0.25
   },
   {
     "material": "LOOM",
     "jobName": "Tisserand",
-    "distanceMin": 8,
-    "distanceMax": 35,
-    "description": "Métier à tisser pour créer des bannières"
+    "distanceMin": 13,
+    "distanceMax": 34,
+    "description": "Métier à tisser pour créer des bannières",
+    "salaire": 9,
+    "tauxImpot": 0.2
   },
   {
     "material": "STONECUTTER",
     "jobName": "Tailleur de Pierre",
-    "distanceMin": 10,
-    "distanceMax": 45,
-    "description": "Scie circulaire pour tailler la pierre"
+    "distanceMin": 13,
+    "distanceMax": 34,
+    "description": "Scie circulaire pour tailler la pierre",
+    "salaire": 9,
+    "tauxImpot": 0.2
   },
   {
     "material": "COMPOSTER",
     "jobName": "Fermier",
-    "distanceMin": 5,
-    "distanceMax": 30,
-    "description": "Composteur pour recycler les déchets organiques"
+    "distanceMin": 34,
+    "distanceMax": 128,
+    "description": "Composteur pour recycler les déchets organiques",
+    "salaire": 6,
+    "tauxImpot": 0.15
   },
   {
     "material": "BARREL",
     "jobName": "Pêcheur",
-    "distanceMin": 15,
-    "distanceMax": 70,
-    "description": "Tonneau pour stocker le poisson"
+    "distanceMin": 77,
+    "distanceMax": 128,
+    "description": "Tonneau pour stocker le poisson",
+    "salaire": 3,
+    "tauxImpot": 0.10
   },
   {
     "material": "SMOKER",
     "jobName": "Boucher",
-    "distanceMin": 8,
-    "distanceMax": 25,
-    "description": "Fumoir pour cuire la viande"
+    "distanceMin": 0,
+    "distanceMax": 13,
+    "description": "Fumoir pour cuire la viande",
+    "salaire": 6,
+    "tauxImpot": 0.15
   },
   {
     "material": "BLAST_FURNACE",
     "jobName": "Armurier",
-    "distanceMin": 12,
-    "distanceMax": 50,
-    "description": "Haut fourneau pour forger les armures"
+    "distanceMin": 13,
+    "distanceMax": 34,
+    "description": "Haut fourneau pour forger les armures",
+    "salaire": 12,
+    "tauxImpot": 0.25
   },
   {
     "material": "LECTERN",
     "jobName": "Bibliothécaire",
-    "distanceMin": 10,
-    "distanceMax": 40,
-    "description": "Pupitre pour étudier et enchanter les livres"
+    "distanceMin": 0,
+    "distanceMax": 13,
+    "description": "Pupitre pour étudier et enchanter les livres",
+    "salaire": 15,
+    "tauxImpot": 0.3
   },
   {
     "material": "GRINDSTONE",
     "jobName": "Réparateur d'Armes",
-    "distanceMin": 15,
-    "distanceMax": 45,
-    "description": "Meule pour réparer et désenchanter les équipements"
-  },
-  {
-    "material": "ANVIL",
-    "jobName": "Maître Forgeron",
-    "distanceMin": 5,
-    "distanceMax": 30,
-    "description": "Enclume pour forger et réparer les équipements"
-  },
-  {
-    "material": "ENCHANTING_TABLE",
-    "jobName": "Enchanteur",
-    "distanceMin": 20,
-    "distanceMax": 60,
-    "description": "Table d'enchantement pour améliorer magiquement les objets"
+    "distanceMin": 13,
+    "distanceMax": 34,
+    "description": "Meule pour réparer et désenchanter les équipements",
+    "salaire": 12,
+    "tauxImpot": 0.25
   },
   {
     "material": "CAULDRON",
-    "jobName": "Apothicaire",
-    "distanceMin": 12,
-    "distanceMax": 45,
-    "description": "Chaudron pour préparer potions et remèdes"
+    "jobName": "Travailleur du Cuir",
+    "distanceMin": 0,
+    "distanceMax": 13,
+    "description": "Chaudron pour travailler le cuir",
+    "salaire": 9,
+    "tauxImpot": 0.2
   }
 ]

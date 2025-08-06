@@ -2,6 +2,7 @@ package TestJava.testjava.listeners;
 
 import TestJava.testjava.services.DistanceConfigService;
 import TestJava.testjava.services.DistanceValidationService;
+import TestJava.testjava.services.JobAssignmentService;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -45,6 +46,9 @@ public class JobBlockPlacementListener implements Listener {
             System.out.println("[JobBlockPlacement] ✅ " + player.getName() + " a placé " + 
                              blockType + " à distance " + String.format("%.1f", result.getCurrentDistance()) + 
                              " (zone autorisée: " + result.getMinDistance() + "-" + result.getMaxDistance() + ")");
+            
+            // Déclencher l'attribution automatique du métier à un villageois inactif
+            JobAssignmentService.assignJobToNearestInactiveVillager(event.getBlock().getLocation(), blockType);
         }
     }
 }

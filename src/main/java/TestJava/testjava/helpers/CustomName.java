@@ -121,9 +121,13 @@ public class CustomName {
     }
 
     public static String generate() {
+        // CORRECTION BUG: Fallback en cas d'échec de l'API
+        int maxAttempts = 3;
+        int attempts = 0;
         String fullname = "";
 
-        while (fullname.equals("") || fullname.equals(" ")) {
+        while ((fullname.equals("") || fullname.equals(" ") || !isValidName(fullname)) && attempts < maxAttempts) {
+            attempts++;
             URL url = null;
             try {
                 url = new URL("https://randomuser.me/api/");
@@ -168,18 +172,110 @@ public class CustomName {
                 e.printStackTrace();
             }
 
-            Pattern pattern = Pattern.compile("\"first\":\"(.*?)\"");
-            Matcher matcher = pattern.matcher(content);
-            matcher.find();
-            String firstName = matcher.group(1);
-
-            pattern = Pattern.compile("\"last\":\"(.*?)\"");
-            matcher = pattern.matcher(content);
-            matcher.find();
-            String lastName = matcher.group(1);
-            fullname = firstName.replaceAll("[^\\x20-\\x7e]", "") + " " + lastName.replaceAll("[^\\x20-\\x7e]", "");
+            try {
+                Pattern pattern = Pattern.compile("\"first\":\"(.*?)\"");
+                Matcher matcher = pattern.matcher(content);
+                if (matcher.find()) {
+                    String firstName = matcher.group(1);
+                    
+                    pattern = Pattern.compile("\"last\":\"(.*?)\"");
+                    matcher = pattern.matcher(content);
+                    if (matcher.find()) {
+                        String lastName = matcher.group(1);
+                        
+                        // Nettoyer et valider les noms
+                        firstName = sanitizeName(firstName);
+                        lastName = sanitizeName(lastName);
+                        
+                        if (!firstName.isEmpty() && !lastName.isEmpty()) {
+                            fullname = firstName + " " + lastName;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Erreur parsing noms: " + e.getMessage());
+            }
+        }
+        
+        // CORRECTION BUG: Si tous les tentatives ont échoué, utiliser un nom de fallback
+        if (fullname.equals("") || fullname.equals(" ") || !isValidName(fullname)) {
+            fullname = generateFallbackName();
+            System.out.println("Utilisation nom fallback: " + fullname);
         }
 
         return fullname;
+    }
+    
+    /**
+     * Nettoie un nom en supprimant les caractères spéciaux non supportés
+     */
+    private static String sanitizeName(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return "";
+        }
+        
+        // Remplacer les caractères spéciaux par des équivalents ASCII
+        name = name.replaceAll("[àáâãäå]", "a")
+                  .replaceAll("[èéêë]", "e")
+                  .replaceAll("[ìíîï]", "i")
+                  .replaceAll("[òóôõö]", "o")
+                  .replaceAll("[ùúûü]", "u")
+                  .replaceAll("[ýÿ]", "y")
+                  .replaceAll("[ñ]", "n")
+                  .replaceAll("[ç]", "c")
+                  .replaceAll("[ÀÁÂÃÄÅ]", "A")
+                  .replaceAll("[ÈÉÊË]", "E")
+                  .replaceAll("[ÌÍÎÏ]", "I")
+                  .replaceAll("[ÒÓÔÕÖ]", "O")
+                  .replaceAll("[ÙÚÛÜ]", "U")
+                  .replaceAll("[ÝŸ]", "Y")
+                  .replaceAll("[Ñ]", "N")
+                  .replaceAll("[Ç]", "C");
+        
+        // Supprimer tous les caractères non-ASCII et non-alphanumériques
+        name = name.replaceAll("[^a-zA-Z0-9\\s]", "");
+        
+        // Supprimer les espaces multiples et trim
+        name = name.replaceAll("\\s+", " ").trim();
+        
+        return name;
+    }
+    
+    /**
+     * Vérifie si un nom est valide
+     */
+    private static boolean isValidName(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return false;
+        }
+        
+        // Vérifier que le nom contient au moins 2 mots
+        String[] parts = name.trim().split("\\s+");
+        if (parts.length < 2) {
+            return false;
+        }
+        
+        // Vérifier que chaque partie fait au moins 2 caractères
+        for (String part : parts) {
+            if (part.length() < 2) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Génère un nom de fallback en cas d'échec total de l'API
+     */
+    private static String generateFallbackName() {
+        String[] firstNames = {"Jean", "Marie", "Pierre", "Sophie", "Nicolas", "Emma", "Julien", "Clara", "Maxime", "Lea"};
+        String[] lastNames = {"Martin", "Bernard", "Dubois", "Thomas", "Robert", "Petit", "Durand", "Leroy", "Moreau", "Simon"};
+        
+        java.util.Random random = new java.util.Random();
+        String firstName = firstNames[random.nextInt(firstNames.length)];
+        String lastName = lastNames[random.nextInt(lastNames.length)];
+        
+        return firstName + " " + lastName;
     }
 }

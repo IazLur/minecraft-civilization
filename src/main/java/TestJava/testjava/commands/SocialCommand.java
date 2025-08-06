@@ -165,9 +165,22 @@ public class SocialCommand implements CommandExecutor {
         player.sendMessage(ChatColor.WHITE + "UUID: " + ChatColor.GRAY + villager.getUniqueId());
         player.sendMessage(ChatColor.WHITE + "Village: " + ChatColor.YELLOW + villagerModel.getVillageName());
         player.sendMessage(ChatColor.WHITE + "Nourriture: " + ChatColor.GREEN + villagerModel.getFood());
+        player.sendMessage(ChatColor.WHITE + "Richesse: " + ChatColor.GOLD + 
+                         String.format("%.2fµ", villagerModel.getRichesse()));
         player.sendMessage(ChatColor.WHITE + "Classe Sociale: " + socialClass.getColoredTag() + 
                          ChatColor.WHITE + " " + socialClass.getName());
-        player.sendMessage(ChatColor.WHITE + "Profession: " + ChatColor.AQUA + villager.getProfession());
+        
+        // Afficher le métier (natif ou custom)
+        String jobInfo;
+        if (villagerModel.hasCustomJob()) {
+            jobInfo = ChatColor.GOLD + villagerModel.getCurrentJobName() + ChatColor.GRAY + " (métier custom)";
+        } else if (villager.getProfession() != Villager.Profession.NONE && villager.getProfession() != Villager.Profession.NITWIT) {
+            jobInfo = ChatColor.AQUA + villager.getProfession().toString() + ChatColor.GRAY + " (métier natif)";
+        } else {
+            jobInfo = ChatColor.GRAY + "Sans emploi";
+        }
+        player.sendMessage(ChatColor.WHITE + "Métier: " + jobInfo);
+        
         player.sendMessage(ChatColor.WHITE + "Peut avoir métier: " + 
                          (socialClass.canHaveJob() ? ChatColor.GREEN + "Oui" : ChatColor.RED + "Non"));
 

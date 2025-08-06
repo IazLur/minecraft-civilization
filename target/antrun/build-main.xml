@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="maven-antrun-" default="main">
+  <target name="main">
+    <copy file="E:\minecraft-civilization\target/TestJava-2.0-SNAPSHOT.jar" todir="../minecraft-server/plugins" />
+  </target>
+</project>

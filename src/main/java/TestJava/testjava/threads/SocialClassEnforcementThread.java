@@ -24,6 +24,9 @@ public class SocialClassEnforcementThread implements Runnable {
             // Enforce les restrictions de métier
             SocialClassJobListener.enforceJobRestrictions();
             
+            // CORRECTION BUG: Vérification supplémentaire des villageois misérables avec métier
+            enforceStrictJobRestrictions();
+            
             // Met à jour les noms d'affichage pour tous les villageois
             updateAllVillagerDisplayNames();
             
@@ -88,6 +91,42 @@ public class SocialClassEnforcementThread implements Runnable {
         
         if (corrected > 0) {
             Bukkit.getLogger().info("[SocialClassEnforcement] " + corrected + " classes sociales corrigées");
+        }
+    }
+    
+    /**
+     * Vérification stricte pour détecter et corriger les villageois misérables avec métier
+     */
+    private void enforceStrictJobRestrictions() {
+        Collection<VillagerModel> villagers = VillagerRepository.getAll();
+        int violationsFixed = 0;
+        
+        for (VillagerModel villager : villagers) {
+            try {
+                if (!SocialClassService.canVillagerHaveJob(villager)) {
+                    // Vérifier si ce villageois misérable a encore un métier
+                    org.bukkit.entity.Entity entity = org.bukkit.Bukkit.getServer().getEntity(villager.getId());
+                    if (entity instanceof org.bukkit.entity.Villager bukkitVillager) {
+                        if (bukkitVillager.getProfession() != org.bukkit.entity.Villager.Profession.NONE) {
+                            Bukkit.getLogger().severe("[SocialClassEnforcement] 🚨 VIOLATION DÉTECTÉE: Villageois misérable " + 
+                                                    villager.getId() + " a le métier " + bukkitVillager.getProfession());
+                            
+                            bukkitVillager.setProfession(org.bukkit.entity.Villager.Profession.NONE);
+                            bukkitVillager.getPathfinder().stopPathfinding();
+                            violationsFixed++;
+                            
+                            Bukkit.getLogger().info("[SocialClassEnforcement] ✅ Violation corrigée pour " + villager.getId());
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                Bukkit.getLogger().warning("[SocialClassEnforcement] Erreur vérification stricte pour " + 
+                                         villager.getId() + ": " + e.getMessage());
+            }
+        }
+        
+        if (violationsFixed > 0) {
+            Bukkit.getLogger().warning("[SocialClassEnforcement] 🔧 " + violationsFixed + " violations de métier corrigées");
         }
     }
 }

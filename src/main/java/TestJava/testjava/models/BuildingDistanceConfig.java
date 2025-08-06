@@ -31,10 +31,20 @@ public class BuildingDistanceConfig {
     @JsonProperty("costUpgradeMultiplier")
     private float costUpgradeMultiplier;
 
+    @JsonProperty("nombreEmployesMax")
+    private int nombreEmployesMax;
+
+    @JsonProperty("salaireEmploye")
+    private int salaireEmploye;
+
+    @JsonProperty("tauxTaxeEmploye")
+    private float tauxTaxeEmploye;
+
     public BuildingDistanceConfig() {}
 
     public BuildingDistanceConfig(String buildingType, int distanceMin, int distanceMax, String description,
-                                  int costToBuild, int costPerDay, int costPerUpgrade, float costUpgradeMultiplier) {
+                                  int costToBuild, int costPerDay, int costPerUpgrade, float costUpgradeMultiplier,
+                                  int nombreEmployesMax, int salaireEmploye, float tauxTaxeEmploye) {
         this.buildingType = buildingType;
         this.distanceMin = distanceMin;
         this.distanceMax = distanceMax;
@@ -43,6 +53,9 @@ public class BuildingDistanceConfig {
         this.costPerDay = costPerDay;
         this.costPerUpgrade = costPerUpgrade;
         this.costUpgradeMultiplier = costUpgradeMultiplier;
+        this.nombreEmployesMax = nombreEmployesMax;
+        this.salaireEmploye = salaireEmploye;
+        this.tauxTaxeEmploye = tauxTaxeEmploye;
     }
 
     public String getBuildingType() {
@@ -109,6 +122,30 @@ public class BuildingDistanceConfig {
         this.costUpgradeMultiplier = costUpgradeMultiplier;
     }
 
+    public int getNombreEmployesMax() {
+        return nombreEmployesMax;
+    }
+
+    public void setNombreEmployesMax(int nombreEmployesMax) {
+        this.nombreEmployesMax = nombreEmployesMax;
+    }
+
+    public int getSalaireEmploye() {
+        return salaireEmploye;
+    }
+
+    public void setSalaireEmploye(int salaireEmploye) {
+        this.salaireEmploye = salaireEmploye;
+    }
+
+    public float getTauxTaxeEmploye() {
+        return tauxTaxeEmploye;
+    }
+
+    public void setTauxTaxeEmploye(float tauxTaxeEmploye) {
+        this.tauxTaxeEmploye = tauxTaxeEmploye;
+    }
+
     @Override
     public String toString() {
         return "BuildingDistanceConfig{" +
@@ -120,6 +157,9 @@ public class BuildingDistanceConfig {
                 ", costPerDay=" + costPerDay +
                 ", costPerUpgrade=" + costPerUpgrade +
                 ", costUpgradeMultiplier=" + costUpgradeMultiplier +
+                ", nombreEmployesMax=" + nombreEmployesMax +
+                ", salaireEmploye=" + salaireEmploye +
+                ", tauxTaxeEmploye=" + tauxTaxeEmploye +
                 '}';
     }
 }

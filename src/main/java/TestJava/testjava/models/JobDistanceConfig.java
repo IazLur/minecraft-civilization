@@ -22,6 +22,12 @@ public class JobDistanceConfig {
     @JsonProperty("description")
     private String description;
 
+    @JsonProperty("salaire")
+    private int salaire = 10; // Salaire par défaut
+
+    @JsonProperty("tauxImpot")
+    private float tauxImpot = 0.2f; // Taux d'impôt par défaut (20%)
+
     public JobDistanceConfig() {}
 
     public JobDistanceConfig(String material, String jobName, int distanceMin, int distanceMax, String description) {
@@ -30,6 +36,18 @@ public class JobDistanceConfig {
         this.distanceMin = distanceMin;
         this.distanceMax = distanceMax;
         this.description = description;
+        this.salaire = 10;
+        this.tauxImpot = 0.2f;
+    }
+
+    public JobDistanceConfig(String material, String jobName, int distanceMin, int distanceMax, String description, int salaire, float tauxImpot) {
+        this.material = material;
+        this.jobName = jobName;
+        this.distanceMin = distanceMin;
+        this.distanceMax = distanceMax;
+        this.description = description;
+        this.salaire = salaire;
+        this.tauxImpot = tauxImpot;
     }
 
     public String getMaterial() {
@@ -72,6 +90,22 @@ public class JobDistanceConfig {
         this.description = description;
     }
 
+    public int getSalaire() {
+        return salaire;
+    }
+
+    public void setSalaire(int salaire) {
+        this.salaire = salaire;
+    }
+
+    public float getTauxImpot() {
+        return tauxImpot;
+    }
+
+    public void setTauxImpot(float tauxImpot) {
+        this.tauxImpot = tauxImpot;
+    }
+
     @Override
     public String toString() {
         return "JobDistanceConfig{" +
@@ -80,6 +114,8 @@ public class JobDistanceConfig {
                 ", distanceMin=" + distanceMin +
                 ", distanceMax=" + distanceMax +
                 ", description='" + description + '\'' +
+                ", salaire=" + salaire +
+                ", tauxImpot=" + tauxImpot +
                 '}';
     }
 }

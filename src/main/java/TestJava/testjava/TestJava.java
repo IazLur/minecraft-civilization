@@ -1,9 +1,12 @@
 package TestJava.testjava;
 
 import TestJava.testjava.commands.*;
+import TestJava.testjava.commands.DataCommand;
 import TestJava.testjava.listeners.SocialClassJobListener;
 import TestJava.testjava.listeners.SheepManagementListener;
 import TestJava.testjava.listeners.JobBlockPlacementListener;
+import TestJava.testjava.listeners.VillagerFearListener;
+import TestJava.testjava.listeners.FriendlyFireListener;
 import TestJava.testjava.models.*;
 import TestJava.testjava.repositories.EmpireRepository;
 import TestJava.testjava.repositories.ResourceRepository;
@@ -77,6 +80,8 @@ public final class TestJava extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(new SocialClassJobListener(), this);
         Bukkit.getPluginManager().registerEvents(new SheepManagementListener(), this);
         Bukkit.getPluginManager().registerEvents(new JobBlockPlacementListener(), this);
+        Bukkit.getPluginManager().registerEvents(new VillagerFearListener(), this);
+        Bukkit.getPluginManager().registerEvents(new FriendlyFireListener(), this);
         TestJava.plugin = this;
         getLogger().log(Level.INFO, "Loading plugin v3.2");
         TestJava.world = Bukkit.getWorld(TestJava.worldName);
@@ -105,6 +110,8 @@ public final class TestJava extends JavaPlugin implements Listener {
         getCommand("forcespawnat").setExecutor(new ForceSpawnAtCommand());
         getCommand("reactivate").setExecutor(new ReactivateCommand());
         getCommand("distance").setExecutor(new DistanceCommand());
+        getCommand("data").setExecutor(new DataCommand());
+        getCommand("refreshplugin").setExecutor(new RefreshPluginCommand());
 
         // Registering databases
         TestJava.database = new JsonDBTemplate(this.jsonLocation, this.baseScanPackage);
@@ -150,6 +157,9 @@ public final class TestJava extends JavaPlugin implements Listener {
 
         // Initialisation des classes sociales pour les villageois existants
         SocialClassService.initializeSocialClassForExistingVillagers();
+        
+        // Synchronisation des métiers custom et équipement des armures
+        CustomJobSynchronizationService.synchronizeCustomJobsOnStartup();
 
         // Migration des juridictions
         for (EmpireModel empire : EmpireRepository.getAll()) {
@@ -187,14 +197,19 @@ public final class TestJava extends JavaPlugin implements Listener {
         }
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerSpawnThread(), 0, 20 * 60);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerEatThread(), 0, 20 * 60 * 5);
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerTaxThread(), 0, 20 * 60 * 5); // Collecte d'impôts toutes les 5 minutes
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new FarmerSupplyThread(), 0, 20 * 60 * 10); // Approvisionnement fermiers toutes les 10 minutes
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerGoEatThread(), 0, 20 * 60 * 2);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new DefenderThread(), 0, 20 * 5);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new TraderThread(), 0, 20 * 60);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new LocustThread(), 0, 20);
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new DailyBuildingCostThread(), 0,  20 * 60 * 20);
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new DailyBuildingCostThread(), 0,  20 * 60 * 4); // Toutes les 4 minutes au lieu de 20
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new SocialClassEnforcementThread(), 0, 20 * 60 * 2); // Toutes les 2 minutes
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new SheepSpawnThread(), 0, 20 * 60 * 20); // Même fréquence que DailyBuildingCostThread
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new SheepMovementThread(), 0, 20 * 60 * 5); // Toutes les 5 minutes
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new InactiveJobSearchThread(), 0, 20 * 60 * 3); // Toutes les 3 minutes
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillageStatsThread(), 0, 20 * 60 * 10); // Toutes les 10 minutes
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new CustomJobMaintenanceThread(), 0, 20 * 60 * 7); // Toutes les 7 minutes - Maintenance métiers custom
     }
 
     @EventHandler

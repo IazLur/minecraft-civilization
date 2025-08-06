@@ -9,6 +9,7 @@ import TestJava.testjava.models.VillageModel;
 import TestJava.testjava.repositories.BuildingRepository;
 import TestJava.testjava.repositories.EmpireRepository;
 import TestJava.testjava.repositories.VillageRepository;
+import TestJava.testjava.services.CustomJobAssignmentService;
 import TestJava.testjava.services.DistanceConfigService;
 import TestJava.testjava.services.DistanceValidationService;
 import org.bukkit.Bukkit;
@@ -129,6 +130,9 @@ public class BuildCommand implements CommandExecutor {
         
         // Afficher la confirmation de distance
         player.sendMessage(validation.getMessage());
+        
+        // Attribuer automatiquement des employés au nouveau bâtiment custom
+        CustomJobAssignmentService.assignEmployeesToBuilding(building);
 
         return true;
     }

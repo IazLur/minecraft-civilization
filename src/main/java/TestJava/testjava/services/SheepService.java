@@ -16,6 +16,7 @@ public class SheepService {
 
     /**
      * Crée et spawn un nouveau mouton pour une bergerie
+     * CONDITION : Il faut au moins 1 employé par mouton
      */
     public static boolean spawnSheepForBuilding(BuildingModel building) {
         if (!building.getBuildingType().equals("bergerie") || !building.isActive()) {
@@ -24,6 +25,16 @@ public class SheepService {
 
         int currentSheepCount = SheepRepository.getSheepCountForBuilding(building.getId());
         int maxSheep = building.getLevel(); // Niveau 1 = 1 mouton max, etc.
+
+        // NOUVELLE LOGIQUE : Vérifier qu'il y a au moins 1 employé par mouton
+        int currentEmployees = CustomJobAssignmentService.countBuildingEmployees(building);
+        int requiredEmployeesForNextSheep = currentSheepCount + 1; // On veut spawner 1 mouton de plus
+        
+        if (currentEmployees < requiredEmployeesForNextSheep) {
+            Bukkit.getLogger().info("[SheepService] ❌ Pas assez d'employés pour spawner un mouton: " + 
+                                   currentEmployees + " employés pour " + requiredEmployeesForNextSheep + " moutons requis");
+            return false;
+        }
 
         if (currentSheepCount >= maxSheep) {
             return false; // Limite atteinte
