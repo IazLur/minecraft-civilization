@@ -17,6 +17,7 @@ public class SheepSpawnThread implements Runnable {
         try {
             Collection<BuildingModel> allBuildings = BuildingRepository.getAll();
             int totalSpawned = 0;
+            int activeBarns = 0;
 
             for (BuildingModel building : allBuildings) {
                 if (!"bergerie".equals(building.getBuildingType())) {
@@ -27,17 +28,19 @@ public class SheepSpawnThread implements Runnable {
                     continue;
                 }
 
+                activeBarns++;
                 // Tenter de spawner un mouton
                 boolean spawned = SheepService.spawnSheepForBuilding(building);
                 if (spawned) {
                     totalSpawned++;
-                    Bukkit.getLogger().info("[SheepSpawn] ✅ Mouton spawné pour bergerie de " + building.getVillageName() + 
-                                          " (niveau " + building.getLevel() + ")");
                 }
             }
 
+            // Un seul log de résumé
             if (totalSpawned > 0) {
-                Bukkit.getLogger().info("[SheepSpawn] 📊 Total de moutons spawnés aujourd'hui: " + totalSpawned);
+                Bukkit.getLogger().info("[SheepSpawn] 📊 Résumé: " + totalSpawned + " moutons spawnés dans " + activeBarns + " bergeries actives");
+            } else {
+                Bukkit.getLogger().info("[SheepSpawn] ℹ️ Aucun mouton spawné (vérifié " + activeBarns + " bergeries actives)");
             }
 
             // Nettoyer les moutons naturels qui auraient pu apparaître

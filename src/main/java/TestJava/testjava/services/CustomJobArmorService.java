@@ -1,5 +1,6 @@
 package TestJava.testjava.services;
 
+import TestJava.testjava.TestJava;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -7,6 +8,7 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Villager;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
+import net.kyori.adventure.text.Component;
 
 /**
  * Service pour gérer l'équipement d'armure de cuir des employés de métiers custom
@@ -154,7 +156,7 @@ public class CustomJobArmorService {
             }
             
             // Tag personnalisé pour identifier cet ArmorStand
-            armorStand.setCustomName("CUSTOM_JOB_ARMOR:" + villager.getUniqueId());
+            armorStand.customName(Component.text("CUSTOM_JOB_ARMOR:" + villager.getUniqueId()));
             armorStand.setCustomNameVisible(false);
             
             Bukkit.getLogger().info("[CustomJobArmor] 🛡️ ArmorStand créé pour afficher l'armure de " + villager.getUniqueId());
@@ -178,7 +180,7 @@ public class CustomJobArmorService {
             villager.getWorld().getNearbyEntities(villager.getLocation(), 5, 5, 5).stream()
                 .filter(entity -> entity instanceof ArmorStand)
                 .map(entity -> (ArmorStand) entity)
-                .filter(armorStand -> targetName.equals(armorStand.getCustomName()))
+                .filter(armorStand -> targetName.equals(armorStand.customName().toString()))
                 .forEach(armorStand -> {
                     armorStand.remove();
                     Bukkit.getLogger().info("[CustomJobArmor] 🗑️ ArmorStand d'armure supprimé pour " + villager.getUniqueId());
@@ -186,6 +188,30 @@ public class CustomJobArmorService {
                 
         } catch (Exception e) {
             Bukkit.getLogger().warning("[CustomJobArmor] Erreur suppression ArmorStand: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Équipe tous les villageois ayant un métier personnalisé avec leur armure
+     */
+    public static void equipAllCustomJobVillagers() {
+        if (TestJava.world == null) {
+            Bukkit.getLogger().warning("[CustomJobArmor] Impossible d'équiper les villageois - monde non disponible");
+            return;
+        }
+
+        try {
+            TestJava.world.getEntities().stream()
+                .filter(entity -> entity instanceof Villager)
+                .map(entity -> (Villager) entity)
+                .filter(villager -> villager.getProfession() != Villager.Profession.NONE)
+                .forEach(villager -> {
+                    ensureCustomJobArmorEquipped(villager);
+                    Bukkit.getLogger().info("[CustomJobArmor] ✅ Armure vérifiée pour le villageois " + villager.getUniqueId());
+                });
+        } catch (Exception e) {
+            Bukkit.getLogger().warning("[CustomJobArmor] Erreur lors de l'équipement global : " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

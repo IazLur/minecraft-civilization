@@ -25,27 +25,46 @@ public class CustomJobMaintenanceThread implements Runnable {
     @Override
     public void run() {
         try {
+            int totalActions = 0;
+            int armorFixed = 0;
+            int buildingAdjustments = 0;
+            int orphansFixed = 0;
+            int inconsistenciesFixed = 0;
+            
             // 1. Maintenance des armures des employés custom
-            maintainCustomJobArmor();
+            armorFixed = maintainCustomJobArmor();
+            totalActions += armorFixed;
             
             // 2. Ajustement automatique des employés selon les besoins des bâtiments
-            adjustBuildingEmployees();
+            buildingAdjustments = adjustBuildingEmployees();
+            totalActions += buildingAdjustments;
             
             // 3. Nettoyage des incohérences (villageois avec métier custom mais bâtiment inexistant)
-            cleanupOrphanedCustomJobs();
+            orphansFixed = cleanupOrphanedCustomJobs();
+            totalActions += orphansFixed;
             
             // 4. Vérification de la cohérence des classes sociales vs métiers custom
-            verifyCustomJobConsistency();
+            inconsistenciesFixed = verifyCustomJobConsistency();
+            totalActions += inconsistenciesFixed;
+            
+            // Un seul log de résumé
+            if (totalActions > 0) {
+                Bukkit.getLogger().info("[CustomJobMaintenance] ✅ Résumé: " + totalActions + " actions effectuées " +
+                                       "(armures: " + armorFixed + ", ajustements: " + buildingAdjustments + 
+                                       ", orphelins: " + orphansFixed + ", incohérences: " + inconsistenciesFixed + ")");
+            } else {
+                Bukkit.getLogger().info("[CustomJobMaintenance] ℹ️ Aucune maintenance nécessaire");
+            }
             
         } catch (Exception e) {
-            Bukkit.getLogger().warning("[CustomJobMaintenance] Erreur lors de la maintenance: " + e.getMessage());
+            Bukkit.getLogger().warning("[CustomJobMaintenance] ❌ Erreur lors de la maintenance: " + e.getMessage());
         }
     }
     
     /**
      * S'assure que tous les employés custom portent leur armure de cuir
      */
-    private void maintainCustomJobArmor() {
+    private int maintainCustomJobArmor() {
         Collection<VillagerModel> allVillagers = VillagerRepository.getAll();
         int armorFixed = 0;
         
@@ -73,15 +92,13 @@ public class CustomJobMaintenanceThread implements Runnable {
             }
         }
         
-        if (armorFixed > 0) {
-            Bukkit.getLogger().info("[CustomJobMaintenance] Armures réparées: " + armorFixed + " employés custom");
-        }
+        return armorFixed;
     }
     
     /**
      * Ajuste automatiquement le nombre d'employés pour chaque bâtiment
      */
-    private void adjustBuildingEmployees() {
+    private int adjustBuildingEmployees() {
         Collection<BuildingModel> allBuildings = BuildingRepository.getAll();
         int adjustments = 0;
         
@@ -93,8 +110,6 @@ public class CustomJobMaintenanceThread implements Runnable {
                 
                 if (beforeCount != afterCount) {
                     adjustments++;
-                    Bukkit.getLogger().info("[CustomJobMaintenance] Ajustement employés " + building.getBuildingType() + 
-                                           ": " + beforeCount + " → " + afterCount);
                 }
                 
             } catch (Exception e) {
@@ -102,15 +117,13 @@ public class CustomJobMaintenanceThread implements Runnable {
             }
         }
         
-        if (adjustments > 0) {
-            Bukkit.getLogger().info("[CustomJobMaintenance] Ajustements d'employés effectués: " + adjustments + " bâtiments");
-        }
+        return adjustments;
     }
     
     /**
      * Nettoie les villageois avec métier custom mais sans bâtiment associé
      */
-    private void cleanupOrphanedCustomJobs() {
+    private int cleanupOrphanedCustomJobs() {
         Collection<VillagerModel> allVillagers = VillagerRepository.getAll();
         int orphansFixed = 0;
         
@@ -126,9 +139,6 @@ public class CustomJobMaintenanceThread implements Runnable {
                     // Bâtiment n'existe plus : retirer le métier custom
                     CustomJobAssignmentService.removeCustomJobFromVillager(villager);
                     orphansFixed++;
-                    
-                    Bukkit.getLogger().info("[CustomJobMaintenance] Métier custom orphelin retiré: " + villager.getId() + 
-                                           " (bâtiment " + villager.getCurrentBuildingId() + " n'existe plus)");
                 }
                 
             } catch (Exception e) {
@@ -136,16 +146,14 @@ public class CustomJobMaintenanceThread implements Runnable {
             }
         }
         
-        if (orphansFixed > 0) {
-            Bukkit.getLogger().info("[CustomJobMaintenance] Métiers custom orphelins nettoyés: " + orphansFixed + " villageois");
-        }
+        return orphansFixed;
     }
     
     /**
      * Vérifie la cohérence entre les classes sociales et les métiers custom
      * Corrige les incohérences détectées
      */
-    private void verifyCustomJobConsistency() {
+    private int verifyCustomJobConsistency() {
         Collection<VillagerModel> allVillagers = VillagerRepository.getAll();
         int inconsistenciesFixed = 0;
         
@@ -153,11 +161,6 @@ public class CustomJobMaintenanceThread implements Runnable {
             try {
                 // Cas 1: Villageois avec métier custom mais classe inappropriée
                 if (villager.hasCustomJob() && villager.getSocialClassEnum() != SocialClass.OUVRIERE) {
-                    Bukkit.getLogger().warning("[CustomJobMaintenance] ⚠️ INCOHÉRENCE DÉTECTÉE: Villageois " + villager.getId() + 
-                                             " a métier custom (" + villager.getCurrentJobName() + 
-                                             ") mais classe " + villager.getSocialClassEnum().getName() + 
-                                             " - CORRECTION AUTOMATIQUE");
-                    
                     // Corriger la classe sociale
                     villager.setSocialClassEnum(SocialClass.OUVRIERE);
                     VillagerRepository.update(villager);
@@ -173,10 +176,6 @@ public class CustomJobMaintenanceThread implements Runnable {
                     // Vérifier si il a vraiment un métier natif
                     Villager entity = (Villager) TestJava.plugin.getServer().getEntity(villager.getId());
                     if (entity != null && entity.getProfession() == Villager.Profession.NONE) {
-                        Bukkit.getLogger().warning("[CustomJobMaintenance] ⚠️ INCOHÉRENCE DÉTECTÉE: Villageois " + villager.getId() + 
-                                                 " classe Ouvrière mais AUCUN métier (ni natif ni custom) " + 
-                                                 " - RÉTROGRADATION vers Inactive");
-                        
                         SocialClassService.demoteToInactiveOnJobLoss(villager);
                         inconsistenciesFixed++;
                     }
@@ -187,8 +186,6 @@ public class CustomJobMaintenanceThread implements Runnable {
             }
         }
         
-        if (inconsistenciesFixed > 0) {
-            Bukkit.getLogger().info("[CustomJobMaintenance] ✅ Incohérences corrigées: " + inconsistenciesFixed + " villageois");
-        }
+        return inconsistenciesFixed;
     }
 }

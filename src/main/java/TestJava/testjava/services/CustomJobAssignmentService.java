@@ -21,7 +21,7 @@ import java.util.List;
  */
 public class CustomJobAssignmentService {
     
-    private static final int MAX_SEARCH_RADIUS = 100; // Rayon max de recherche de villageois
+    private static final int MAX_SEARCH_RADIUS = 256; // Rayon max de recherche de villageois
     
     /**
      * Trouve et attribue des employés à un nouveau bâtiment custom

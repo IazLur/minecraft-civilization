@@ -19,16 +19,16 @@ public class SheepMovementThread implements Runnable {
         try {
             Collection<SheepModel> allSheep = SheepRepository.getAll();
             int movedCount = 0;
+            int removedCount = 0;
+            int totalSheep = allSheep.size();
 
             for (SheepModel sheepModel : allSheep) {
                 BuildingModel building = BuildingRepository.getBuildingById(sheepModel.getBuildingId());
                 
                 if (building == null) {
                     // Bergerie n'existe plus, supprimer le mouton
-                    Bukkit.getLogger().warning("[SheepMovement] ⚠️ Bergerie introuvable pour mouton " + 
-                                             sheepModel.getVillageName() + " N°" + sheepModel.getSheepNumber() + 
-                                             ", suppression du mouton");
                     SheepRepository.remove(sheepModel);
+                    removedCount++;
                     continue;
                 }
 
@@ -42,8 +42,12 @@ public class SheepMovementThread implements Runnable {
                 movedCount++;
             }
 
-            if (movedCount > 0) {
-                Bukkit.getLogger().info("[SheepMovement] 📍 " + movedCount + " moutons déplacés vers leur bergerie");
+            // Un seul log de résumé
+            if (movedCount > 0 || removedCount > 0) {
+                Bukkit.getLogger().info("[SheepMovement] 📍 Résumé: " + movedCount + " moutons déplacés, " + 
+                                       removedCount + " supprimés (total: " + totalSheep + ")");
+            } else {
+                Bukkit.getLogger().info("[SheepMovement] ℹ️ Aucun mouton traité (total: " + totalSheep + ")");
             }
 
         } catch (Exception e) {

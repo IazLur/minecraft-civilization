@@ -25,7 +25,7 @@ public class SocialClassService {
     private static final Pattern SOCIAL_CLASS_TAG_PATTERN = Pattern.compile("(\\[\\d\\]|\\{\\d\\})\\s*");
 
     /**
-     * Évalue et met à jour la classe sociale d'un villageois en fonction de sa nourriture
+     * Évalue et met à jour la classe sociale d'un villageois basée sur sa nourriture et son métier
      */
     public static void evaluateAndUpdateSocialClass(VillagerModel villager) {
         if (villager == null || villager.getFood() == null) {
@@ -38,37 +38,62 @@ public class SocialClassService {
         
         Bukkit.getLogger().info("[SocialClass] Évaluation pour villageois " + villager.getId() + 
                                " - Classe actuelle: " + currentClass.getName() + 
-                               " - Nourriture: " + food);
+                               " - Nourriture: " + food + " - Métier custom: " + villager.hasCustomJob());
 
-        // Logique de transition basée sur la classe actuelle
-        switch (currentClass) {
-            case MISERABLE: // Classe 0
-                if (food >= FOOD_THRESHOLD_0_TO_1) {
-                    newClass = SocialClass.INACTIVE;
-                    Bukkit.getLogger().info("[SocialClass] Promotion: Misérable → Inactive");
-                }
-                break;
-
-            case INACTIVE: // Classe 1
-                if (food < FOOD_THRESHOLD_1_TO_0) {
-                    newClass = SocialClass.MISERABLE;
-                    Bukkit.getLogger().info("[SocialClass] Rétrogradation: Inactive → Misérable");
-                }
-                // Note: Promotion vers Ouvrière se fait lors de l'obtention d'un métier
-                break;
-
-            case OUVRIERE: // Classe 2
+        // CORRECTION BUG: Les villageois avec métiers custom peuvent perdre leur métier
+        // s'ils deviennent misérables à cause de la nourriture
+        if (villager.hasCustomJob()) {
+            // Si le villageois a un métier custom, il doit être en classe Ouvrière
+            if (currentClass != SocialClass.OUVRIERE) {
+                newClass = SocialClass.OUVRIERE;
+                Bukkit.getLogger().info("[SocialClass] 🔧 CORRECTION: Villageois avec métier custom (" + 
+                                       villager.getCurrentJobName() + ") promu vers Ouvrière");
+            } else {
+                // Villageois avec métier custom déjà en classe Ouvrière - vérifier s'il doit perdre son métier
                 if (food <= FOOD_THRESHOLD_2_TO_0) {
                     newClass = SocialClass.MISERABLE;
                     removeJobFromVillager(villager);
-                    Bukkit.getLogger().info("[SocialClass] Rétrogradation drastique: Ouvrière → Misérable (perte métier)");
+                    Bukkit.getLogger().info("[SocialClass] Rétrogradation: Villageois avec métier custom (" + 
+                                           villager.getCurrentJobName() + ") devient Misérable et perd son métier");
+                } else {
+                    // Villageois avec métier custom maintient sa classe Ouvrière
+                    Bukkit.getLogger().info("[SocialClass] ✅ Villageois avec métier custom (" + 
+                                           villager.getCurrentJobName() + ") maintient sa classe Ouvrière");
                 }
-                // Si perd métier pour autre raison → retourne à Inactive (géré ailleurs)
-                break;
+            }
+        }
+        // Sinon, appliquer la logique normale basée sur la nourriture
+        else {
+            // Logique de transition basée sur la classe actuelle
+            switch (currentClass) {
+                case MISERABLE: // Classe 0
+                    if (food >= FOOD_THRESHOLD_0_TO_1) {
+                        newClass = SocialClass.INACTIVE;
+                        Bukkit.getLogger().info("[SocialClass] Promotion: Misérable → Inactive");
+                    }
+                    break;
 
-            default:
-                // Classes 3 et 4 pas encore implémentées
-                break;
+                case INACTIVE: // Classe 1
+                    if (food < FOOD_THRESHOLD_1_TO_0) {
+                        newClass = SocialClass.MISERABLE;
+                        Bukkit.getLogger().info("[SocialClass] Rétrogradation: Inactive → Misérable");
+                    }
+                    // Note: Promotion vers Ouvrière se fait lors de l'obtention d'un métier
+                    break;
+
+                case OUVRIERE: // Classe 2
+                    if (food <= FOOD_THRESHOLD_2_TO_0) {
+                        newClass = SocialClass.MISERABLE;
+                        removeJobFromVillager(villager);
+                        Bukkit.getLogger().info("[SocialClass] Rétrogradation drastique: Ouvrière → Misérable (perte métier)");
+                    }
+                    // Si perd métier pour autre raison → retourne à Inactive (géré ailleurs)
+                    break;
+
+                default:
+                    // Classes 3 et 4 pas encore implémentées
+                    break;
+            }
         }
 
         // Applique le changement si nécessaire
@@ -163,24 +188,18 @@ public class SocialClassService {
                     entity.getUniqueId().equals(villager.getId())) {
                     
                     String currentName = bukkit_villager.getCustomName();
-                    Bukkit.getLogger().info("[SocialClass] Nom actuel: '" + currentName + "'");
                     
                     if (currentName == null) {
                         currentName = "Villageois";
-                        Bukkit.getLogger().info("[SocialClass] Nom null, utilisation par défaut: " + currentName);
                     }
                     
                     // Nettoie les anciens tags de classe sociale
                     String cleanName = SOCIAL_CLASS_TAG_PATTERN.matcher(currentName).replaceAll("").trim();
-                    Bukkit.getLogger().info("[SocialClass] Nom nettoyé: '" + cleanName + "'");
                     
                     // Ajoute le nouveau tag
                     SocialClass socialClass = villager.getSocialClassEnum();
                     String coloredTag = socialClass.getColoredTag();
                     String newName = coloredTag + cleanName;
-                    
-                    Bukkit.getLogger().info("[SocialClass] Nouveau nom complet: '" + newName + "'");
-                    Bukkit.getLogger().info("[SocialClass] Tag coloré: '" + coloredTag + "'");
                     
                     bukkit_villager.setCustomName(newName);
                     bukkit_villager.setCustomNameVisible(true);
@@ -210,7 +229,7 @@ public class SocialClassService {
      * Gère les restrictions de métier selon la classe sociale
      */
     private static void handleJobRestrictions(VillagerModel villager, SocialClass oldClass, SocialClass newClass) {
-        // Si passe à classe 0, doit perdre son métier
+        // Si passe à classe 0, doit perdre son métier (natifs ET custom)
         if (newClass.shouldLoseJob()) {
             removeJobFromVillager(villager);
         }
@@ -261,6 +280,7 @@ public class SocialClassService {
                 if (entity instanceof Villager bukkit_villager && 
                     entity.getUniqueId().equals(villager.getId())) {
                     
+                    // Retirer les métiers natifs ET custom
                     if (bukkit_villager.getProfession() != Villager.Profession.NONE) {
                         Bukkit.getLogger().warning("[SocialClass] 🚨 BUG DÉTECTÉ: Villageois misérable avec métier " + 
                                                  bukkit_villager.getProfession() + " - Retrait forcé immédiat");
@@ -273,6 +293,13 @@ public class SocialClassService {
                         
                         Bukkit.getLogger().info("[SocialClass] ✅ Métier retiré pour villageois misérable " + villager.getId());
                     }
+                    
+                    // Retirer aussi les métiers custom s'il en a
+                    if (villager.hasCustomJob()) {
+                        CustomJobAssignmentService.removeCustomJobFromVillager(villager);
+                        Bukkit.getLogger().info("[SocialClass] ✅ Métier custom retiré pour villageois misérable " + villager.getId());
+                    }
+                    
                     break;
                 }
             }

@@ -1,14 +1,13 @@
 package TestJava.testjava;
 
 import TestJava.testjava.commands.*;
-import TestJava.testjava.commands.DataCommand;
 import TestJava.testjava.listeners.SocialClassJobListener;
 import TestJava.testjava.listeners.SheepManagementListener;
 import TestJava.testjava.listeners.JobBlockPlacementListener;
 import TestJava.testjava.listeners.VillagerFearListener;
 import TestJava.testjava.listeners.FriendlyFireListener;
 import TestJava.testjava.models.*;
-import TestJava.testjava.repositories.EmpireRepository;
+
 import TestJava.testjava.repositories.ResourceRepository;
 import TestJava.testjava.services.*;
 import TestJava.testjava.threads.*;
@@ -30,17 +29,17 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.logging.Level;
 
 public final class TestJava extends JavaPlugin implements Listener {
+    private static TestJava instance;
 
-    String path = TestJava.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-    String rawPath = URLDecoder.decode(path, "UTF-8");
-    String decodedPath = rawPath.substring(1, rawPath.lastIndexOf("/"));
-    String jsonLocation = decodedPath + "/plugins";
-    String baseScanPackage = "TestJava.testjava.model";
+    // Initialisation des chemins dans le constructeur pour éviter les doublons
+    private final String jsonLocation;
+    private final String baseScanPackage;
     public static final String worldName = "nouveaumonde2";
     public static Plugin plugin;
 
@@ -54,12 +53,19 @@ public final class TestJava extends JavaPlugin implements Listener {
     public static EntityService entityService;
     public static VillagerService villagerService;
     public static WarBlockService warBlockService;
+    public static ChunkManagerService chunkManagerService;
     public static World world;
 
     public static HashMap<UUID, String> banditTargets = new HashMap<>();
     public static HashMap<UUID, VillageModel> locustTargets = new HashMap<>();
 
     public TestJava() throws UnsupportedEncodingException {
+        String path = TestJava.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        String rawPath = URLDecoder.decode(path, "UTF-8");
+        String decodedPath = rawPath.substring(1, rawPath.lastIndexOf("/"));
+        this.jsonLocation = decodedPath + "/plugins";
+        this.baseScanPackage = "TestJava.testjava.model";
+        TestJava.instance = this;
     }
     
     /**
@@ -106,12 +112,9 @@ public final class TestJava extends JavaPlugin implements Listener {
         getCommand("nearest").setExecutor(new NearestCommand());
         getCommand("build").setExecutor(new BuildCommand());
         getCommand("social").setExecutor(new SocialCommand());
-        getCommand("emptyvillage").setExecutor(new EmptyVillageCommand());
-        getCommand("forcespawnat").setExecutor(new ForceSpawnAtCommand());
-        getCommand("reactivate").setExecutor(new ReactivateCommand());
         getCommand("distance").setExecutor(new DistanceCommand());
-        getCommand("data").setExecutor(new DataCommand());
-        getCommand("refreshplugin").setExecutor(new RefreshPluginCommand());
+        getCommand("population").setExecutor(new PopulationCommand());
+        getCommand("admin").setExecutor(new AdminCommand());
 
         // Registering databases
         TestJava.database = new JsonDBTemplate(this.jsonLocation, this.baseScanPackage);
@@ -143,33 +146,11 @@ public final class TestJava extends JavaPlugin implements Listener {
             TestJava.database.createCollection(SheepModel.class);
         }
 
-        // Initialisation des ressources depuis resources.json
-        ResourceInitializationService.initializeResourcesIfEmpty();
-        
-        // Chargement des configurations de distance pour métiers et bâtiments
-        DistanceConfigService.loadAllConfigurations();
-        
-                // Synchronisation des villageois du monde avec la base de données
-        VillagerSynchronizationService.synchronizeWorldVillagersWithDatabase();
+        // Les opérations de maintenance sont maintenant gérées par MaintenanceService.performFullMaintenance()
+        // après le chargement des chunks
 
-        // Migration format tags classes sociales ([0] vers {0})
-        SocialClassService.migrateSocialClassTagsToNewFormat();
-
-        // Initialisation des classes sociales pour les villageois existants
-        SocialClassService.initializeSocialClassForExistingVillagers();
-        
-        // Synchronisation des métiers custom et équipement des armures
-        CustomJobSynchronizationService.synchronizeCustomJobsOnStartup();
-
-        // Migration des juridictions
-        for (EmpireModel empire : EmpireRepository.getAll()) {
-            try {
-                empire.getJuridictionCount();
-            } catch (NullPointerException ex) {
-                empire.setJuridictionCount(0);
-                EmpireRepository.update(empire);
-            }
-        }
+        // Démarrage de la synchronisation avec délai
+        VillagerSynchronizationService.startDelayedSync();
 
         // Registering services
         TestJava.blockProtectionService = new BlockProtectionService();
@@ -180,20 +161,23 @@ public final class TestJava extends JavaPlugin implements Listener {
         TestJava.entityService = new EntityService();
         TestJava.villagerService = new VillagerService();
         TestJava.warBlockService = new WarBlockService();
+        TestJava.chunkManagerService = new ChunkManagerService(TestJava.world);
 
-        // Nettoyage des entités (seulement si le monde est disponible)
+        // Forcer le chargement des chunks pour tous les villages
         if (TestJava.world != null) {
             try {
-                playerService.killAllDelegators();
-                playerService.killAllBandits();
-                playerService.resetAllWars();
-                SheepService.removeNaturalSheep();
-                getLogger().info("Nettoyage des entités terminé");
+                Collection<VillageModel> allVillages = TestJava.database.findAll(VillageModel.class);
+                TestJava.chunkManagerService.forceLoadAllVillageChunks(allVillages);
+                getLogger().info("✅ Chunks des villages chargés avec succès");
+
+                // Exécuter la maintenance complète après le chargement des chunks
+                MaintenanceService.performFullMaintenance();
             } catch (Exception e) {
-                getLogger().warning("Erreur lors du nettoyage des entités : " + e.getMessage());
+                getLogger().severe("❌ Erreur lors du chargement des chunks des villages : " + e.getMessage());
+                e.printStackTrace();
             }
         } else {
-            getLogger().warning("Nettoyage des entités ignoré - monde non disponible");
+            getLogger().warning("⚠️ Impossible de charger les chunks des villages - monde non disponible");
         }
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerSpawnThread(), 0, 20 * 60);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerEatThread(), 0, 20 * 60 * 5);
@@ -202,6 +186,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerGoEatThread(), 0, 20 * 60 * 2);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new DefenderThread(), 0, 20 * 5);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new TraderThread(), 0, 20 * 60);
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new TraderMaintenanceThread(), 0, 20 * 60 * 2); // Maintenance marchands toutes les 2 minutes
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new LocustThread(), 0, 20);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new DailyBuildingCostThread(), 0,  20 * 60 * 4); // Toutes les 4 minutes au lieu de 20
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new SocialClassEnforcementThread(), 0, 20 * 60 * 2); // Toutes les 2 minutes
@@ -210,6 +195,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new InactiveJobSearchThread(), 0, 20 * 60 * 3); // Toutes les 3 minutes
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillageStatsThread(), 0, 20 * 60 * 10); // Toutes les 10 minutes
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new CustomJobMaintenanceThread(), 0, 20 * 60 * 7); // Toutes les 7 minutes - Maintenance métiers custom
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new AutomaticJobAssignmentThread(), 0, 20 * 60); // Toutes les minutes - Assignation automatique d'emplois
     }
 
     @EventHandler
@@ -346,5 +332,39 @@ public final class TestJava extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerRespawn(PlayerRespawnEvent e) {
         TestJava.playerService.testIfPlayerHaveVillageToTeleport(e);
+    }
+
+    public static TestJava getInstance() {
+        return instance;
+    }
+
+    public String getJsonLocation() {
+        return jsonLocation;
+    }
+
+    public void initDatabase() {
+        TestJava.database = new JsonDBTemplate(this.jsonLocation, this.baseScanPackage);
+    }
+
+    public void closeDatabase() {
+        if (TestJava.database != null) {
+            // JsonDB n'a pas de méthode de fermeture explicite, mais on peut
+            // libérer la référence pour le GC
+            TestJava.database = null;
+        }
+    }
+
+    @Override
+    public void onDisable() {
+        // Décharger tous les chunks forcés avant l'arrêt
+        if (TestJava.world != null && TestJava.chunkManagerService != null) {
+            try {
+                TestJava.chunkManagerService.unloadAllChunks();
+                getLogger().info("✅ Chunks des villages déchargés avec succès");
+            } catch (Exception e) {
+                getLogger().severe("❌ Erreur lors du déchargement des chunks des villages : " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
     }
 }

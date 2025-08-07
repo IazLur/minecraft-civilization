@@ -34,7 +34,7 @@ public class SocialCommand implements CommandExecutor {
 
         // Vérification des arguments
         if (args.length == 0) {
-            player.sendMessage(ChatColor.RED + "Usage: /social <village|villager|stats|refresh|migrate|cleanup|refreshnames|sync|testnames|migrateformat>");
+            player.sendMessage(ChatColor.RED + "Usage: /social <village|villager|stats|refresh|migrate|cleanup|refreshnames|sync|testnames|migrateformat|diagnose>");
             player.sendMessage(ChatColor.YELLOW + "  /social village <nom> - Statistiques des classes sociales d'un village");
             player.sendMessage(ChatColor.YELLOW + "  /social villager - Informations du villageois le plus proche");
             player.sendMessage(ChatColor.YELLOW + "  /social stats - Statistiques globales des classes sociales");
@@ -45,6 +45,7 @@ public class SocialCommand implements CommandExecutor {
             player.sendMessage(ChatColor.YELLOW + "  /social sync - Synchronise villageois monde/base (admin)");
             player.sendMessage(ChatColor.YELLOW + "  /social testnames - Test extraction noms (admin debug)");
             player.sendMessage(ChatColor.YELLOW + "  /social migrateformat - Migration format tags [0] → {0} (admin)");
+            player.sendMessage(ChatColor.YELLOW + "  /social diagnose - Diagnostique et corrige les incohérences de classes sociales");
             return true;
         }
 
@@ -71,6 +72,8 @@ public class SocialCommand implements CommandExecutor {
                 return handleTestNamesCommand(player);
             case "migrateformat":
                 return handleMigrateFormatCommand(player);
+            case "diagnose":
+                return handleDiagnoseCommand(player);
             default:
                 player.sendMessage(ChatColor.RED + "Sous-commande inconnue: " + subCommand);
                 return true;
@@ -159,7 +162,18 @@ public class SocialCommand implements CommandExecutor {
             return true;
         }
 
-        SocialClass socialClass = villagerModel.getSocialClassEnum();
+        // CORRECTION BUG: Évaluer et mettre à jour la classe sociale avant affichage
+        // pour s'assurer de la cohérence entre métier et classe sociale
+        SocialClass oldClass = villagerModel.getSocialClassEnum();
+        SocialClassService.evaluateAndUpdateSocialClass(villagerModel);
+        SocialClass newClass = villagerModel.getSocialClassEnum();
+        
+        // Si la classe a changé, informer le joueur
+        if (oldClass != newClass) {
+            player.sendMessage(ChatColor.YELLOW + "⚠️ Classe sociale corrigée: " + 
+                             oldClass.getColoredTag() + " " + oldClass.getName() + 
+                             ChatColor.YELLOW + " → " + newClass.getColoredTag() + " " + newClass.getName());
+        }
         
         player.sendMessage(ChatColor.GOLD + "=== Informations Villageois ===");
         player.sendMessage(ChatColor.WHITE + "UUID: " + ChatColor.GRAY + villager.getUniqueId());
@@ -167,8 +181,8 @@ public class SocialCommand implements CommandExecutor {
         player.sendMessage(ChatColor.WHITE + "Nourriture: " + ChatColor.GREEN + villagerModel.getFood());
         player.sendMessage(ChatColor.WHITE + "Richesse: " + ChatColor.GOLD + 
                          String.format("%.2fµ", villagerModel.getRichesse()));
-        player.sendMessage(ChatColor.WHITE + "Classe Sociale: " + socialClass.getColoredTag() + 
-                         ChatColor.WHITE + " " + socialClass.getName());
+        player.sendMessage(ChatColor.WHITE + "Classe Sociale: " + newClass.getColoredTag() + 
+                         ChatColor.WHITE + " " + newClass.getName());
         
         // Afficher le métier (natif ou custom)
         String jobInfo;
@@ -182,7 +196,7 @@ public class SocialCommand implements CommandExecutor {
         player.sendMessage(ChatColor.WHITE + "Métier: " + jobInfo);
         
         player.sendMessage(ChatColor.WHITE + "Peut avoir métier: " + 
-                         (socialClass.canHaveJob() ? ChatColor.GREEN + "Oui" : ChatColor.RED + "Non"));
+                         (newClass.canHaveJob() ? ChatColor.GREEN + "Oui" : ChatColor.RED + "Non"));
 
         return true;
     }
@@ -475,7 +489,7 @@ public class SocialCommand implements CommandExecutor {
             player.sendMessage(ChatColor.WHITE + "Villageois en base: " + ChatColor.YELLOW + result.existingInDB);
             player.sendMessage(ChatColor.WHITE + "Villageois dans le monde: " + ChatColor.YELLOW + result.worldVillagersWithName);
             
-            if (result.foundUnsynchronized()) {
+            if (result.hadChanges()) {
                 player.sendMessage(ChatColor.AQUA + "🔄 Nouveaux synchronisés: " + result.syncedCount);
                 player.sendMessage(ChatColor.GREEN + "🏘️ Villages mis à jour: " + result.villagesUpdated);
                 
@@ -584,7 +598,7 @@ public class SocialCommand implements CommandExecutor {
     }
 
     /**
-     * Migration format tags classe sociale (admin debug)
+     * Migration du format des tags de classe sociale (admin seulement)
      */
     private boolean handleMigrateFormatCommand(Player player) {
         // Vérification des permissions admin
@@ -594,24 +608,102 @@ public class SocialCommand implements CommandExecutor {
         }
 
         player.sendMessage(ChatColor.GOLD + "=== Migration Format Tags Classes Sociales ===");
-        player.sendMessage(ChatColor.YELLOW + "Conversion [0][Village] → {0} [Village]");
+        player.sendMessage(ChatColor.YELLOW + "🔄 Migration en cours...");
+        
+        long startTime = System.currentTimeMillis();
+        int migrated = 0;
+        int errors = 0;
         
         try {
-            long startTime = System.currentTimeMillis();
+            Collection<VillagerModel> allVillagers = VillagerRepository.getAll();
             
-            // Exécuter la migration
-            SocialClassService.migrateSocialClassTagsToNewFormat();
+            for (VillagerModel villager : allVillagers) {
+                try {
+                    SocialClassService.updateVillagerDisplayName(villager);
+                    migrated++;
+                } catch (Exception e) {
+                    errors++;
+                    Bukkit.getLogger().warning("[SocialCommand] Erreur migration format " + 
+                                             villager.getId() + ": " + e.getMessage());
+                }
+            }
             
             long endTime = System.currentTimeMillis();
             double duration = (endTime - startTime) / 1000.0;
             
-            player.sendMessage(ChatColor.GREEN + "✅ Migration terminée en " + 
-                              String.format("%.2f", duration) + " secondes");
-            player.sendMessage(ChatColor.AQUA + "📊 Consultez les logs serveur pour les détails");
+            player.sendMessage(ChatColor.WHITE + "Durée: " + ChatColor.YELLOW + String.format("%.2f", duration) + " secondes");
+            player.sendMessage(ChatColor.GREEN + "✅ Tags migrés: " + migrated);
+            
+            if (errors > 0) {
+                player.sendMessage(ChatColor.RED + "❌ Erreurs: " + errors);
+            }
+            
+            player.sendMessage(ChatColor.GRAY + "💡 Format migré: [0] → {0}, [1] → {1}, etc.");
             
         } catch (Exception e) {
             player.sendMessage(ChatColor.RED + "❌ Erreur lors de la migration: " + e.getMessage());
             Bukkit.getLogger().severe("[SocialCommand] Erreur migration format: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return true;
+    }
+
+    /**
+     * Diagnostique et corrige les incohérences de classes sociales
+     */
+    private boolean handleDiagnoseCommand(Player player) {
+        player.sendMessage(ChatColor.GOLD + "=== Diagnostic Classes Sociales ===");
+        player.sendMessage(ChatColor.YELLOW + "🔍 Analyse des incohérences...");
+        
+        int totalVillagers = 0;
+        int corrected = 0;
+        int errors = 0;
+        
+        try {
+            Collection<VillagerModel> allVillagers = VillagerRepository.getAll();
+            totalVillagers = allVillagers.size();
+            
+            for (VillagerModel villager : allVillagers) {
+                try {
+                    SocialClass oldClass = villager.getSocialClassEnum();
+                    
+                    // Évaluer et corriger la classe sociale
+                    SocialClassService.evaluateAndUpdateSocialClass(villager);
+                    
+                    SocialClass newClass = villager.getSocialClassEnum();
+                    if (oldClass != newClass) {
+                        corrected++;
+                        player.sendMessage(ChatColor.YELLOW + "🔧 Corrigé: " + 
+                                         oldClass.getColoredTag() + " " + oldClass.getName() + 
+                                         ChatColor.YELLOW + " → " + newClass.getColoredTag() + " " + newClass.getName() + 
+                                         ChatColor.GRAY + " (UUID: " + villager.getId() + ")");
+                    }
+                    
+                } catch (Exception e) {
+                    errors++;
+                    Bukkit.getLogger().warning("[SocialCommand] Erreur diagnostic " + 
+                                             villager.getId() + ": " + e.getMessage());
+                }
+            }
+            
+            player.sendMessage(ChatColor.GREEN + "✅ Diagnostic terminé:");
+            player.sendMessage(ChatColor.WHITE + "  Villageois analysés: " + ChatColor.YELLOW + totalVillagers);
+            player.sendMessage(ChatColor.WHITE + "  Classes corrigées: " + ChatColor.GREEN + corrected);
+            
+            if (errors > 0) {
+                player.sendMessage(ChatColor.WHITE + "  Erreurs: " + ChatColor.RED + errors);
+            }
+            
+            if (corrected == 0) {
+                player.sendMessage(ChatColor.GREEN + "🎉 Toutes les classes sociales sont cohérentes !");
+            } else {
+                player.sendMessage(ChatColor.YELLOW + "💡 Utilisez /social refresh pour mettre à jour les noms d'affichage");
+            }
+            
+        } catch (Exception e) {
+            player.sendMessage(ChatColor.RED + "❌ Erreur lors du diagnostic: " + e.getMessage());
+            Bukkit.getLogger().severe("[SocialCommand] Erreur diagnostic: " + e.getMessage());
             e.printStackTrace();
         }
         

@@ -7,6 +7,7 @@ import TestJava.testjava.models.EmpireModel;
 import TestJava.testjava.models.VillageModel;
 import TestJava.testjava.repositories.EmpireRepository;
 import TestJava.testjava.repositories.VillageRepository;
+import TestJava.testjava.threads.TraderThread;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -249,6 +250,45 @@ public class PlayerService {
         if(e.getEntity() instanceof ArmorStand) {
             e.setCancelled(true);
             e.setDamage(0D);
+        }
+    }
+
+    /**
+     * Supprime tous les marchands spéciaux (WanderingTrader et TraderLlama) du monde
+     * Utilisé au démarrage du serveur pour nettoyer les marchands persistants
+     */
+    public void killAllWanderingTraders() {
+        if (TestJava.world == null) {
+            Bukkit.getLogger().warning("Nettoyage des marchands spéciaux ignoré - monde non disponible");
+            return;
+        }
+
+        int tradersKilled = 0;
+        int llamasKilled = 0;
+
+        try {
+            // Supprimer tous les WanderingTrader
+            for (WanderingTrader trader : TestJava.world.getEntitiesByClass(WanderingTrader.class)) {
+                trader.remove();
+                tradersKilled++;
+            }
+
+            // Supprimer tous les TraderLlama
+            for (TraderLlama llama : TestJava.world.getEntitiesByClass(TraderLlama.class)) {
+                llama.remove();
+                llamasKilled++;
+            }
+
+            if (tradersKilled > 0 || llamasKilled > 0) {
+                Bukkit.getLogger().info("Nettoyage des marchands spéciaux terminé - " + 
+                    tradersKilled + " marchands et " + llamasKilled + " lamas supprimés");
+            }
+
+            // Nettoyer aussi le système de tracking du TraderThread
+            TraderThread.cleanupAllActiveTraders();
+            
+        } catch (Exception e) {
+            Bukkit.getLogger().warning("Erreur lors du nettoyage des marchands spéciaux : " + e.getMessage());
         }
     }
 }

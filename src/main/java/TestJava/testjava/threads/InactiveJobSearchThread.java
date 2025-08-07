@@ -11,14 +11,12 @@ public class InactiveJobSearchThread implements Runnable {
     @Override
     public void run() {
         try {
-            Bukkit.getLogger().info("[InactiveJobSearchThread] Démarrage recherche métiers...");
-            
             InactiveJobSearchService.searchJobsForInactiveVillagers();
             
-            Bukkit.getLogger().info("[InactiveJobSearchThread] Recherche terminée.");
+            Bukkit.getLogger().info("[InactiveJobSearchThread] ✅ Recherche de métiers terminée");
             
         } catch (Exception e) {
-            Bukkit.getLogger().severe("[InactiveJobSearchThread] Erreur: " + e.getMessage());
+            Bukkit.getLogger().severe("[InactiveJobSearchThread] ❌ Erreur: " + e.getMessage());
             e.printStackTrace();
         }
     }

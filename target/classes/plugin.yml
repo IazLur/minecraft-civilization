@@ -35,21 +35,13 @@ commands:
   social:
     description: Gérer les classes sociales
     usage: /social <village|villager|stats|refresh|migrate|cleanup|refreshnames|sync|testnames|migrateformat>
-  emptyvillage:
-    description: Vider votre village de tous ses villageois
-    usage: /emptyvillage
-  forcespawnat:
-    description: Forcer le spawn d'un villageois dans un village (admin)
-    usage: /forcespawnat <villageName>
-  reactivate:
-    description: Réactiver un bâtiment inactif à proximité
-    usage: /reactivate
   distance:
     description: Gérer et consulter les distances de placement des métiers et bâtiments
     usage: /distance <metiers|batiments|check|info|reload>
-  data:
-    description: Consulter l'historique d'un village ou villageois
-    usage: /data <village <nom>|villager>
-  refreshplugin:
-    description: Rafraîchir le plugin et équiper les armures des employés custom
-    usage: /refreshplugin
+  population:
+    description: Gérer les populations de villages
+    usage: /population <check|fix|stats|diagnose> [village]
+  admin:
+    description: Commandes administratives
+    usage: /admin <refresh|data|emptyvillage|forcespawn|reactivate|testautojob|traderstatus>
+    permission: testjava.admin

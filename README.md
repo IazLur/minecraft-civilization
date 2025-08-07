@@ -10,6 +10,24 @@ Plugin Minecraft Java reproduisant Civilization 6 dans un environnement multijou
 - **Maven** - Gestionnaire de dépendances et build
 - **Jackson** - Sérialisation/désérialisation JSON
 
+## 🔍 Règles de Développement
+
+### Vérification des Lints
+
+Les LLM (Language Model) doivent **OBLIGATOIREMENT** :
+1. Vérifier les erreurs de lint après chaque modification de fichier
+2. Corriger immédiatement toute erreur de lint détectée
+3. Ne pas laisser de code avec des erreurs de lint
+4. Utiliser l'outil `read_lints` pour vérifier les fichiers modifiés
+5. Documenter les corrections de lint effectuées
+
+**Exemple de workflow** :
+1. Modification d'un fichier
+2. Vérification immédiate avec `read_lints`
+3. Si erreurs détectées → correction immédiate
+4. Nouvelle vérification pour confirmer
+5. Documentation des corrections dans les commentaires
+
 ## 📁 Architecture du Projet
 
 ```
@@ -218,6 +236,20 @@ public static boolean attemptToFeedVillager(VillagerModel hungryVillager) {
 }
 ```
 
+**VillagerHomeService** - Gestion des "Home" des villageois
+```java
+public static void validateAndCorrectAllVillagerHomes() {
+    // Vérifie que chaque villageois est dans le rayon de protection de son village
+    // Corrige automatiquement les "Home" incorrects
+    // Empêche le retour automatique au village d'origine
+}
+
+public static void resetVillagerNavigation(Villager villager) {
+    // Réinitialise complètement les données de navigation
+    // Utilisé lors de la téléportation pour famine
+}
+```
+
 ## 🎮 Système d'Événements
 
 ### Listeners Pattern
@@ -358,6 +390,14 @@ if (result == FeedResult.SELF_FED) {
 // Donne des stocks alimentaires aux fermiers pour qu'ils puissent vendre
 // Blé: production régulière, Pain: 30% chance, Bloc foin: 10% chance
 VillagerInventoryService.giveFoodToFarmers();
+```
+
+**AutomaticJobAssignmentThread** (1 min) - Assignation automatique d'emplois
+```java
+// Boucle sur chaque village et chaque villageois inactif
+// Cherche automatiquement les bâtiments custom avec des emplois disponibles
+// Assigne automatiquement les villageois inactifs aux emplois disponibles
+AutomaticJobAssignmentService.executeAutomaticJobAssignment();
 ```
 
 ## 🎲 Commandes
@@ -561,7 +601,11 @@ BlockPlaceEvent → JobAssignmentService.assignJobToNearestInactiveVillager()
 **Problème** : Villageois migrés retournaient automatiquement à leur village d'origine (données navigation Minecraft).
 
 **Solution** :
-- ✅ **Réinitialisation navigation** : `resetVillagerHome()` avant téléportation
+- ✅ **Service VillagerHomeService** : Vérification et correction automatique des "Home"
+- ✅ **Vérification périodique** : Dans `SocialClassEnforcementThread` (toutes les 2 minutes)
+- ✅ **Vérification au démarrage** : Correction des Home au lancement du serveur
+- ✅ **Vérification lors de migration** : Réinitialisation navigation lors de téléportation pour famine
+- ✅ **Rayon de protection** : Vérification distance `VILLAGE_PROTECTION_RADIUS` (256 blocs)
 - ✅ **Reset profession temporaire** pour vider les données internes
 - ✅ **Arrêt pathfinding** pour empêcher le retour automatique
 
@@ -822,5 +866,353 @@ Toutes les actions importantes des villageois et villages sont automatiquement e
 ---
 
 Ce plugin implémente un système de civilisation complexe avec une architecture modulaire, une base de données JSON intégrée et des mécaniques de jeu avancées. L'architecture est conçue pour être extensible et maintenable.
+
+## 🐛 **Correction du Bug de Spawn de Villageois (v3.5)**
+
+### **Problème Signalé**
+> "Le village avait 1 seul lit, donc normalement limité à 1 villageois en spawn. Lors de ma reconnexion au serveur, le village avait plein de villageois."
+
+### **Causes Identifiées**
+1. **Spawn Naturel Minecraft** : Le serveur Minecraft peut faire spawner des villageois naturellement dans les villages, même sans lits
+2. **Pas de Vérification de Limite** : `EntityService.testSpawnIfVillager` ne vérifie pas `population < bedsCount`
+3. **Synchronisation Agressive** : Au redémarrage, tous les villageois du monde sont synchronisés sans vérifier les limites
+4. **Thread Spawn Incohérent** : Le `VillagerSpawnThread` met à jour la population mais ne vérifie pas si le spawn a réellement eu lieu
+
+### **Solutions Implémentées**
+
+#### ✅ **1. Vérification de Limite dans EntityService**
+```java
+// VÉRIFICATION CRITIQUE: Empêcher le spawn si le village a atteint sa limite de lits
+if (village.getPopulation() >= village.getBedsCount()) {
+    Bukkit.getLogger().warning("[EntityService] Spawn villageois bloqué: Village " + 
+        village.getId() + " a atteint sa limite (" + village.getPopulation() + "/" + village.getBedsCount() + " lits)");
+    e.setCancelled(true);
+    return;
+}
+```
+
+#### ✅ **2. Amélioration du VillagerSpawnThread**
+- **Vérifications de sécurité** : Skip les villages sans lits
+- **Vérification de succès** : Mise à jour population seulement si le spawn a réussi
+- **Gestion d'erreurs** : Logs détaillés en cas d'échec
+
+#### ✅ **3. Service de Correction Automatique**
+**VillagePopulationCorrectionService** :
+- **Correction au démarrage** : Vérification automatique de tous les villages
+- **Suppression intelligente** : Supprime les villageois les plus récents en excès
+- **Messages informatifs** : Broadcast des corrections effectuées
+
+#### ✅ **4. Commande de Gestion Manuelle**
+**`/population`** :
+- `/population check` - Vérifier les populations
+- `/population fix` - Corriger les populations  
+- `/population stats` - Afficher les statistiques
+
+#### ✅ **5. Logs Détaillés**
+- **Détection des excès** : `⚠️ Village X: 5/1 villageois`
+- **Corrections effectuées** : `✅ Village X corrigé: 1/1 villageois`
+- **Messages de mort** : `💀 [Village] Nom a été supprimé (correction population)`
+
+## 📝 **Optimisation des Logs des Threads (v3.6)**
+
+### **Problème Signalé**
+> "Tu vas modifier les logs de TOUS les threads. Actuellement tu fais des logs serveur sur des itérations ce qui flood la console. Je veux 1 seul log serveur par execution de thread, qui récapitule ce qui a été fait, et non pas faire des logs au fur et à mesure de l'execution du thread."
+
+### **Threads Modifiés**
+
+#### ✅ **1. SheepSpawnThread**
+```java
+// AVANT: Logs itératifs pour chaque mouton
+Bukkit.getLogger().info("[SheepSpawn] ✅ Mouton spawné pour bergerie de " + building.getVillageName());
+
+// APRÈS: Un seul log de résumé
+Bukkit.getLogger().info("[SheepSpawn] 📊 Résumé: " + totalSpawned + " moutons spawnés dans " + activeBarns + " bergeries actives");
+```
+
+#### ✅ **2. SheepMovementThread**
+```java
+// AVANT: Logs itératifs pour chaque mouton
+Bukkit.getLogger().warning("[SheepMovement] ⚠️ Bergerie introuvable pour mouton " + sheepModel.getVillageName());
+
+// APRÈS: Un seul log de résumé
+Bukkit.getLogger().info("[SheepMovement] 📍 Résumé: " + movedCount + " moutons déplacés, " + removedCount + " supprimés");
+```
+
+#### ✅ **3. SocialClassEnforcementThread**
+```java
+// AVANT: Logs itératifs pour chaque action
+Bukkit.getLogger().info("[SocialClassEnforcement] " + updated + " noms de villageois mis à jour");
+
+// APRÈS: Un seul log de résumé détaillé
+Bukkit.getLogger().info("[SocialClassEnforcement] ✅ Résumé: " + totalActions + " actions effectuées " +
+                       "(restrictions: 1, strict: " + strictRestrictions + ", noms: " + namesUpdated + ")");
+```
+
+#### ✅ **4. CustomJobMaintenanceThread**
+```java
+// AVANT: Logs itératifs pour chaque maintenance
+Bukkit.getLogger().info("[CustomJobMaintenance] Armures réparées: " + armorFixed + " employés custom");
+
+// APRÈS: Un seul log de résumé
+Bukkit.getLogger().info("[CustomJobMaintenance] ✅ Résumé: " + totalActions + " actions effectuées " +
+                       "(armures: " + armorFixed + ", ajustements: " + buildingAdjustments + ")");
+```
+
+#### ✅ **5. AutomaticJobAssignmentService**
+```java
+// AVANT: Logs itératifs pour chaque village
+Bukkit.getLogger().info("[AutoJobAssignment] ✅ Village " + village.getId() + ": " + villageAssignments + " emplois assignés");
+
+// APRÈS: Un seul log de résumé
+Bukkit.getLogger().info("[AutoJobAssignment] ✅ Résumé: " + totalAssignments + " emplois assignés dans " + 
+                       villagesWithAssignments + "/" + villagesProcessed + " villages");
+```
+
+#### ✅ **6. VillagerSynchronizationService**
+```java
+// AVANT: Logs itératifs pour chaque villageois synchronisé
+Bukkit.getLogger().info("[VillagerSync] ✅ Synchronisé: " + villager.getUniqueId());
+
+// APRÈS: Un seul log de résumé final
+Bukkit.getLogger().info("[VillagerSync] ✅ Synchronisation terminée en " + duration + " secondes");
+Bukkit.getLogger().info("[VillagerSync] Nouveaux synchronisés: " + result.syncedCount);
+```
+
+#### ✅ **7. VillagerSpawnThread**
+```java
+// AVANT: Logs itératifs pour chaque villageois spawné
+Bukkit.getLogger().info("[VillagerSpawnThread] Villageois spawné avec succès dans " + village.getId());
+
+// APRÈS: Un seul log de résumé
+Bukkit.getLogger().info("[VillagerSpawnThread] ✅ Résumé: " + totalSpawned + " villageois spawnés " +
+                       "(vérifié " + villagesChecked + " villages, " + villagesSkipped + " ignorés)");
+```
+
+#### ✅ **8. DailyBuildingCostThread**
+```java
+// APRÈS: Ajout d'un log de résumé
+Bukkit.getLogger().info("[DailyBuildingCost] ✅ Résumé: " + totalBuildingsProcessed + " bâtiments traités, " + 
+                       totalCostPaid + "µ payés, " + buildingsDeactivated + " désactivés");
+```
+
+### **Avantages de l'Optimisation**
+- **Console plus propre** : Plus de flood de logs itératifs
+- **Informations utiles** : Résumés détaillés avec statistiques
+- **Performance améliorée** : Moins d'écriture dans les logs
+- **Debugging facilité** : Un seul log par thread pour identifier les problèmes
+
+### **Format des Logs de Résumé**
+```
+[ThreadName] ✅ Résumé: X actions effectuées (détail1: Y, détail2: Z)
+[ThreadName] ℹ️ Aucune action nécessaire (vérifié X éléments)
+[ThreadName] ❌ Erreur: message d'erreur
+```
+
+## 🐛 **Correction du Bug de Comptage des Villageois (v3.7)**
+
+### **Problème Signalé**
+> "Le message 'Distribution de nourriture' est censé afficher l'activité de nourriture de tous les villageois du village. Mais il semblerait que souvent le nombre de villageois affichés au total dans le message ne corresponde pas au total de villageois du village, comme si certains ne se nourrissent pas ou passent à travers les mailles du filet."
+
+### **Causes Identifiées**
+
+#### ❌ **1. Villageois avec nourriture entre 19 et 20**
+- Les villageois avec `food >= 19` mais `< 20` n'étaient ni "rassasiés" ni "affamés"
+- Ils n'étaient pas comptés dans les statistiques
+
+#### ❌ **2. Villageois fantômes non comptés**
+- Les villageois en DB mais pas dans le monde étaient supprimés sans être comptés
+- Cela créait des incohérences dans les totaux
+
+#### ❌ **3. Échecs de traitement silencieux**
+- Les erreurs dans `handleHungryVillager` n'étaient pas gérées
+- Les villageois en échec n'étaient pas comptés
+
+#### ❌ **4. Requêtes de base de données incomplètes**
+- Utilisation de requêtes JXQuery au lieu de traiter tous les villageois
+- Certains villageois pouvaient être manqués
+
+### **Solutions Implémentées**
+
+#### ✅ **1. Système de Comptage Complet**
+```java
+// AVANT: Requêtes partielles
+String queryHungry = String.format("/.[food<'%s']", MAX_FOOD);
+String queryFull = String.format("/.[food>='%s']", FULL_FOOD);
+
+// APRÈS: Traitement de tous les villageois
+Collection<VillagerModel> allVillagers = VillagerRepository.getAll();
+for (VillagerModel villager : allVillagers) {
+    if (villager.getFood() >= FULL_FOOD) {
+        stats.rassasies++;
+    } else if (villager.getFood() < MAX_FOOD) {
+        // Traitement des affamés
+    } else {
+        stats.stables++; // NOUVEAU: Villageois entre 19 et 20
+    }
+}
+```
+
+#### ✅ **2. Gestion des Erreurs Robuste**
+```java
+private void handleHungryVillager(VillagerModel villager, VillageStats stats) {
+    try {
+        // Logique de traitement
+    } catch (Exception e) {
+        // En cas d'erreur, compter comme affamé par défaut
+        stats.affames++;
+        Bukkit.getLogger().warning("[VillagerGoEat] Erreur traitement villageois " + villager.getId());
+    }
+}
+```
+
+#### ✅ **3. Validation des Totaux**
+```java
+// Calculer le total des villageois traités
+int totalProcessed = stats.rassasies + stats.autosuffisants + stats.clients + 
+                     stats.voleurs + stats.affames + stats.stables;
+int villagePopulation = village.getPopulation();
+
+// Validation du total
+if (totalProcessed != villagePopulation) {
+    owner.sendMessage(ChatColor.YELLOW + "⚠️ Attention: " + totalProcessed + 
+                     " villageois traités sur " + villagePopulation);
+}
+```
+
+#### ✅ **4. Nouvelle Catégorie "Stables"**
+- **Villageois stables** : Nourriture entre 19 et 20 (pas besoin de se nourrir mais pas rassasiés)
+- Comptage complet de tous les états possibles
+
+#### ✅ **5. Logs de Résumé Détaillés**
+```java
+Bukkit.getLogger().info("[VillagerGoEat] ✅ Résumé global: " + totalVillagers + 
+                       " villageois traités dans " + totalVillages + " villages");
+Bukkit.getLogger().info("[VillagerGoEat] 📊 Répartition: " + totalRassasies + 
+                       " rassasiés, " + totalAutosuffisants + " autosuffisants...");
+```
+
+#### ✅ **6. Commande de Diagnostic**
+```bash
+/population diagnose <village>
+```
+- Analyse détaillée d'un village spécifique
+- Identifie les villageois fantômes
+- Vérifie la cohérence des données
+
+### **Nouvelles Catégories de Villageois**
+
+| Catégorie | Nourriture | Description |
+|-----------|------------|-------------|
+| **Rassasiés** | `>= 20` | Ne consomment que des points de nourriture |
+| **Stables** | `19-20` | Pas besoin de se nourrir mais pas rassasiés |
+| **Autosuffisants** | `< 19` | Se nourrissent de leur inventaire |
+| **Clients** | `< 19` | Achètent de la nourriture aux fermiers |
+| **Voleurs** | `< 19` | Volent du blé dans les champs |
+| **Affamés** | `< 19` | Ne trouvent pas de nourriture |
+
+### **Avantages de la Correction**
+- **Comptage précis** : Tous les villageois sont maintenant comptés
+- **Détection d'incohérences** : Alertes automatiques si les totaux ne correspondent pas
+- **Debugging facilité** : Logs détaillés et commande de diagnostic
+- **Transparence** : Les joueurs voient exactement combien de villageois sont traités
+- **Robustesse** : Gestion des erreurs pour éviter les villageois "perdus"
+
+## 🐛 **Correction du Bug d'Incohérence de Classe Sociale (v3.8)**
+
+### **Problème Signalé**
+> "/social villager" a eu une incohérence, le villageois avait la classe sociale "Inactive" alors qu'il avait bien un métier custom "bergerie" et que la classe était "Ouvrière" et donc "{2}" dans son customName.
+
+### **Causes Identifiées**
+
+#### ❌ **1. Incohérence Base de Données vs Affichage**
+- La base de données contenait encore l'ancienne classe "Inactive" (1)
+- Le `customName` affichait la classe "Ouvrière" (2) avec le tag `{2}`
+- La commande `/social villager` lisait directement depuis la base sans évaluation
+
+#### ❌ **2. Évaluation de Classe Sociale Non Systématique**
+- Les villageois avec métiers custom n'étaient pas automatiquement promus vers "Ouvrière"
+- L'évaluation ne se faisait que lors de l'obtention du métier, pas lors de la consultation
+
+#### ❌ **3. Manque de Vérification Prioritaire**
+- La logique d'évaluation ne vérifiait pas en priorité si un villageois avec métier custom était bien en classe "Ouvrière"
+
+### **Solutions Implémentées**
+
+#### ✅ **1. Correction de la Commande `/social villager`**
+```java
+// CORRECTION BUG: Évaluer et mettre à jour la classe sociale avant affichage
+// pour s'assurer de la cohérence entre métier et classe sociale
+SocialClass oldClass = villagerModel.getSocialClassEnum();
+SocialClassService.evaluateAndUpdateSocialClass(villagerModel);
+SocialClass newClass = villagerModel.getSocialClassEnum();
+
+// Si la classe a changé, informer le joueur
+if (oldClass != newClass) {
+    player.sendMessage(ChatColor.YELLOW + "⚠️ Classe sociale corrigée: " + 
+                     oldClass.getColoredTag() + " " + oldClass.getName() + 
+                     ChatColor.YELLOW + " → " + newClass.getColoredTag() + " " + newClass.getName());
+}
+```
+
+#### ✅ **2. Amélioration du Service SocialClassService**
+```java
+// CORRECTION BUG: Vérification prioritaire pour les métiers custom
+// Si le villageois a un métier custom, il DOIT être en classe Ouvrière
+if (villager.hasCustomJob() && currentClass != SocialClass.OUVRIERE) {
+    newClass = SocialClass.OUVRIERE;
+    Bukkit.getLogger().info("[SocialClass] 🔧 CORRECTION: Villageois avec métier custom (" + 
+                           villager.getCurrentJobName() + ") promu vers Ouvrière");
+}
+```
+
+#### ✅ **3. Nouvelle Commande de Diagnostic**
+```bash
+/social diagnose
+```
+- Analyse tous les villageois pour détecter les incohérences
+- Corrige automatiquement les classes sociales incorrectes
+- Affiche un rapport détaillé des corrections effectuées
+
+#### ✅ **4. Logs de Correction Détaillés**
+```java
+Bukkit.getLogger().info("[SocialClass] 🔧 CORRECTION: Villageois avec métier custom (" + 
+                       villager.getCurrentJobName() + ") promu vers Ouvrière");
+```
+
+### **Règles de Cohérence Implémentées**
+
+| Situation | Classe Sociale Requise | Action |
+|-----------|------------------------|--------|
+| **Villageois avec métier custom** | **Ouvrière (2)** | Promotion automatique |
+| **Villageois avec métier natif** | **Ouvrière (2)** | Promotion automatique |
+| **Villageois sans métier** | **Inactive (1)** ou **Misérable (0)** | Selon nourriture |
+| **Villageois misérable** | **Misérable (0)** | Retrait forcé du métier |
+
+### **Avantages de la Correction**
+- **Cohérence garantie** : Les villageois avec métiers sont toujours en classe "Ouvrière"
+- **Correction automatique** : La commande `/social villager` corrige les incohérences
+- **Diagnostic complet** : Nouvelle commande pour analyser et corriger en masse
+- **Transparence** : Le joueur est informé des corrections effectuées
+- **Robustesse** : Vérification prioritaire des métiers custom dans l'évaluation
+
+### **Utilisation des Nouvelles Fonctionnalités**
+
+#### **Correction Automatique**
+```bash
+/social villager  # Corrige automatiquement la classe sociale avant affichage
+```
+
+#### **Diagnostic Complet**
+```bash
+/social diagnose  # Analyse et corrige toutes les incohérences
+```
+
+#### **Messages de Correction**
+```
+⚠️ Classe sociale corrigée: {1} Inactive → {2} Ouvrière
+🔧 Corrigé: {1} Inactive → {2} Ouvrière (UUID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
+```
+
+---
 
 **🔄 Auto-Update README Policy** : Ce document est automatiquement maintenu à jour selon `.readme-update-policy.md`

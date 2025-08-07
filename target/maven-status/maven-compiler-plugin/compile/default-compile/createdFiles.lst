@@ -22,6 +22,7 @@ TestJava\testjava\services\CustomJobAssignmentService.class
 TestJava\testjava\threads\VillagerGoEatThread.class
 TestJava\testjava\repositories\VillageRepository.class
 TestJava\testjava\classes\OneArg.class
+TestJava\testjava\commands\AdminCommand.class
 TestJava\testjava\services\ResourceInitializationService.class
 TestJava\testjava\threads\WarThread.class
 TestJava\testjava\models\EatableModel.class
@@ -32,8 +33,10 @@ TestJava\testjava\services\JobAssignmentService$1.class
 TestJava\testjava\services\WarBlockService.class
 TestJava\testjava\services\GhostVillagerCleanupService.class
 TestJava\testjava\services\InventoryService.class
+TestJava\testjava\threads\AutomaticJobAssignmentThread.class
 TestJava\testjava\commands\VillageCommand.class
 TestJava\testjava\listeners\FriendlyFireListener.class
+TestJava\testjava\services\MaintenanceService.class
 TestJava\testjava\services\VillagerInventoryService.class
 TestJava\testjava\helpers\JuridictionHelper.class
 TestJava\testjava\models\VillagerHistoryModel.class
@@ -41,11 +44,13 @@ TestJava\testjava\commands\WarCommand.class
 TestJava\testjava\models\EmpireModel.class
 TestJava\testjava\commands\MarketPriceCommand.class
 TestJava\testjava\enums\SocialClass.class
+TestJava\testjava\services\ChunkManagerService$ChunkCoordinate.class
 TestJava\testjava\commands\ForceSpawnAtCommand.class
 TestJava\testjava\services\VillagerInventoryService$1.class
 TestJava\testjava\listeners\SocialClassJobListener$1.class
 TestJava\testjava\threads\DailyBuildingCostThread.class
 TestJava\testjava\threads\VillagerGoEatThread$VillageStats.class
+TestJava\testjava\services\AutomaticJobAssignmentService.class
 TestJava\testjava\services\JobAssignmentService.class
 TestJava\testjava\threads\DailyBuildingCostThread$VillageCostStats.class
 TestJava\testjava\services\SheepService.class
@@ -55,7 +60,10 @@ TestJava\testjava\services\DistanceConfigService$1.class
 TestJava\testjava\models\VillageHistoryModel.class
 TestJava\testjava\services\TaxService$VillageTaxStats.class
 TestJava\testjava\services\CustomJobAssignmentService$VillagerCandidate.class
+TestJava\testjava\services\VillagerSynchronizationService$1.class
 TestJava\testjava\commands\RenameCommand.class
+TestJava\testjava\services\VillagerSynchronizationService$ChunkCoord.class
+TestJava\testjava\commands\PopulationCommand.class
 TestJava\testjava\helpers\ResourceHelper$ResourceSearchResult.class
 TestJava\testjava\services\VillagerInventoryService$2.class
 TestJava\testjava\services\ItemService.class
@@ -65,6 +73,7 @@ TestJava\testjava\commands\ReactivateCommand.class
 TestJava\testjava\services\VillagerInventoryService$FeedResult.class
 TestJava\testjava\models\VillageModel.class
 TestJava\testjava\services\VillagerInventoryService$3.class
+TestJava\testjava\services\DatabaseBackupService.class
 TestJava\testjava\models\WarBlockModel.class
 TestJava\testjava\services\JobAssignmentService$VillagerCandidate.class
 TestJava\testjava\helpers\EatableHelper.class
@@ -72,12 +81,15 @@ TestJava\testjava\commands\MoneyCommand.class
 TestJava\testjava\services\VillagerService.class
 TestJava\testjava\listeners\JobBlockPlacementListener.class
 TestJava\testjava\services\InactiveJobSearchService.class
+TestJava\testjava\commands\TraderStatusCommand.class
 TestJava\testjava\helpers\Colorize.class
 TestJava\testjava\services\TaxService$TaxStats.class
 TestJava\testjava\services\GhostVillagerCleanupService$CleanupResult.class
 TestJava\testjava\services\HistoryService$1.class
 TestJava\testjava\services\VillagerSynchronizationService$SynchronizationResult.class
 TestJava\testjava\commands\DistanceCommand.class
+TestJava\testjava\threads\TraderMaintenanceThread.class
+TestJava\testjava\services\VillagePopulationCorrectionService.class
 TestJava\testjava\repositories\WarBlockRepository.class
 TestJava\testjava\listeners\SocialClassJobListener.class
 TestJava\testjava\services\ItemService$1.class
@@ -87,6 +99,7 @@ TestJava\testjava\threads\DefenderThread.class
 TestJava\testjava\threads\VillageStatsThread.class
 TestJava\testjava\classes\CustomEntity.class
 TestJava\testjava\services\CustomJobArmorService.class
+TestJava\testjava\services\ChunkManagerService.class
 TestJava\testjava\threads\InactiveJobSearchThread.class
 TestJava\testjava\services\VillageService.class
 TestJava\testjava\commands\EmptyVillageCommand.class
@@ -95,8 +108,10 @@ TestJava\testjava\models\VillagerModel.class
 TestJava\testjava\threads\SheepSpawnThread.class
 TestJava\testjava\threads\SocialClassEnforcementThread.class
 TestJava\testjava\commands\NearestCommand.class
+TestJava\testjava\commands\TestAutoJobCommand.class
 TestJava\testjava\models\BuildingModel.class
 TestJava\testjava\commands\SocialCommand.class
+TestJava\testjava\services\VillagerHomeService.class
 TestJava\testjava\services\SocialClassService.class
 TestJava\testjava\repositories\BuildingRepository.class
 TestJava\testjava\services\EntityService$1.class

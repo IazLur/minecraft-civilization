@@ -9,6 +9,7 @@ import TestJava.testjava.repositories.VillageRepository;
 import TestJava.testjava.repositories.VillagerRepository;
 import TestJava.testjava.services.SocialClassService;
 import TestJava.testjava.services.HistoryService;
+import TestJava.testjava.services.VillagerHomeService;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Villager;
@@ -69,42 +70,21 @@ public class VillagerEatThread implements Runnable {
                 prosp.setPopulation(prosp.getPopulation() + 1);
                 
                 // CORRECTION BUG: Réinitialiser les données de navigation du villageois
-                resetVillagerHome(v);
+                VillagerHomeService.resetVillagerNavigation(v);
                 v.teleport(VillageRepository.getBellLocation(prosp));
                 
                 VillageRepository.update(village);
                 VillageRepository.update(prosp);
             }
             
-            // Évaluation de la classe sociale après changement de nourriture
+            // CORRECTION BUG: Évaluation de la classe sociale après changement de nourriture
+            // evaluateAndUpdateSocialClass sauvegarde déjà les changements, pas besoin de VillagerRepository.update
             SocialClassService.evaluateAndUpdateSocialClass(villagerModel);
             
+            // Sauvegarde de la nourriture mise à jour
             VillagerRepository.update(villagerModel);
         });
     }
     
-    /**
-     * Réinitialise les données de navigation du villageois pour empêcher le retour automatique
-     */
-    private void resetVillagerHome(Villager villager) {
-        try {
-            Bukkit.getLogger().info("[VillagerMigration] Réinitialisation données navigation pour " + villager.getUniqueId());
-            
-            // Arrêter tous les mouvements en cours
-            villager.getPathfinder().stopPathfinding();
-            
-            // Retirer la profession temporairement puis la remettre pour réinitialiser
-            Villager.Profession currentProfession = villager.getProfession();
-            villager.setProfession(Villager.Profession.NONE);
-            
-            // Programmer la restauration de la profession après quelques ticks
-            Bukkit.getScheduler().runTaskLater(TestJava.plugin, () -> {
-                villager.setProfession(currentProfession);
-                Bukkit.getLogger().info("[VillagerMigration] ✅ Navigation réinitialisée pour " + villager.getUniqueId());
-            }, 5L);
-            
-        } catch (Exception e) {
-            Bukkit.getLogger().warning("[VillagerMigration] Erreur réinitialisation navigation: " + e.getMessage());
-        }
-    }
+
 }

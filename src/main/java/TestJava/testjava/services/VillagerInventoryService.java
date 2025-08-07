@@ -399,4 +399,48 @@ public class VillagerInventoryService {
             }
         }
     }
+    
+    /**
+     * Méthode de diagnostic pour identifier les villageois problématiques
+     * @param villageName Le nom du village à diagnostiquer
+     */
+    public static void diagnoseVillageVillagers(String villageName) {
+        Collection<VillagerModel> allVillagers = VillagerRepository.getAll();
+        int totalVillagers = 0;
+        int villagersInWorld = 0;
+        int villagersWithFood = 0;
+        int villagersWithoutFood = 0;
+        int ghostVillagers = 0;
+        
+        for (VillagerModel villager : allVillagers) {
+            if (!villageName.equals(villager.getVillageName())) {
+                continue;
+            }
+            
+            totalVillagers++;
+            
+            // Vérifier si le villageois existe dans le monde
+            Villager entity = (Villager) TestJava.plugin.getServer().getEntity(villager.getId());
+            if (entity == null) {
+                ghostVillagers++;
+                continue;
+            }
+            
+            villagersInWorld++;
+            
+            // Vérifier la nourriture
+            if (villager.getFood() != null && villager.getFood() > 0) {
+                villagersWithFood++;
+            } else {
+                villagersWithoutFood++;
+            }
+        }
+        
+        Bukkit.getLogger().info("[Diagnostic] Village " + villageName + ":");
+        Bukkit.getLogger().info("[Diagnostic] - Total en DB: " + totalVillagers);
+        Bukkit.getLogger().info("[Diagnostic] - Dans le monde: " + villagersInWorld);
+        Bukkit.getLogger().info("[Diagnostic] - Avec nourriture: " + villagersWithFood);
+        Bukkit.getLogger().info("[Diagnostic] - Sans nourriture: " + villagersWithoutFood);
+        Bukkit.getLogger().info("[Diagnostic] - Villageois fantômes: " + ghostVillagers);
+    }
 }

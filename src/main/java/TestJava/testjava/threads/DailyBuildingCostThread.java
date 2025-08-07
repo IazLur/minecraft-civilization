@@ -29,6 +29,9 @@ public class DailyBuildingCostThread implements Runnable {
         
         // Statistiques par village pour le message personnalisé
         Map<String, VillageCostStats> villageStats = new HashMap<>();
+        int totalBuildingsProcessed = 0;
+        int totalCostPaid = 0;
+        int buildingsDeactivated = 0;
 
         for (BuildingModel building : allBuildings) {
             VillageModel village = VillageRepository.get(building.getVillageName());
@@ -48,6 +51,8 @@ public class DailyBuildingCostThread implements Runnable {
                 continue;
             }
 
+            totalBuildingsProcessed++;
+            
             // Calculer le coût divisé par 5 (nouvelle fréquence : 4 min au lieu de 20 min)
             int adjustedCost = building.getCostPerDay() / 5;
 
@@ -55,6 +60,7 @@ public class DailyBuildingCostThread implements Runnable {
                 // Payer les coûts normalement
                 empire.setJuridictionCount(empire.getJuridictionCount() - adjustedCost);
                 EmpireRepository.update(empire);
+                totalCostPaid += adjustedCost;
                 
                 // Statistiques pour le message personnalisé
                 String villageName = village.getId();
@@ -69,6 +75,7 @@ public class DailyBuildingCostThread implements Runnable {
                 // Pas assez d'argent : désactiver le bâtiment au lieu de le détruire
                 building.setActive(false);
                 BuildingRepository.update(building);
+                buildingsDeactivated++;
 
                 // Gérer la désactivation du bâtiment custom
                 if ("bergerie".equals(building.getBuildingType())) {
@@ -101,6 +108,12 @@ public class DailyBuildingCostThread implements Runnable {
                     }
                 }
             }
+        }
+        
+        // Un seul log de résumé
+        if (totalBuildingsProcessed > 0) {
+            Bukkit.getLogger().info("[DailyBuildingCost] ✅ Résumé: " + totalBuildingsProcessed + " bâtiments traités, " + 
+                                   totalCostPaid + "µ payés, " + buildingsDeactivated + " désactivés");
         }
         
         // Afficher les messages personnalisés aux propriétaires des villages

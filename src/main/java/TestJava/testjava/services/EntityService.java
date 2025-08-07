@@ -26,6 +26,15 @@ public class EntityService {
             return;
         }
         VillageModel village = VillageRepository.getNearestOf(villager);
+        
+        // VÉRIFICATION CRITIQUE: Empêcher le spawn si le village a atteint sa limite de lits
+        if (village.getPopulation() >= village.getBedsCount()) {
+            Bukkit.getLogger().warning("[EntityService] Spawn villageois bloqué: Village " + 
+                village.getId() + " a atteint sa limite (" + village.getPopulation() + "/" + village.getBedsCount() + " lits)");
+            e.setCancelled(true);
+            return;
+        }
+        
         villager.setCustomNameVisible(true);
         assert village != null;
         String customName = CustomName.generate();
@@ -39,6 +48,10 @@ public class EntityService {
         nVillager.setFood(1);
         nVillager.setId(villager.getUniqueId());
         VillagerRepository.update(nVillager);
+        
+        // Mise à jour de la population du village
+        village.setPopulation(village.getPopulation() + 1);
+        VillageRepository.update(village);
         
         // Mise à jour du nom avec le tag de classe sociale
         SocialClassService.updateVillagerDisplayName(nVillager);
