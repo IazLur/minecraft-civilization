@@ -5,6 +5,7 @@ TestJava\testjava\threads\VillagerSpawnThread.class
 TestJava\testjava\threads\SheepMovementThread.class
 TestJava\testjava\services\PlayerService.class
 TestJava\testjava\models\ResourceModel.class
+TestJava\testjava\services\TaxService$RedistributionStats.class
 TestJava\testjava\services\BlockProtectionService.class
 TestJava\testjava\repositories\EmpireRepository.class
 TestJava\testjava\commands\DataCommand.class
@@ -66,6 +67,7 @@ TestJava\testjava\services\VillagerSynchronizationService$ChunkCoord.class
 TestJava\testjava\commands\PopulationCommand.class
 TestJava\testjava\helpers\ResourceHelper$ResourceSearchResult.class
 TestJava\testjava\services\VillagerInventoryService$2.class
+TestJava\testjava\services\NativeJobLevelService.class
 TestJava\testjava\services\ItemService.class
 TestJava\testjava\services\DistanceConfigService.class
 TestJava\testjava\threads\LocustThread.class

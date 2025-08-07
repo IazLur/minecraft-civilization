@@ -5,10 +5,11 @@ import TestJava.testjava.models.VillagerModel;
 import TestJava.testjava.repositories.VillagerRepository;
 import TestJava.testjava.services.SocialClassService;
 import TestJava.testjava.services.HistoryService;
+import TestJava.testjava.services.NativeJobLevelService;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
+
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -17,28 +18,11 @@ import org.bukkit.event.entity.VillagerAcquireTradeEvent;
 import org.bukkit.event.entity.VillagerCareerChangeEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 
-import java.util.Arrays;
-import java.util.List;
+
 
 public class SocialClassJobListener implements Listener {
 
-    // Blocs de métier que les villageois ne peuvent pas utiliser s'ils sont classe 0
-    private static final List<Material> JOB_BLOCKS = Arrays.asList(
-        Material.COMPOSTER,
-        Material.BARREL,
-        Material.BLAST_FURNACE,
-        Material.SMOKER,
-        Material.CARTOGRAPHY_TABLE,
-        Material.FLETCHING_TABLE,
-        Material.GRINDSTONE,
-        Material.LECTERN,
-        Material.LOOM,
-        Material.SMITHING_TABLE,
-        Material.STONECUTTER,
-        Material.CAULDRON,
-        Material.BREWING_STAND,
-        Material.ENCHANTING_TABLE
-    );
+
 
     /**
      * Gère le changement de profession d'un villageois
@@ -116,6 +100,9 @@ public class SocialClassJobListener implements Listener {
                 // Marquer comme métier natif
                 villagerModel.assignNativeJob();
                 VillagerRepository.update(villagerModel);
+                
+                // NOUVEAU : Appliquer le niveau d'éducation au métier natif
+                NativeJobLevelService.applyEducationToNativeJobLevel(villagerModel);
                 
                 // Enregistrer le changement de métier dans l'historique
                 String jobName = getJobNameFromProfession(finalProfession);
@@ -206,12 +193,7 @@ public class SocialClassJobListener implements Listener {
         }
     }
 
-    /**
-     * Vérifie si un bloc est un bloc de métier
-     */
-    private boolean isJobBlock(Block block) {
-        return JOB_BLOCKS.contains(block.getType());
-    }
+
 
     /**
      * Empêche un villageois misérable de chercher activement des blocs de métier

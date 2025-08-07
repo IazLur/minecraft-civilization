@@ -10,13 +10,19 @@ import TestJava.testjava.repositories.EmpireRepository;
 import TestJava.testjava.repositories.VillageRepository;
 import TestJava.testjava.services.CustomJobAssignmentService;
 import TestJava.testjava.services.SheepService;
+import TestJava.testjava.services.NativeJobLevelService;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
+
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import TestJava.testjava.models.VillagerModel;
+import TestJava.testjava.repositories.VillagerRepository;
+import java.util.Set;
+import java.util.HashSet;
+import org.bukkit.entity.Villager;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -32,9 +38,14 @@ public class DailyBuildingCostThread implements Runnable {
         int totalBuildingsProcessed = 0;
         int totalCostPaid = 0;
         int buildingsDeactivated = 0;
+        Set<String> villagesWithSchool = new HashSet<>();
 
         for (BuildingModel building : allBuildings) {
             VillageModel village = VillageRepository.get(building.getVillageName());
+            // Enregistre les villages disposant d'une école active
+            if ("ecole".equals(building.getBuildingType()) && building.isActive()) {
+                villagesWithSchool.add(building.getVillageName());
+            }
 
             if(village == null) {
                 continue; // passez à la prochaine itération
@@ -68,7 +79,6 @@ public class DailyBuildingCostThread implements Runnable {
                 VillageCostStats stats = villageStats.get(villageName);
                 stats.totalCost += adjustedCost;
                 stats.buildingCount++;
-                stats.villageName = villageName;
                 stats.ownerName = village.getPlayerName();
                 
             } else {
@@ -109,6 +119,37 @@ public class DailyBuildingCostThread implements Runnable {
                 }
             }
         }
+
+        // === Traitement de l'éducation ===
+        Collection<VillagerModel> allVillagers = VillagerRepository.getAll();
+        for (VillagerModel villager : allVillagers) {
+            if (!villagesWithSchool.contains(villager.getVillageName())) continue;
+            if (villager.getSocialClassEnum().getLevel() < 1) continue;
+            int currentEducation = villager.getEducation();
+            if (currentEducation >= 8) continue;
+
+            float currentRichesse = villager.getRichesse();
+            float costEducation = currentEducation * 20f;
+            if (currentRichesse >= costEducation) {
+                villager.setRichesse(currentRichesse - costEducation);
+                villager.setEducation(currentEducation + 1);
+                VillagerRepository.update(villager);
+
+                String displayName;
+                Entity entity = TestJava.world != null ? TestJava.world.getEntity(villager.getId()) : null;
+                if (entity instanceof Villager villagerEntity && villagerEntity.getCustomName() != null) {
+                    displayName = ChatColor.stripColor(villagerEntity.getCustomName());
+                } else {
+                    displayName = "Un villageois";
+                }
+                Bukkit.getServer().broadcastMessage(displayName + " a gagné un niveau d'éducation (niveau " + villager.getEducation() + ")");
+                
+                // NOUVEAU : Si le villageois a un métier natif, mettre à jour son niveau selon l'éducation
+                if (villager.hasNativeJob()) {
+                    NativeJobLevelService.applyEducationToNativeJobLevel(villager);
+                }
+            }
+        }
         
         // Un seul log de résumé
         if (totalBuildingsProcessed > 0) {
@@ -135,7 +176,6 @@ public class DailyBuildingCostThread implements Runnable {
      * Classe pour les statistiques de coûts par village
      */
     private static class VillageCostStats {
-        public String villageName;
         public String ownerName;
         public int totalCost = 0;
         public int buildingCount = 0;

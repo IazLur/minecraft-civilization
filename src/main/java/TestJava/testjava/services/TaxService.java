@@ -11,15 +11,14 @@ import TestJava.testjava.repositories.EmpireRepository;
 import TestJava.testjava.services.HistoryService;
 import TestJava.testjava.repositories.VillageRepository;
 import TestJava.testjava.repositories.VillagerRepository;
+import TestJava.testjava.enums.SocialClass;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Villager;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Service pour gérer le système d'impôts des villageois
@@ -85,17 +84,41 @@ public class TaxService {
 
                 // Calculer l'impôt
                 float tax = salary * taxRate;
-
-                // Payer le salaire au villageois
-                villager.setRichesse(villager.getRichesse() + salary);
-
-                // Collecter les impôts
-                villager.setRichesse(villager.getRichesse() - tax);
+                
+                // CORRECTION BUG : Vérifier que l'empire peut payer le salaire
+                String villageName = villager.getVillageName();
+                VillageModel village = VillageRepository.get(villageName);
+                if (village == null) {
+                    continue; // Village introuvable
+                }
+                
+                EmpireModel empire = EmpireRepository.getForPlayer(village.getPlayerName());
+                if (empire == null) {
+                    continue; // Empire introuvable
+                }
+                
+                // Vérifier si l'empire a assez d'argent pour payer le salaire
+                if (empire.getJuridictionCount() < salary) {
+                    // FAILLITE : L'empire ne peut pas payer, le villageois perd son métier
+                    handleJobLossFromBankruptcy(villager, entity, salary, empire.getJuridictionCount());
+                    continue;
+                }
+                
+                // L'empire peut payer : prélever le salaire de l'empire
+                empire.setJuridictionCount(empire.getJuridictionCount() - salary);
+                
+                // Payer le salaire au villageois (salaire - impôts)
+                float netSalary = salary - tax;
+                villager.setRichesse(villager.getRichesse() + netSalary);
+                
+                // Verser les impôts à l'empire (récupération partielle)
+                empire.setJuridictionCount(empire.getJuridictionCount() + tax);
+                EmpireRepository.update(empire);
+                
                 totalTaxCollected += tax;
                 totalTaxedVillagers++;
 
                 // Statistiques par village
-                String villageName = villager.getVillageName();
                 villageStats.putIfAbsent(villageName, new VillageTaxStats());
                 VillageTaxStats stats = villageStats.get(villageName);
                 stats.taxCollected += tax;
@@ -103,21 +126,12 @@ public class TaxService {
                 stats.villageName = villageName;
 
                 // Log pour debug
-                Bukkit.getLogger().info("[TaxService] Impôt collecté: " + villager.getId() + 
+                Bukkit.getLogger().info("[TaxService] Salaire payé: " + villager.getId() + 
                                        " - Village: " + villageName +
                                        " - Métier: " + jobType + 
-                                       " - Salaire: " + salary + "µ" +
-                                       " - Impôt: " + String.format("%.2f", tax) + "µ");
-
-                // Verser les impôts à l'empire du propriétaire du village
-                VillageModel village = VillageRepository.get(villageName);
-                if (village != null) {
-                    EmpireModel empire = EmpireRepository.getForPlayer(village.getPlayerName());
-                    if (empire != null) {
-                        empire.setJuridictionCount(empire.getJuridictionCount() + tax);
-                        EmpireRepository.update(empire);
-                    }
-                }
+                                       " - Salaire brut: " + salary + "µ" +
+                                       " - Salaire net: " + String.format("%.2f", netSalary) + "µ" +
+                                       " - Impôt collecté: " + String.format("%.2f", tax) + "µ");
 
                 // Sauvegarder le villageois
                 VillagerRepository.update(villager);
@@ -128,13 +142,22 @@ public class TaxService {
             }
         }
 
+        // NOUVELLE FONCTIONNALITÉ: Redistribution 25% des taxes aux misérables
+        float redistributionAmount = 0.0f;
+        Map<String, RedistributionStats> redistributionByVillage = new HashMap<>();
+        
+        if (totalTaxCollected > 0) {
+            redistributionAmount = totalTaxCollected * 0.25f;
+            redistributionByVillage = redistributeToMiserableVillagers(redistributionAmount);
+        }
+
         // Messages par village et enregistrement historique
         if (totalTaxCollected > 0) {
             // Message global résumé
             Bukkit.getServer().broadcastMessage(
-                Colorize.name("💰 Collecte d'impôts terminée") + ": " + 
+                Colorize.name("💰 Paie des salaires terminée") + ": " + 
                 Colorize.name(String.format("%.2fµ", totalTaxCollected)) + 
-                " collectés au total auprès de " + Colorize.name(totalTaxedVillagers + " villageois")
+                " d'impôts collectés auprès de " + Colorize.name(totalTaxedVillagers + " travailleurs")
             );
             
             // Messages détaillés par village
@@ -144,10 +167,24 @@ public class TaxService {
                     if (village != null) {
                         String ownerName = village.getPlayerName();
                         Bukkit.getServer().broadcastMessage(
-                            Colorize.name("🏘️ " + stats.villageName) + " (" + ownerName + "): " +
+                            Colorize.name(stats.villageName) + ": " +
                             Colorize.name(String.format("%.2fµ", stats.taxCollected)) + 
-                            " collectés auprès de " + Colorize.name(stats.taxedVillagers + " villageois")
+                            " pour " + Colorize.name(stats.taxedVillagers + " travailleurs")
                         );
+                        
+                        // Message de redistribution pour le propriétaire du village
+                        RedistributionStats redistribution = redistributionByVillage.get(stats.villageName);
+                        if (redistribution != null && redistribution.miserableCount > 0) {
+                            // Envoyer le message au propriétaire du village uniquement s'il est connecté
+                            if (Bukkit.getPlayerExact(ownerName) != null) {
+                                Bukkit.getPlayerExact(ownerName).sendMessage(
+                                    Colorize.name("25%(") + 
+                                    Colorize.name(String.format("%.2fµ", redistribution.amountDistributed)) + 
+                                    Colorize.name(") redistribuées à ") + 
+                                    Colorize.name(redistribution.miserableCount + " misérables")
+                                );
+                            }
+                        }
                         
                         // Enregistrer la collecte d'impôts dans l'historique
                         EmpireModel empire = EmpireRepository.getForPlayer(ownerName);
@@ -161,12 +198,141 @@ public class TaxService {
     }
     
     /**
+     * Redistribue un montant aux villageois misérables de tous les villages
+     * @param totalAmount Montant total à redistribuer (25% des taxes collectées)
+     * @return Map avec les statistiques de redistribution par village
+     */
+    private static Map<String, RedistributionStats> redistributeToMiserableVillagers(float totalAmount) {
+        Map<String, RedistributionStats> redistributionByVillage = new HashMap<>();
+        
+        // Trouver tous les villageois misérables
+        Collection<VillagerModel> allVillagers = VillagerRepository.getAll();
+        Map<String, java.util.List<VillagerModel>> miserablesByVillage = new HashMap<>();
+        int totalMiserables = 0;
+        
+        for (VillagerModel villager : allVillagers) {
+            if (villager.getSocialClassEnum() == SocialClass.MISERABLE) {
+                String villageName = villager.getVillageName();
+                miserablesByVillage.putIfAbsent(villageName, new java.util.ArrayList<>());
+                miserablesByVillage.get(villageName).add(villager);
+                totalMiserables++;
+            }
+        }
+        
+        // Si aucun misérable, rien à redistribuer
+        if (totalMiserables == 0) {
+            Bukkit.getLogger().info("[TaxService] Aucun villageois misérable trouvé pour la redistribution");
+            return redistributionByVillage;
+        }
+        
+        // Calculer le montant par misérable
+        float amountPerMiserable = totalAmount / totalMiserables;
+        
+        // Redistribuer par village
+        for (Map.Entry<String, java.util.List<VillagerModel>> entry : miserablesByVillage.entrySet()) {
+            String villageName = entry.getKey();
+            java.util.List<VillagerModel> miserables = entry.getValue();
+            
+            RedistributionStats stats = new RedistributionStats();
+            stats.miserableCount = miserables.size();
+            stats.amountDistributed = amountPerMiserable * miserables.size();
+            
+            // Distribuer l'argent à chaque misérable
+            for (VillagerModel miserable : miserables) {
+                miserable.setRichesse(miserable.getRichesse() + amountPerMiserable);
+                VillagerRepository.update(miserable);
+                
+                // Log pour debug
+                Bukkit.getLogger().info("[TaxService] Redistribution: " + miserable.getId() + 
+                                       " (Village: " + villageName + ") a reçu " + 
+                                       String.format("%.2f", amountPerMiserable) + "µ");
+            }
+            
+            redistributionByVillage.put(villageName, stats);
+        }
+        
+        // Log global de redistribution
+        Bukkit.getLogger().info("[TaxService] Redistribution terminée: " + 
+                               String.format("%.2f", totalAmount) + "µ redistribués à " + 
+                               totalMiserables + " misérables dans " + 
+                               miserablesByVillage.size() + " villages");
+        
+        return redistributionByVillage;
+    }
+    
+    /**
+     * Gère la perte d'emploi d'un villageois due à la faillite de son empire
+     */
+    private static void handleJobLossFromBankruptcy(VillagerModel villager, Villager entity, int requiredSalary, float availableFunds) {
+        String villageName = villager.getVillageName();
+        String jobType = "";
+        
+        // Déterminer le type de métier
+        if (villager.hasCustomJob()) {
+            jobType = "métier custom (" + villager.getCurrentJobName() + ")";
+            
+            // Retirer le métier custom
+            villager.clearJob();
+            
+            // Retirer l'armure de cuir si c'est un métier custom
+            if (entity != null) {
+                // TODO: Appeler CustomJobArmorService.removeCustomJobArmor si nécessaire
+            }
+        } else if (villager.hasNativeJob()) {
+            jobType = "métier natif (" + entity.getProfession().toString() + ")";
+            
+            // Retirer le métier natif
+            villager.clearJob();
+            if (entity != null) {
+                entity.setProfession(Villager.Profession.NONE);
+            }
+        }
+        
+        // Rétrograder à la classe Inactive
+        SocialClassService.demoteToInactiveOnJobLoss(villager);
+        
+        // Messages informatifs
+        String villagerName = "Un villageois";
+        if (entity != null && entity.getCustomName() != null) {
+            villagerName = org.bukkit.ChatColor.stripColor(entity.getCustomName());
+        }
+        
+        // Message global de faillite
+        Bukkit.getServer().broadcastMessage(
+            "💸 " + Colorize.name("FAILLITE") + " à " + Colorize.name(villageName) + 
+            " : " + villagerName + " a perdu son " + jobType + 
+            " (salaire requis: " + requiredSalary + "µ, disponible: " + String.format("%.2f", availableFunds) + "µ)"
+        );
+        
+        // Enregistrer dans l'historique
+        HistoryService.recordJobChange(villager, "Licenciement pour faillite");
+        
+        // Log détaillé
+        Bukkit.getLogger().warning("[TaxService] FAILLITE: " + villager.getId() + 
+                                 " - Village: " + villageName +
+                                 " - Métier perdu: " + jobType + 
+                                 " - Salaire requis: " + requiredSalary + "µ" +
+                                 " - Fonds disponibles: " + String.format("%.2f", availableFunds) + "µ");
+        
+        // Sauvegarder les changements
+        VillagerRepository.update(villager);
+    }
+    
+    /**
      * Classe pour les statistiques d'impôts par village
      */
     private static class VillageTaxStats {
         public String villageName;
         public float taxCollected = 0.0f;
         public int taxedVillagers = 0;
+    }
+    
+    /**
+     * Classe pour les statistiques de redistribution par village
+     */
+    private static class RedistributionStats {
+        public int miserableCount = 0;
+        public float amountDistributed = 0.0f;
     }
 
     /**

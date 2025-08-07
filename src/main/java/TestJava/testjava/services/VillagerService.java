@@ -50,7 +50,7 @@ public class VillagerService {
         }
 
         try {
-            String villageName = CustomName.extractVillageName(villager.customName().toString());
+            String villageName = CustomName.extractVillageName(villager.getCustomName());
             
             VillagerModel model = new VillagerModel();
             model.setId(villager.getUniqueId());
@@ -59,6 +59,7 @@ public class VillagerService {
             model.setEating(false);
             model.setSocialClass(0); // Misérable par défaut
             model.setRichesse(0.0f); // Pas de richesse au départ
+            model.setEducation(0); // Niveau d'éducation initial
             
             // Gestion des métiers
             model.setCurrentJobType(null);

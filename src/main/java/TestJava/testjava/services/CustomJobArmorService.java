@@ -180,7 +180,7 @@ public class CustomJobArmorService {
             villager.getWorld().getNearbyEntities(villager.getLocation(), 5, 5, 5).stream()
                 .filter(entity -> entity instanceof ArmorStand)
                 .map(entity -> (ArmorStand) entity)
-                .filter(armorStand -> targetName.equals(armorStand.customName().toString()))
+                .filter(armorStand -> targetName.equals(armorStand.getCustomName()))
                 .forEach(armorStand -> {
                     armorStand.remove();
                     Bukkit.getLogger().info("[CustomJobArmor] 🗑️ ArmorStand d'armure supprimé pour " + villager.getUniqueId());

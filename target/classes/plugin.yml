@@ -43,5 +43,5 @@ commands:
     usage: /population <check|fix|stats|diagnose> [village]
   admin:
     description: Commandes administratives
-    usage: /admin <refresh|data|emptyvillage|forcespawn|reactivate|testautojob|traderstatus>
+    usage: /admin <refresh|data|emptyvillage|forcespawn|reactivate|testautojob|traderstatus|collecttaxes|goeat>
     permission: testjava.admin

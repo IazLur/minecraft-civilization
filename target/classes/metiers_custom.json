@@ -11,5 +11,18 @@
     "nombreEmployesMax": 3,
     "salaireEmploye": 8,
     "tauxTaxeEmploye": 0.20
+  },
+  {
+    "buildingType": "ecole",
+    "distanceMin": 0,
+    "distanceMax": 77,
+    "description": "Ecole pour augmenter le niveau d'éducation des villageois",
+    "costToBuild": 500,
+    "costPerDay": 10,
+    "costPerUpgrade": 100,
+    "costUpgradeMultiplier": 1.2,
+    "nombreEmployesMax": 3,
+    "salaireEmploye": 12,
+    "tauxTaxeEmploye": 0.25
   }
 ]

@@ -107,54 +107,134 @@ public class JobAssignmentService {
         String jobName = getJobNameFromBlock(jobBlockType);
         
         Bukkit.getServer().broadcastMessage(
-            org.bukkit.ChatColor.AQUA + villagerName + 
-            org.bukkit.ChatColor.WHITE + " se dirige vers le bloc de métier pour devenir " + 
-            org.bukkit.ChatColor.YELLOW + jobName
+            "§b" + villagerName + 
+            "§f se dirige vers le bloc de métier pour devenir " + 
+            "§e" + jobName
         );
         
-        // Faire se déplacer le villageois vers le bloc
+        // CORRECTION BUG: Forcer l'attribution immédiate du métier
+        // Au lieu de laisser le villageois "décider" naturellement, nous forçons l'attribution
+        forceJobAssignment(villager, villagerModel, jobBlockType, jobBlockLocation);
+    }
+    
+    /**
+     * CORRECTION BUG: Force l'attribution immédiate du métier au villageois
+     * Cette méthode résout le problème où le villageois se déplace vers le bloc mais ne prend pas le métier
+     */
+    private static void forceJobAssignment(Villager villager, VillagerModel villagerModel, 
+                                         Material jobBlockType, Location jobBlockLocation) {
         try {
-            // Déplacer légèrement au-dessus du bloc pour éviter les problèmes de pathfinding
+            // Étape 1: Téléporter le villageois près du bloc pour garantir la proximité
             Location targetLocation = jobBlockLocation.clone().add(0.5, 1, 0.5);
-            villager.getPathfinder().moveTo(targetLocation, 1.0); // Vitesse normale
+            villager.teleport(targetLocation);
             
-            // Programmer une vérification pour s'assurer que le villageois prend bien le métier
+            Bukkit.getLogger().info("[JobAssignment] 🔧 Téléportation forcée du villageois vers " + 
+                                   locationToString(jobBlockLocation));
+            
+            // Étape 2: Forcer l'attribution du métier avec un délai court
             Bukkit.getScheduler().runTaskLater(TestJava.plugin, () -> {
-                verifyJobAssignment(villager, villagerModel, jobBlockType, jobBlockLocation);
-            }, 100L); // 5 secondes de délai
+                try {
+                    // Déterminer la profession correspondante au bloc
+                    Villager.Profession targetProfession = getProfessionFromJobBlock(jobBlockType);
+                    
+                    if (targetProfession != null) {
+                        // Forcer la profession directement
+                        villager.setProfession(targetProfession);
+                        
+                        Bukkit.getLogger().info("[JobAssignment] ✅ ATTRIBUTION FORCÉE: " + 
+                                               villager.getUniqueId() + " → " + targetProfession);
+                        
+                        // Programmer une vérification finale
+                        Bukkit.getScheduler().runTaskLater(TestJava.plugin, () -> {
+                            verifyFinalJobAssignment(villager, villagerModel, targetProfession);
+                        }, 20L); // 1 seconde de délai pour la vérification
+                        
+                    } else {
+                        Bukkit.getLogger().warning("[JobAssignment] ❌ Impossible de déterminer la profession pour " + jobBlockType);
+                    }
+                    
+                } catch (Exception e) {
+                    Bukkit.getLogger().warning("[JobAssignment] Erreur lors de l'attribution forcée: " + e.getMessage());
+                }
+            }, 10L); // 0.5 seconde de délai
             
         } catch (Exception e) {
-            Bukkit.getLogger().warning("[JobAssignment] Erreur lors du déplacement: " + e.getMessage());
+            Bukkit.getLogger().warning("[JobAssignment] Erreur lors de la téléportation: " + e.getMessage());
         }
     }
     
     /**
-     * Vérifie que le villageois a bien pris le métier après le déplacement
+     * Détermine la profession Minecraft correspondante à un bloc de métier
      */
-    private static void verifyJobAssignment(Villager villager, VillagerModel villagerModel, 
-                                          Material jobBlockType, Location jobBlockLocation) {
+    private static Villager.Profession getProfessionFromJobBlock(Material blockType) {
+        return switch (blockType) {
+            case COMPOSTER -> Villager.Profession.FARMER;
+            case BLAST_FURNACE -> Villager.Profession.ARMORER;
+            case SMOKER -> Villager.Profession.BUTCHER;
+            case CARTOGRAPHY_TABLE -> Villager.Profession.CARTOGRAPHER;
+            case BREWING_STAND -> Villager.Profession.CLERIC;
+            case SMITHING_TABLE -> Villager.Profession.TOOLSMITH;
+            case FLETCHING_TABLE -> Villager.Profession.FLETCHER;
+            case LOOM -> Villager.Profession.SHEPHERD;
+            case STONECUTTER -> Villager.Profession.MASON;
+            case CAULDRON -> Villager.Profession.LEATHERWORKER;
+            case LECTERN -> Villager.Profession.LIBRARIAN;
+            case GRINDSTONE -> Villager.Profession.WEAPONSMITH;
+            case BARREL -> Villager.Profession.FISHERMAN;
+            default -> null;
+        };
+    }
+    
+    /**
+     * Vérification finale que le villageois a bien obtenu le métier
+     */
+    private static void verifyFinalJobAssignment(Villager villager, VillagerModel villagerModel, 
+                                               Villager.Profession expectedProfession) {
         try {
-            if (villager.getProfession() != Villager.Profession.NONE) {
-                // Le villageois a pris le métier avec succès
-                Bukkit.getLogger().info("[JobAssignment] ✅ Métier attribué avec succès: " + 
-                                       villager.getProfession() + " pour " + villager.getUniqueId());
+            if (villager.getProfession() == expectedProfession) {
+                // Succès ! Le SocialClassJobListener va maintenant gérer la promotion à la classe Ouvrière
+                Bukkit.getLogger().info("[JobAssignment] ✅ SUCCESS: Villageois " + villager.getUniqueId() + 
+                                       " a obtenu le métier " + expectedProfession);
+                
+                String villagerName = extractVillagerName(villager);
+                String jobName = getJobNameFromBlock(getMaterialFromProfession(expectedProfession));
+                
+                Bukkit.getServer().broadcastMessage(
+                    "§a✅ " + villagerName + 
+                    "§f est maintenant " + 
+                    "§e" + jobName
+                );
+                
             } else {
-                // Le villageois n'a pas pris le métier, réessayer s'il est encore proche
-                double currentDistance = villager.getLocation().distance(jobBlockLocation);
-                if (currentDistance <= 5.0) {
-                    Bukkit.getLogger().info("[JobAssignment] ⚠️ Réessai d'attribution pour " + villager.getUniqueId());
-                    // Réessayer de le diriger vers le bloc
-                    Location targetLocation = jobBlockLocation.clone().add(0.5, 1, 0.5);
-                    villager.getPathfinder().moveTo(targetLocation, 1.0);
-                } else {
-                    Bukkit.getLogger().warning("[JobAssignment] ❌ Échec d'attribution pour " + villager.getUniqueId() + 
-                                             " (distance: " + String.format("%.1f", currentDistance) + ")");
-                }
+                Bukkit.getLogger().warning("[JobAssignment] ❌ ÉCHEC FINAL: Villageois " + villager.getUniqueId() + 
+                                         " devrait être " + expectedProfession + " mais est " + villager.getProfession());
             }
         } catch (Exception e) {
-            Bukkit.getLogger().warning("[JobAssignment] Erreur lors de la vérification: " + e.getMessage());
+            Bukkit.getLogger().warning("[JobAssignment] Erreur lors de la vérification finale: " + e.getMessage());
         }
     }
+    
+    /**
+     * Obtient le matériau correspondant à une profession (pour les messages)
+     */
+    private static Material getMaterialFromProfession(Villager.Profession profession) {
+        if (profession == Villager.Profession.FARMER) return Material.COMPOSTER;
+        if (profession == Villager.Profession.ARMORER) return Material.BLAST_FURNACE;
+        if (profession == Villager.Profession.BUTCHER) return Material.SMOKER;
+        if (profession == Villager.Profession.CARTOGRAPHER) return Material.CARTOGRAPHY_TABLE;
+        if (profession == Villager.Profession.CLERIC) return Material.BREWING_STAND;
+        if (profession == Villager.Profession.TOOLSMITH) return Material.SMITHING_TABLE;
+        if (profession == Villager.Profession.FLETCHER) return Material.FLETCHING_TABLE;
+        if (profession == Villager.Profession.SHEPHERD) return Material.LOOM;
+        if (profession == Villager.Profession.MASON) return Material.STONECUTTER;
+        if (profession == Villager.Profession.LEATHERWORKER) return Material.CAULDRON;
+        if (profession == Villager.Profession.LIBRARIAN) return Material.LECTERN;
+        if (profession == Villager.Profession.WEAPONSMITH) return Material.GRINDSTONE;
+        if (profession == Villager.Profession.FISHERMAN) return Material.BARREL;
+        return Material.STONE;
+    }
+    
+
     
     /**
      * Extrait le nom du villageois depuis son nom personnalisé

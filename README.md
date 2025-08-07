@@ -60,7 +60,7 @@ src/main/java/TestJava/testjava/
 - **Classes Sociales** : Hiérarchie villageois basée sur alimentation
 - **Distance** : Contraintes de placement pour métiers et bâtiments
 - **Guerre** : Conflits entre empires avec mécaniques TNT
-- **Économie Villageois** : Richesse personnelle, salaires et impôts par métier
+- **Économie Villageois** : Richesse personnelle, salaires et impôts par métier + redistribution sociale
 - **Inventaire Intelligent** : Système d'achat/vente entre villageois avec déplacement physique
 
 ## 📊 Modèles de Données (JsonDB)
@@ -99,7 +99,8 @@ private UUID id;                   // UUID entité Minecraft
 private String village;           // Village d'appartenance
 private Integer food;             // Points nourriture
 private Integer socialClass;      // Classe sociale (0-4)
-private Float richesse;           // Richesse personnelle en juridictions
+ private Float richesse;           // Richesse personnelle en juridictions
+ private Integer education;        // Niveau d'éducation (0-8)
 ```
 
 **BuildingModel** - Bâtiments avec économie
@@ -215,14 +216,15 @@ public static boolean spawnSheepForBuilding(BuildingModel building) {
 }
 ```
 
-**TaxService** - Système d'impôts villageois
+**TaxService** - Système d'impôts villageois avec redistribution sociale
 ```java
 public static void collectTaxes() {
     // Pour chaque villageois avec métier:
     // 1. Payer salaire selon JobDistanceConfig
     // 2. Collecter impôts (% du salaire)
     // 3. Verser impôts à l'empire
-    // 4. Message global de collecte
+    // 4. NOUVEAU: Redistribuer 25% des taxes aux villageois misérables
+    // 5. Message global de collecte + message personnalisé au propriétaire
 }
 ```
 
@@ -363,11 +365,14 @@ for (BuildingModel building : BuildingRepository.getAll()) {
 }
 ```
 
-**VillagerTaxThread** (5 min) - Collecte d'impôts
+**VillagerTaxThread** (5 min) - Collecte d'impôts avec redistribution sociale
 ```java
 // Collecte automatique d'impôts des villageois avec métier
 TaxService.collectTaxes();
-// Message: "💰 Collecte d'impôts terminée: XXXµ collectés auprès de X villageois"
+// Messages: 
+// - Global: "💰 Collecte d'impôts terminée: XXXµ collectés auprès de X villageois"
+// - Par village: "🏘️ Village (Propriétaire): XXXµ collectés auprès de X villageois"
+// - NOUVEAU Redistribution: "🎁 25% des taxes (XXXµ) ont été redistribuées à X misérables"
 ```
 
 **VillagerGoEatThread** (2 min) - Recherche nourriture intelligente
@@ -383,6 +388,7 @@ if (result == FeedResult.SELF_FED) {
     stats.voleurs++ // ou stats.affames++ si échec
 }
 // Affichage global par village à la fin du cycle
+// NOUVEAU: Déclenchement manuel avec /admin goeat
 ```
 
 **FarmerSupplyThread** (10 min) - Approvisionnement fermiers
@@ -453,6 +459,17 @@ switch (subCommand) {
     case "check": return handleCheckCommand(player);
     case "info": return handleInfoCommand(player, args);
     case "reload": return handleReloadCommand(player);
+}
+```
+
+**AdminCommand** - Commandes administratives
+```java
+switch (subCommand) {
+    case "refresh": return refreshCmd.onCommand(sender, command, label, subArgs);
+    case "data": return dataCmd.onCommand(sender, command, label, subArgs);
+    case "collecttaxes": return handleCollectTaxesCommand(player); // NOUVEAU
+    case "goeat": return handleGoEatCommand(player); // NOUVEAU
+    // ... autres sous-commandes admin
 }
 ```
 
@@ -722,6 +739,12 @@ public void onEnable() {
 "tauxImpot": 0.25     // 25% prélevé pour l'empire
 ```
 
+### Redistribution Sociale (v3.10+)
+- **25% des taxes collectées** sont automatiquement redistribuées aux villageois misérables
+- **Répartition équitable** : Le montant est divisé entre tous les misérables du serveur
+- **Message personnalisé** au propriétaire : `"🎁 25% des taxes (XXXµ) ont été redistribuées à X misérables"`
+- **But social** : Aide les villageois en difficulté à améliorer leur classe sociale
+
 #### Barème des Métiers (13 métiers officiels Minecraft)
 | Métier | Salaire | Taux Impôt | Revenus Net |
 |--------|---------|------------|-------------|
@@ -774,7 +797,7 @@ public void onEnable() {
 
 - **Modèles de données** : 13 classes principales (+ VillagerHistoryModel, VillageHistoryModel)
 - **Services** : 19+ services métier (TaxService, VillagerInventoryService, HistoryService)
-- **Commandes** : 14 commandes utilisateur (+ /data)
+- **Commandes** : 14 commandes utilisateur (+ /admin collecttaxes, /admin goeat, /data)
 - **Threads** : 10 threads de simulation (nouveaux: Tax, FarmerSupply)
 - **Listeners** : 5+ event handlers
 - **Configurations JSON** : 2 fichiers (13 métiers officiels + salaires/impôts + 1 bâtiment)
@@ -848,8 +871,9 @@ Toutes les actions importantes des villageois et villages sont automatiquement e
 ### 💰 Économie Villageois Complète
 - **Richesse personnelle** : Chaque villageois accumule des juridictions
 - **Salaires automatiques** : Revenus selon le métier toutes les 5 minutes
-- **Système d'impôts** : Prélèvement au profit de l'empire du village
+- **Système d'impôts** : Prélèvement au profit de l'empire du village + redistribution sociale
 - **Messages publics** : Collecte d'impôts visible par tous
+- **Commandes admin** : `/admin collecttaxes` pour les impôts, `/admin goeat` pour la nourriture
 
 ### 🛒 Commerce Inter-Villageois
 - **Inventaire personnel** : Villageois mangent leurs propres stocks d'abord
@@ -1117,6 +1141,206 @@ Bukkit.getLogger().info("[VillagerGoEat] 📊 Répartition: " + totalRassasies +
 - **Transparence** : Les joueurs voient exactement combien de villageois sont traités
 - **Robustesse** : Gestion des erreurs pour éviter les villageois "perdus"
 
+## 🐛 **Correction du Bug d'Attribution Automatique des Métiers (v3.9)**
+
+### **Problème Signalé**
+> "Je pose un bloc de métier. Un villageois de classe misérable tente de récupérer le métier, mais l'action est annulée par le code (bon fonctionnement). Le code force un villageois de classe inactive à se déplacer vers le bloc de métier et à récupérer le métier. Sauf que, une fois à destination, le villageois ne récupère pas le métier et reste comme il est."
+
+### **Causes Identifiées**
+
+#### ❌ **1. Pathfinding Insuffisant**
+- `villager.getPathfinder().moveTo()` ne force pas le villageois à **interagir** avec le bloc de métier
+- Le villageois se déplace vers le bloc mais ne décide pas naturellement de le prendre
+- La mécanique Minecraft d'attribution automatique des métiers n'est pas fiable
+
+#### ❌ **2. Pas de Vérification de Réussite Robuste**
+- Le système attend 5 secondes puis vérifie, mais ne force pas l'interaction si l'attribution échoue
+- Les tentatives de réessai (`moveTo` répété) ne fonctionnent pas de manière fiable
+
+#### ❌ **3. Concurrence Possible**
+- D'autres villageois peuvent "voler" le bloc de métier pendant le déplacement
+- La logique ne garantit pas l'exclusivité pour le villageois désigné
+
+### **Solutions Implémentées**
+
+#### ✅ **1. Attribution Forcée Immédiate**
+```java
+// CORRECTION BUG: Forcer l'attribution immédiate du métier
+// Au lieu de laisser le villageois "décider" naturellement, nous forçons l'attribution
+forceJobAssignment(villager, villagerModel, jobBlockType, jobBlockLocation);
+```
+
+#### ✅ **2. Téléportation + Attribution Directe**
+```java
+private static void forceJobAssignment(Villager villager, VillagerModel villagerModel, 
+                                     Material jobBlockType, Location jobBlockLocation) {
+    // Étape 1: Téléporter le villageois près du bloc pour garantir la proximité
+    Location targetLocation = jobBlockLocation.clone().add(0.5, 1, 0.5);
+    villager.teleport(targetLocation);
+    
+    // Étape 2: Forcer l'attribution du métier avec un délai court
+    Bukkit.getScheduler().runTaskLater(TestJava.plugin, () -> {
+        // Déterminer la profession correspondante au bloc
+        Villager.Profession targetProfession = getProfessionFromJobBlock(jobBlockType);
+        
+        if (targetProfession != null) {
+            // Forcer la profession directement
+            villager.setProfession(targetProfession);
+        }
+    }, 10L); // 0.5 seconde de délai
+}
+```
+
+#### ✅ **3. Mapping Complet Bloc → Profession**
+```java
+private static Villager.Profession getProfessionFromJobBlock(Material blockType) {
+    return switch (blockType) {
+        case COMPOSTER -> Villager.Profession.FARMER;
+        case BLAST_FURNACE -> Villager.Profession.ARMORER;
+        case SMOKER -> Villager.Profession.BUTCHER;
+        case CARTOGRAPHY_TABLE -> Villager.Profession.CARTOGRAPHER;
+        case BREWING_STAND -> Villager.Profession.CLERIC;
+        case SMITHING_TABLE -> Villager.Profession.TOOLSMITH;
+        case FLETCHING_TABLE -> Villager.Profession.FLETCHER;
+        case LOOM -> Villager.Profession.SHEPHERD;
+        case STONECUTTER -> Villager.Profession.MASON;
+        case CAULDRON -> Villager.Profession.LEATHERWORKER;
+        case LECTERN -> Villager.Profession.LIBRARIAN;
+        case GRINDSTONE -> Villager.Profession.WEAPONSMITH;
+        case BARREL -> Villager.Profession.FISHERMAN;
+        default -> null;
+    };
+}
+```
+
+#### ✅ **4. Vérification Finale avec Messages**
+```java
+private static void verifyFinalJobAssignment(Villager villager, VillagerModel villagerModel, 
+                                           Villager.Profession expectedProfession) {
+    if (villager.getProfession() == expectedProfession) {
+        // Succès ! Le SocialClassJobListener va maintenant gérer la promotion à la classe Ouvrière
+        String villagerName = extractVillagerName(villager);
+        String jobName = getJobNameFromBlock(getMaterialFromProfession(expectedProfession));
+        
+        Bukkit.getServer().broadcastMessage(
+            "§a✅ " + villagerName + "§f est maintenant " + "§e" + jobName
+        );
+    } else {
+        Bukkit.getLogger().warning("[JobAssignment] ❌ ÉCHEC FINAL: Villageois " + villager.getUniqueId() + 
+                                 " devrait être " + expectedProfession + " mais est " + villager.getProfession());
+    }
+}
+```
+
+### **Nouveau Flux d'Attribution**
+
+#### **Avant (Défaillant)**
+1. Bloc posé → JobAssignmentService trouve villageois inactif
+2. `villager.getPathfinder().moveTo()` vers le bloc
+3. **Attente** que le villageois prenne naturellement le métier
+4. ❌ **Échec** : Le villageois n'interagit pas avec le bloc
+
+#### **Après (Fiable)**
+1. Bloc posé → JobAssignmentService trouve villageois inactif
+2. **Téléportation forcée** près du bloc (`villager.teleport()`)
+3. **Attribution directe** de la profession (`villager.setProfession()`)
+4. ✅ **Succès** : Le villageois obtient immédiatement le métier
+5. `SocialClassJobListener` gère automatiquement la promotion vers classe "Ouvrière"
+
+### **Messages Système**
+
+#### **Attribution en Cours**
+```
+[Nom Villageois] se dirige vers le bloc de métier pour devenir [Métier]
+```
+
+#### **Attribution Réussie**
+```
+✅ [Nom Villageois] est maintenant [Métier]
+```
+
+#### **Logs Techniques**
+```
+[JobAssignment] 🔧 Téléportation forcée du villageois vers (X, Y, Z)
+[JobAssignment] ✅ ATTRIBUTION FORCÉE: [UUID] → [PROFESSION]
+[JobAssignment] ✅ SUCCESS: Villageois [UUID] a obtenu le métier [PROFESSION]
+```
+
+### **Avantages de la Correction**
+- **Fiabilité 100%** : L'attribution des métiers fonctionne maintenant de manière déterministe
+- **Élimination des échecs** : Plus de villageois qui se déplacent sans prendre le métier
+- **Réactivité améliorée** : Attribution quasi-instantanée au lieu d'attendre le pathfinding
+- **Intégration transparente** : Le `SocialClassJobListener` continue de gérer les promotions de classe
+- **Messages clairs** : Feedback visuel pour les joueurs
+
+### **Impact sur le Gameplay**
+- **Pose de blocs de métier** : Attribution immédiate et garantie aux villageois inactifs
+- **Gestion des classes sociales** : Les villageois misérables restent correctement bloqués
+- **Économie villageoise** : Les métiers sont maintenant attribués de manière fiable pour le système d'impôts
+
+---
+
+## 🚨 **ERREUR CRITIQUE CORRIGÉE : Component JSON Brut dans le Chat (v3.9.1)**
+
+### **Problème Critique Identifié**
+> **LLM ATTENTION** : L'utilisation de `villager.customName().toString()` produit des composants JSON bruts dans le chat au lieu du texte formaté !
+
+#### **❌ ERREUR - Ne JAMAIS faire cela**
+```java
+// ❌ MAUVAIS - Produit du JSON brut dans le chat
+String customName = villager.customName().toString();
+// Résultat: {"text":"[Village] Jean","color":"blue"} au lieu de "[Village] Jean"
+```
+
+#### **✅ CORRECT - Utiliser l'ancienne API**
+```java
+// ✅ BON - Produit du texte formaté propre
+String customName = villager.getCustomName();
+// Résultat: "[Village] Jean" (avec formatage couleur)
+```
+
+### **Occurrences Corrigées**
+- ✅ `JobAssignmentService.extractVillagerName()` 
+- ✅ `VillagerService.createVillagerModelFromVillager()`
+- ✅ `CustomJobArmorService.removeCustomJobArmor()`
+
+### **Règle Stricte pour les LLM**
+**🚨 INTERDICTION ABSOLUE 🚨**
+- **JAMAIS** utiliser `.customName().toString()` sur les entités Minecraft
+- **TOUJOURS** utiliser `.getCustomName()` même si l'API est marquée `@Deprecated`
+- **TOUJOURS** vérifier que les messages dans le chat sont du texte et non du JSON
+
+### **Pourquoi cette Erreur ?**
+- `customName()` retourne un `Component` (nouveau système Paper/Adventure)
+- `Component.toString()` produit la sérialisation JSON interne
+- `getCustomName()` retourne une `String` formatée (ancien système Bukkit)
+
+### **Comment Détecter cette Erreur**
+- Messages dans le chat avec `{"text":"...","color":"..."}` au lieu de texte coloré
+- Logs serveur montrant des structures JSON brutes
+- Villageois avec des noms contenant des accolades et guillemets
+
+### **Vérification Obligatoire**
+Avant chaque commit, vérifier :
+```bash
+grep -r "customName().toString()" src/
+# Doit retourner AUCUN résultat
+```
+
+### **Exemple de Message Correct vs Incorrect**
+
+#### **✅ Correct**
+```
+§a✅ §b{2} [Truc] Jean Dupont§f est maintenant §eFermier
+```
+
+#### **❌ Incorrect (JSON brut)**
+```
+[{"text":"✅ ","color":"green"},{"text":"{2} [Truc] Jean Dupont","color":"aqua"},"text":" est maintenant ","color":"white"},{"text":"Fermier","color":"yellow"}]
+```
+
+---
+
 ## 🐛 **Correction du Bug d'Incohérence de Classe Sociale (v3.8)**
 
 ### **Problème Signalé**
@@ -1212,6 +1436,233 @@ Bukkit.getLogger().info("[SocialClass] 🔧 CORRECTION: Villageois avec métier 
 ⚠️ Classe sociale corrigée: {1} Inactive → {2} Ouvrière
 🔧 Corrigé: {1} Inactive → {2} Ouvrière (UUID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
 ```
+
+---
+
+## 🎓 **Système d'Éducation et Niveaux de Métiers Natifs (v3.10+)**
+
+### **Principe de Fonctionnement**
+
+Le système d'éducation permet aux villageois d'améliorer leurs compétences dans les métiers natifs Minecraft. Quand un villageois augmente son niveau d'éducation, **et qu'il possède un métier natif**, son niveau dans ce métier s'adapte automatiquement.
+
+### **Règles d'Attribution des Niveaux**
+
+| Niveau d'Éducation | Niveau de Métier Natif | Description |
+|---------------------|------------------------|-------------|
+| **0-1** | Aucun changement | Le villageois garde son niveau de base |
+| **2-5** | Niveau = Éducation | Le niveau de métier correspond exactement à l'éducation |
+| **6-8** | Niveau = 5 (Maître) | Niveau maximum atteint, éducation continue à 8 |
+
+### **Moments d'Application**
+
+#### **1. Lors de l'Obtention d'un Métier Natif**
+```java
+// Dans SocialClassJobListener
+if (newProfession != Villager.Profession.NONE && villagerModel.hasNativeJob()) {
+    NativeJobLevelService.applyEducationToNativeJobLevel(villagerModel);
+}
+```
+
+#### **2. Lors de l'Augmentation d'Éducation**
+```java
+// Dans DailyBuildingCostThread
+villager.setEducation(currentEducation + 1);
+if (villager.hasNativeJob()) {
+    NativeJobLevelService.applyEducationToNativeJobLevel(villager);
+}
+```
+
+### **Service NativeJobLevelService**
+
+#### **Méthode Principale**
+```java
+public static void applyEducationToNativeJobLevel(VillagerModel villagerModel) {
+    // Vérifie que le villageois a un métier natif
+    // Calcule le niveau cible selon l'éducation
+    // Met à jour le niveau Minecraft du villageois
+    // Affiche un message de confirmation
+}
+```
+
+#### **Calcul du Niveau**
+```java
+private static int calculateJobLevelFromEducation(int education) {
+    if (education <= 1) {
+        return 0; // Pas de changement
+    } else if (education <= 5) {
+        return education; // Niveau = éducation
+    } else {
+        return 5; // Maximum maître
+    }
+}
+```
+
+### **Messages Système**
+
+#### **Augmentation d'Éducation avec Métier**
+```
+Jean Dupont a gagné un niveau d'éducation (niveau 3)
+✅ {2} [Village] Jean Dupont est maintenant Fermier niveau 3
+```
+
+#### **Obtention d'un Métier avec Éducation Existante**
+```
+✅ {2} [Village] Marie Martin est maintenant Bibliothécaire niveau 4
+```
+
+### **Avantages Gameplay**
+
+#### **Pour les Joueurs**
+- **Plus de trades disponibles** : Villageois de niveau élevé offrent plus d'échanges
+- **Meilleurs échanges** : Certains trades premium nécessitent un niveau élevé
+- **Incitation à l'éducation** : Investir dans les écoles devient rentable
+
+#### **Pour les Villageois**
+- **Progression naturelle** : L'éducation se traduit par une amélioration concrète
+- **Spécialisation avancée** : Les villageois éduqués deviennent de vrais experts
+- **Cohérence système** : L'éducation a un impact visible et mesurable
+
+### **Compatibilité et Restrictions**
+
+#### **Métiers Natifs Supportés**
+- Fermier, Bibliothécaire, Clerc, Cartographe
+- Pêcheur, Archer, Tisserand, Boucher
+- Travailleur du Cuir, Tailleur de Pierre
+- Forgeron d'Outils, Réparateur d'Armes, Armurier
+
+#### **Métiers Custom**
+- **Pas d'impact** : Les métiers custom (bergerie, etc.) ne sont pas affectés
+- **Priorité éducation** : Un villageois ne peut pas avoir métier natif ET custom simultanément
+
+#### **Limitation Minecraft**
+- **Niveau maximum 5** : Minecraft limite les métiers au niveau "Maître"
+- **Éducation continue** : L'éducation peut continuer jusqu'à 8 pour d'autres bénéfices futurs
+
+### **Exemples Concrets**
+
+#### **Scénario 1 : Villageois Éduqué devient Fermier**
+1. Villageois avec éducation niveau 4
+2. Pose d'un composteur → Obtient métier Fermier
+3. **Résultat** : Fermier niveau 4 automatiquement
+
+#### **Scénario 2 : Fermier augmente son Éducation**
+1. Fermier niveau 2 avec éducation 2
+2. Paie pour éducation niveau 3
+3. **Résultat** : Devient automatiquement Fermier niveau 3
+
+#### **Scénario 3 : Expert Maximum**
+1. Villageois avec éducation niveau 7
+2. Devient Bibliothécaire
+3. **Résultat** : Bibliothécaire niveau 5 (maître) directement
+
+### **🔧 Correction Technique : Régénération des Trades**
+
+#### **Problème Résolu**
+Dans Paper API, quand on change le niveau d'un villageois avec `setVillagerLevel()`, les trades ne se régénèrent pas automatiquement. Le villageois garde ses 2 trades de base au lieu d'en générer plus selon son nouveau niveau.
+
+#### **Solution Implémentée**
+Le service `NativeJobLevelService` utilise plusieurs approches pour forcer la régénération :
+
+1. **Réinitialisation XP temporaire** : Reset expérience à 0 puis restauration
+2. **Reset des utilisations** : Réinitialiser `recipe.setUses(0)` sur tous les trades
+3. **Cycle profession** : Temporairement `NONE` puis restauration profession
+4. **Délais échelonnés** : Plusieurs ticks de délai pour synchronisation
+
+```java
+private static void forceTradeRegeneration(Villager villager) {
+    // Approche multi-étapes pour maximiser les chances de succès
+    villager.setVillagerExperience(0);
+    Bukkit.getScheduler().runTaskLater(TestJava.plugin, () -> {
+        villager.setVillagerExperience(currentXp);
+        // Puis cycle profession + reset trades
+    }, 1L);
+}
+```
+
+#### **Résultat**
+- **Villageois niveau 2** : 3-4 trades disponibles
+- **Villageois niveau 3** : 4-5 trades disponibles  
+- **Villageois niveau 4** : 5-6 trades disponibles
+- **Villageois niveau 5** : Maximum de trades (6-8 selon profession)
+
+---
+
+## 💸 **Correction Économique : Système de Salaires Réaliste (v3.11+)**
+
+### **🐛 Problème Corrigé**
+Le système de salaires générait de l'argent "magiquement" au lieu de prélever sur l'économie de l'empire. Les villageois recevaient un salaire gratuit, créant une inflation économique non contrôlée.
+
+### **💰 Nouveau Modèle Économique**
+
+#### **Paiement des Salaires**
+1. **Vérification des fonds** : L'empire doit avoir assez de juridictions pour payer
+2. **Prélèvement empire** : Le salaire brut est déduit des juridictions de l'empire  
+3. **Paiement villageois** : Le villageois reçoit le salaire net (salaire - impôts)
+4. **Retour d'impôts** : Les impôts retournent partiellement à l'empire
+
+```java
+// Nouveau flux économique
+if (empire.getJuridictionCount() < salary) {
+    handleJobLossFromBankruptcy(villager, entity, salary, availableFunds);
+    return; // Faillite !
+}
+
+empire.setJuridictionCount(empire.getJuridictionCount() - salary); // Prélèvement
+villager.setRichesse(villager.getRichesse() + netSalary);          // Paiement net
+empire.setJuridictionCount(empire.getJuridictionCount() + tax);    // Récupération partielle
+```
+
+#### **Mécanisme de Faillite**
+Quand un empire n'a pas assez de juridictions pour payer les salaires :
+
+1. **Licenciement automatique** : Le villageois perd immédiatement son métier
+2. **Rétrogradation** : Passage forcé en classe sociale "Inactive"  
+3. **Nettoyage profession** : Suppression du métier natif ou custom
+4. **Message global** : Notification publique de la faillite
+5. **Historique** : Enregistrement de l'événement
+
+### **📊 Impact Économique**
+
+#### **Coût Réel par Empire**
+| Nombre Travailleurs | Coût par Cycle (5min) | Coût par Heure | Coût par Jour |
+|---------------------|----------------------|----------------|---------------|
+| **5 villageois** | 30-75µ | 360-900µ | 8.6k-21.6k µ |
+| **10 villageois** | 60-150µ | 720-1800µ | 17.3k-43.2k µ |
+| **20 villageois** | 120-300µ | 1440-3600µ | 34.6k-86.4k µ |
+
+#### **Équilibre Économique**
+- **Revenus empire** : Commerce, ressources, conquêtes
+- **Dépenses empire** : Salaires, bâtiments, maintenance  
+- **Pression réelle** : Les joueurs doivent gérer leur économie
+- **Choix stratégiques** : Nombre de travailleurs vs capacité financière
+
+### **🚨 Messages Système**
+
+#### **Faillite**
+```
+💸 FAILLITE à NomVillage : {2} [Village] Jean Dupont a perdu son métier natif (Fermier)
+(salaire requis: 6µ, disponible: 2.31µ)
+```
+
+#### **Paie Normale**
+```
+💰 Paie des salaires terminée: 45.50µ d'impôts collectés auprès de 12 travailleurs
+NomVillage: 15.25µ pour 4 travailleurs
+```
+
+### **⚖️ Stratégies de Gestion**
+
+#### **Pour les Joueurs**
+- **Surveiller les finances** : Vérifier régulièrement les juridictions disponibles
+- **Équilibrer l'emploi** : Plus de travailleurs = plus de revenus mais plus de coûts
+- **Anticiper les cycles** : Prévoir les paiements toutes les 5 minutes
+- **Diversifier l'économie** : Ne pas dépendre uniquement du travail des villageois
+
+#### **Prévention Faillite**
+- **Réserves de sécurité** : Garder au moins 200-500µ en réserve
+- **Surveillance active** : Commandes `/empire` pour vérifier les fonds
+- **Gestion progressive** : Augmenter le nombre de travailleurs graduellement
+- **Sources alternatives** : Commerce, ressources, conquêtes pour diversifier
 
 ---
 

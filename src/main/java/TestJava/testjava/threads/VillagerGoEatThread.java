@@ -328,13 +328,11 @@ public class VillagerGoEatThread implements Runnable {
             int villagePopulation = village.getPopulation();
             
             // Envoyer le message de distribution seulement au propriétaire
-            owner.sendMessage("Distribution de nourriture à " + Colorize.name(villageName));
-            owner.sendMessage("Villageois rassasiés: " + Colorize.name(stats.rassasies + " villageois"));
-            owner.sendMessage("Villageois autosuffisants: " + Colorize.name(stats.autosuffisants + " villageois"));
-            owner.sendMessage("Villageois clients: " + Colorize.name(stats.clients + " villageois"));
-            owner.sendMessage("Villageois voleurs: " + Colorize.name(stats.voleurs + " villageois"));
+            owner.sendMessage(org.bukkit.ChatColor.GREEN + "Distribution de nourriture à " + villageName);
+            owner.sendMessage("Villageois suffisants: " + Colorize.name((stats.voleurs + stats.rassasies + stats.stables + stats.autosuffisants + stats.clients) + " villageois"));
             owner.sendMessage("Villageois affamés: " + Colorize.name(stats.affames + " villageois"));
-            owner.sendMessage("Villageois stables: " + Colorize.name(stats.stables + " villageois"));
+            owner.sendMessage(Colorize.name("Il y a eu " + stats.voleurs + " vols de blé."));
+            owner.sendMessage(Colorize.name("Il y a eu " + stats.clients + " achats de nourriture."));
             
             // Validation du total
             if (totalProcessed != villagePopulation) {

@@ -16,6 +16,7 @@ public class VillagerModel {
     private boolean isEating = false;
     private Integer socialClass = 0; // 0 = Misérable par défaut
     private Float richesse = 0.0f; // Richesse personnelle en juridictions
+    private Integer education = 0; // Niveau d'éducation (0-8)
     
     // Gestion des métiers
     private String currentJobType; // "native" ou "custom" ou null
@@ -83,6 +84,15 @@ public class VillagerModel {
 
     public void setRichesse(Float richesse) {
         this.richesse = richesse != null ? Math.round(richesse * 100.0f) / 100.0f : 0.0f;
+    }
+
+    public Integer getEducation() {
+        return education != null ? education : 0;
+    }
+
+    public void setEducation(Integer education) {
+        if (education == null) education = 0;
+        this.education = Math.max(0, Math.min(8, education));
     }
 
     // ========== Getters/Setters pour les métiers ==========

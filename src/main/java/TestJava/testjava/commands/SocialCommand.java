@@ -181,6 +181,7 @@ public class SocialCommand implements CommandExecutor {
         player.sendMessage(ChatColor.WHITE + "Nourriture: " + ChatColor.GREEN + villagerModel.getFood());
         player.sendMessage(ChatColor.WHITE + "Richesse: " + ChatColor.GOLD + 
                          String.format("%.2fµ", villagerModel.getRichesse()));
+        player.sendMessage(ChatColor.WHITE + "Éducation: " + ChatColor.AQUA + villagerModel.getEducation());
         player.sendMessage(ChatColor.WHITE + "Classe Sociale: " + newClass.getColoredTag() + 
                          ChatColor.WHITE + " " + newClass.getName());
         

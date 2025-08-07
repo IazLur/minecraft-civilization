@@ -7,6 +7,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import TestJava.testjava.services.TaxService;
+import TestJava.testjava.threads.VillagerGoEatThread;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,6 +65,10 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
                 return traderStatusCmd.onCommand(sender, command, label, subArgs);
             case "testsocialclass":
                 return handleTestSocialClassCommand(player);
+            case "collecttaxes":
+                return handleCollectTaxesCommand(player);
+            case "goeat":
+                return handleGoEatCommand(player);
             default:
                 showHelp(player);
                 return true;
@@ -78,7 +84,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         if (args.length == 1) {
             List<String> subCommands = Arrays.asList(
                 "refresh", "data", "emptyvillage", "forcespawn",
-                "reactivate", "testautojob", "traderstatus", "testsocialclass"
+                "reactivate", "testautojob", "traderstatus", "testsocialclass", "collecttaxes", "goeat"
             );
             
             String input = args[0].toLowerCase();
@@ -126,6 +132,45 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         
         return true;
     }
+    
+    /**
+     * Commande pour déclencher manuellement la collecte d'impôts
+     */
+    private boolean handleCollectTaxesCommand(Player player) {
+        player.sendMessage(Component.text("💰 Déclenchement manuel de la collecte d'impôts...").color(NamedTextColor.YELLOW));
+        
+        try {
+            // Déclencher la collecte d'impôts via TaxService
+            TaxService.collectTaxes(); 
+        } catch (Exception e) {
+            player.sendMessage(Component.text("❌ Erreur lors de la collecte d'impôts: " + e.getMessage()).color(NamedTextColor.RED));
+            e.printStackTrace();
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Commande pour déclencher manuellement l'événement de nourriture des villageois
+     */
+    private boolean handleGoEatCommand(Player player) {
+        player.sendMessage(Component.text("🍵 Déclenchement manuel de l'événement de nourriture...").color(NamedTextColor.YELLOW));
+        
+        try {
+            // Créer et exécuter une nouvelle instance du thread de nourriture
+            VillagerGoEatThread goEatThread = new VillagerGoEatThread();
+            goEatThread.run();
+            
+            player.sendMessage(Component.text("✅ Événement de nourriture déclenché avec succès.").color(NamedTextColor.GREEN));
+            player.sendMessage(Component.text("💡 Les villageois affamés vont chercher de la nourriture et les messages seront envoyés aux propriétaires.").color(NamedTextColor.GRAY));
+            
+        } catch (Exception e) {
+            player.sendMessage(Component.text("❌ Erreur lors du déclenchement: " + e.getMessage()).color(NamedTextColor.RED));
+            e.printStackTrace();
+        }
+        
+        return true;
+    }
 
     private void showHelp(Player player) {
         player.sendMessage(Component.text("=== Commandes Administratives ===").color(NamedTextColor.GOLD));
@@ -137,5 +182,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         player.sendMessage(Component.text("/admin testautojob").color(NamedTextColor.YELLOW).append(Component.text(" - Test assignation automatique d'emplois").color(NamedTextColor.WHITE)));
         player.sendMessage(Component.text("/admin traderstatus").color(NamedTextColor.YELLOW).append(Component.text(" - Statut des marchands").color(NamedTextColor.WHITE)));
         player.sendMessage(Component.text("/admin testsocialclass").color(NamedTextColor.YELLOW).append(Component.text(" - Test classes sociales métiers custom").color(NamedTextColor.WHITE)));
+        player.sendMessage(Component.text("/admin collecttaxes").color(NamedTextColor.YELLOW).append(Component.text(" - Déclencher manuellement la collecte d'impôts").color(NamedTextColor.WHITE)));
+        player.sendMessage(Component.text("/admin goeat").color(NamedTextColor.YELLOW).append(Component.text(" - Déclencher manuellement l'événement de nourriture des villageois").color(NamedTextColor.WHITE)));
     }
 }
