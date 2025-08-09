@@ -290,7 +290,8 @@ public class ForestGuardService {
     }
     
     /**
-     * Plante un sapling puis force la pousse en décalant temporairement le garde pour éviter qu'il se coince
+     * Plante un sapling puis force la pousse en décalant le garde APRÈS la pousse.
+     * Avant la pousse, applique de la "poudre d'os" simulée sur deux blocs d'herbe adjacents.
      */
     @SuppressWarnings("deprecation")
     private static void plantSaplingAndGrow(Villager villagerEntity, Location plantingLocation, String guardName) {
@@ -343,22 +344,8 @@ public class ForestGuardService {
             return;
         }
         
-        // Décaler le garde s'il est trop proche du futur arbre
-        if (villagerEntity != null && villagerEntity.isValid() && villagerEntity.getWorld() == plantingLocation.getWorld()) {
-            try {
-                double dist = villagerEntity.getLocation().distance(plantingLocation);
-                if (dist < 2.5) {
-                    Location safe = findSafeOffsetSpot(plantingLocation, 3, 6);
-                    if (safe != null) {
-                        try {
-                            Chunk c = safe.getChunk();
-                            if (!c.isLoaded()) c.load(true);
-                        } catch (Exception ignored) {}
-                        villagerEntity.teleport(safe);
-                    }
-                }
-            } catch (Exception ignored) {}
-        }
+        // NOUVEAU: Simuler l'effet de poudre d'os sur deux blocs d'herbe adjacents avant la pousse
+        applyBonemealOnNearbyGrassBlocks(groundBlock, 2);
 
         String saplingName = saplingType.name().toLowerCase().replace("_sapling", "").replace("_", " ");
         Bukkit.getServer().broadcastMessage("🌱 " + Colorize.name(guardName) + " a planté un " + Colorize.name(saplingName) + " qui va bientôt pousser...");
@@ -370,6 +357,22 @@ public class ForestGuardService {
         taskIdHolder[0] = Bukkit.getScheduler().scheduleSyncRepeatingTask(TestJava.plugin, () -> {
             try {
                 if (blockForGrowth.getType() != saplingType) {
+                    // L'arbre a poussé : décaler le garde maintenant si nécessaire
+                    if (villagerEntity != null && villagerEntity.isValid() && villagerEntity.getWorld() == plantingLocation.getWorld()) {
+                        try {
+                            double dist = villagerEntity.getLocation().distance(plantingLocation);
+                            if (dist < 2.5) {
+                                Location safe = findSafeOffsetSpot(plantingLocation, 3, 6);
+                                if (safe != null) {
+                                    try {
+                                        Chunk c2 = safe.getChunk();
+                                        if (!c2.isLoaded()) c2.load(true);
+                                    } catch (Exception ignored) {}
+                                    villagerEntity.teleport(safe);
+                                }
+                            }
+                        } catch (Exception ignored) {}
+                    }
                     String treeName = saplingType.name().toLowerCase().replace("_sapling", "").replace("_", " ");
                     Bukkit.getServer().broadcastMessage("🌳✨ " + Colorize.name(guardName) + " a fait pousser un magnifique " + Colorize.name(treeName) + " par magie !");
                     Bukkit.getScheduler().cancelTask(taskIdHolder[0]);
@@ -380,10 +383,42 @@ public class ForestGuardService {
                 if (attempts[0] >= maxAttempts) {
                     Bukkit.getScheduler().cancelTask(taskIdHolder[0]);
                     createSimpleTree(blockForGrowth, saplingType, guardName);
+                    // Après création manuelle de l'arbre, décaler le garde
+                    if (villagerEntity != null && villagerEntity.isValid() && villagerEntity.getWorld() == plantingLocation.getWorld()) {
+                        try {
+                            double dist = villagerEntity.getLocation().distance(plantingLocation);
+                            if (dist < 2.5) {
+                                Location safe = findSafeOffsetSpot(plantingLocation, 3, 6);
+                                if (safe != null) {
+                                    try {
+                                        Chunk c2 = safe.getChunk();
+                                        if (!c2.isLoaded()) c2.load(true);
+                                    } catch (Exception ignored) {}
+                                    villagerEntity.teleport(safe);
+                                }
+                            }
+                        } catch (Exception ignored) {}
+                    }
                 }
             } catch (Exception ex) {
                 Bukkit.getScheduler().cancelTask(taskIdHolder[0]);
                 createSimpleTree(blockForGrowth, saplingType, guardName);
+                // Après création manuelle (suite à exception), décaler le garde
+                if (villagerEntity != null && villagerEntity.isValid() && villagerEntity.getWorld() == plantingLocation.getWorld()) {
+                    try {
+                        double dist = villagerEntity.getLocation().distance(plantingLocation);
+                        if (dist < 2.5) {
+                            Location safe = findSafeOffsetSpot(plantingLocation, 3, 6);
+                            if (safe != null) {
+                                try {
+                                    Chunk c2 = safe.getChunk();
+                                    if (!c2.isLoaded()) c2.load(true);
+                                } catch (Exception ignored) {}
+                                villagerEntity.teleport(safe);
+                            }
+                        }
+                    } catch (Exception ignored) {}
+                }
             }
         }, 0L, 5L);
     }
@@ -509,5 +544,33 @@ public class ForestGuardService {
             }
         }
         return null;
+    }
+
+    /**
+     * Applique de la poudre d'os sur jusqu'à "count" blocs d'herbe adjacents (cardinaux) au pied du sapling.
+     */
+    private static void applyBonemealOnNearbyGrassBlocks(Block groundBlockUnderSapling, int count) {
+        if (groundBlockUnderSapling == null) return;
+        List<Block> candidates = new ArrayList<>();
+        int[][] dirs = new int[][] { {1,0}, {-1,0}, {0,1}, {0,-1} };
+        for (int[] d : dirs) {
+            Block neighbor = groundBlockUnderSapling.getRelative(d[0], 0, d[1]);
+            if (neighbor.getType() == Material.GRASS_BLOCK) {
+                Block above = neighbor.getRelative(0, 1, 0);
+                if (above.getType() == Material.AIR) {
+                    candidates.add(neighbor);
+                }
+            }
+        }
+        // Mélanger pour variété, puis appliquer à count blocs
+        Collections.shuffle(candidates, ThreadLocalRandom.current());
+        int applied = 0;
+        for (Block b : candidates) {
+            try {
+                b.applyBoneMeal(org.bukkit.block.BlockFace.UP);
+                applied++;
+                if (applied >= count) break;
+            } catch (Exception ignored) {}
+        }
     }
 }
