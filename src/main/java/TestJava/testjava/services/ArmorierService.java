@@ -4,6 +4,7 @@ import TestJava.testjava.TestJava;
 import TestJava.testjava.Config;
 import TestJava.testjava.models.VillageModel;
 import TestJava.testjava.models.VillagerModel;
+import TestJava.testjava.services.VillagerMovementManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -80,6 +81,7 @@ public class ArmorierService {
     
     /**
      * Déplace le villageois vers le joueur et améliore son armure
+     * NOUVEAU: Utilise VillagerMovementManager pour centraliser la logique de déplacement
      */
     private static void moveToPlayerAndUpgradeArmor(VillagerModel villager, Player target, VillageModel village) {
         UUID villagerId = villager.getId();
@@ -88,71 +90,70 @@ public class ArmorierService {
         BukkitRunnable existingTask = activeMovements.get(villagerId);
         if (existingTask != null) {
             existingTask.cancel();
+            activeMovements.remove(villagerId);
         }
         
-        // Créer une nouvelle tâche de mouvement
-        BukkitRunnable movementTask = new BukkitRunnable() {
-            private int attempts = 0;
-            private final int maxAttempts = 60; // 60 secondes maximum
-            
-            @Override
-            public void run() {
-                attempts++;
-                
-                if (attempts > maxAttempts) {
-                    plugin.getLogger().info("ArmorierService: Timeout - arrêt du mouvement après " + maxAttempts + " tentatives");
-                    activeMovements.remove(villagerId);
-                    cancel();
-                    return;
-                }
-                
-                if (!target.isOnline()) {
-                    plugin.getLogger().info("ArmorierService: Joueur déconnecté - arrêt du mouvement");
-                    activeMovements.remove(villagerId);
-                    cancel();
-                    return;
-                }
-                
-                // Vérifier si le joueur est toujours dans le village
-                if (!isPlayerInVillage(target, village)) {
-                    sendMessage(target, "§cVous avez quitté le village! L'armurier ne peut plus vous rejoindre.");
-                    activeMovements.remove(villagerId);
-                    cancel();
-                    return;
-                }
-                
-                org.bukkit.entity.Villager bukkitVillager = findBukkitVillager(villager, village);
-                if (bukkitVillager == null) {
-                    plugin.getLogger().warning("ArmorierService: Villageois Bukkit introuvable");
-                    activeMovements.remove(villagerId);
-                    cancel();
-                    return;
-                }
-                
-                Location villagerLoc = bukkitVillager.getLocation();
-                Location targetLoc = target.getLocation();
-                double distance = villagerLoc.distance(targetLoc);
-                
-                plugin.getLogger().fine("ArmorierService: Distance entre villageois et joueur: " + distance);
-                
-                if (distance <= 3.0) {
-                    // Assez proche pour améliorer l'armure
-                    plugin.getLogger().info("ArmorierService: Villageois assez proche, amélioration de l'armure");
+        // Trouver l'entité Bukkit villageois
+        org.bukkit.entity.Villager bukkitVillager = findBukkitVillager(villager, village);
+        if (bukkitVillager == null) {
+            plugin.getLogger().warning("ArmorierService: Villageois Bukkit introuvable pour " + villagerId);
+            return;
+        }
+        
+        // Vérifications de sécurité
+        if (!target.isOnline()) {
+            plugin.getLogger().info("ArmorierService: Joueur déconnecté avant le début du mouvement");
+            return;
+        }
+        
+        if (!isPlayerInVillage(target, village)) {
+            sendMessage(target, "§cVous avez quitté le village! L'armurier ne peut pas vous rejoindre.");
+            return;
+        }
+        
+        // Utiliser le gestionnaire centralisé pour le déplacement
+        VillagerMovementManager.moveVillager(bukkitVillager, target.getLocation())
+            .withSuccessDistance(3.0) // Distance pour l'amélioration d'armure
+            .withMoveSpeed(1.0)
+            .withTimeout(60) // 60 secondes maximum
+            .withName("ArmorierUpgrade_" + target.getName())
+            .onSuccess(() -> {
+                // Améliorer l'armure à l'arrivée
+                if (target.isOnline() && isPlayerInVillage(target, village)) {
+                    plugin.getLogger().info("ArmorierService: Villageois arrivé, amélioration de l'armure pour " + target.getName());
                     performArmorUpgrade(target, village);
-                    activeMovements.remove(villagerId);
-                    cancel();
                 } else {
-                    // Déplacer le villageois vers le joueur
-                    bukkitVillager.getPathfinder().moveTo(targetLoc, 1.0);
+                    plugin.getLogger().info("ArmorierService: Joueur non disponible à l'arrivée du villageois");
                 }
-            }
-        };
-        
-        // Démarrer la tâche et l'enregistrer
-        activeMovements.put(villagerId, movementTask);
-        movementTask.runTaskTimer(plugin, 0L, 20L); // Toutes les secondes
-        
-        plugin.getLogger().info("ArmorierService: Démarrage du mouvement vers " + target.getName());
+            })
+            .onFailure(() -> {
+                // Échec du déplacement
+                plugin.getLogger().info("ArmorierService: Échec du déplacement vers " + target.getName());
+                if (target.isOnline()) {
+                    sendMessage(target, "§cL'armurier n'a pas pu vous rejoindre. Réessayez plus tard.");
+                }
+            })
+            .onPositionUpdate((distance, attempts) -> {
+                // Vérifications périodiques pendant le déplacement
+                if (!target.isOnline()) {
+                    plugin.getLogger().info("ArmorierService: Joueur déconnecté pendant le mouvement");
+                    return; // Le mouvement va s'arrêter automatiquement
+                }
+                
+                if (!isPlayerInVillage(target, village)) {
+                    plugin.getLogger().info("ArmorierService: Joueur a quitté le village pendant le mouvement");
+                    sendMessage(target, "§cVous avez quitté le village! L'armurier ne peut plus vous rejoindre.");
+                    return; // Le mouvement va s'arrêter automatiquement
+                }
+                
+                // Log de progression occasionnel
+                if (attempts % 10 == 0) {
+                    plugin.getLogger().fine("ArmorierService: Distance vers " + target.getName() + ": " + String.format("%.2f", distance));
+                }
+            })
+            .start();
+            
+        plugin.getLogger().info("ArmorierService: Démarrage du mouvement centralisé vers " + target.getName());
     }
     
     /**

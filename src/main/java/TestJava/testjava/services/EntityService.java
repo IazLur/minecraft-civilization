@@ -7,7 +7,6 @@ import TestJava.testjava.models.VillageModel;
 import TestJava.testjava.models.VillagerModel;
 import TestJava.testjava.repositories.VillageRepository;
 import TestJava.testjava.repositories.VillagerRepository;
-import TestJava.testjava.services.SocialClassService;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -18,14 +17,18 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Objects;
-
+@SuppressWarnings("deprecation")
 public class EntityService {
     public void testSpawnIfVillager(EntitySpawnEvent e) {
         if (!(e.getEntity() instanceof Villager villager)) {
             return;
         }
         VillageModel village = VillageRepository.getNearestOf(villager);
+        if (village == null) {
+            // No village context; cancel spawn for consistency
+            e.setCancelled(true);
+            return;
+        }
         
         // VÉRIFICATION CRITIQUE: Empêcher le spawn si le village a atteint sa limite de lits
         if (village.getPopulation() >= village.getBedsCount()) {
@@ -36,12 +39,8 @@ public class EntityService {
         }
         
         villager.setCustomNameVisible(true);
-        assert village != null;
         String customName = CustomName.generate();
-        villager.setCustomName(ChatColor.BLUE + "[" + village.getId() + "] " + ChatColor.WHITE
-                + customName);
-        Bukkit.getServer().broadcastMessage(Colorize.name(customName) + " est né à " + Colorize.name(village.getId()));
-
+        
         // Creating new model entity
         VillagerModel nVillager = new VillagerModel();
         nVillager.setVillageName(village.getId());
@@ -53,7 +52,13 @@ public class EntityService {
         village.setPopulation(village.getPopulation() + 1);
         VillageRepository.update(village);
         
-        // Mise à jour du nom avec le tag de classe sociale
+        // Appliquer le nouveau format centralisé
+        String display = VillagerNameService.buildDisplayName(nVillager, villager, customName);
+        villager.setCustomName(display);
+        
+        Bukkit.getServer().broadcastMessage(Colorize.name(customName) + " est né à " + Colorize.name(village.getId()));
+
+        // Mise à jour du nom avec la classe sociale (réapplique le format centralisé si besoin)
         SocialClassService.updateVillagerDisplayName(nVillager);
     }
 
@@ -81,6 +86,10 @@ public class EntityService {
         Location location = e.getBlockPlaced().getLocation();
         Skeleton skeleton = TestJava.world.spawn(location, Skeleton.class);
         VillageModel village = VillageRepository.getNearestOf(skeleton);
+        if (village == null) {
+            skeleton.remove();
+            return;
+        }
         skeleton.setCanPickupItems(false);
         skeleton.getEquipment().setHelmet(new ItemStack(Material.LEATHER_HELMET));
         skeleton.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(0D);
@@ -89,7 +98,6 @@ public class EntityService {
         skeleton.setCustomNameVisible(true);
         skeleton.setRemoveWhenFarAway(false);
         skeleton.setPersistent(true);
-        assert village != null;
         String customName = CustomName.generate();
         
         // CORRECTION BUG: Incrémenter la garnison lors de la création
@@ -109,6 +117,10 @@ public class EntityService {
         Location location = e.getBlockPlaced().getLocation();
         Pillager pillager = TestJava.world.spawn(location, Pillager.class);
         VillageModel village = VillageRepository.getNearestOf(pillager);
+        if (village == null) {
+            pillager.remove();
+            return;
+        }
         pillager.setCanPickupItems(false);
         pillager.setCanJoinRaid(false);
         pillager.setPatrolLeader(false);
@@ -123,7 +135,6 @@ public class EntityService {
         pillager.getAttribute(Attribute.KNOCKBACK_RESISTANCE).setBaseValue(1D);
         pillager.setCustomNameVisible(true);
         pillager.setRemoveWhenFarAway(false);
-        assert village != null;
         String customName = CustomName.generate();
         village.setGroundArmy(village.getGroundArmy() + 1);
         VillageRepository.update(village);
@@ -222,6 +233,9 @@ public class EntityService {
 
         Player player = e.getPlayer();
         VillageModel village = VillageRepository.getNearestOf(player);
+        if (village == null) {
+            return;
+        }
         e.getBlockPlaced().setType(Material.AIR);
         Zombie bandit = e.getBlockPlaced().getWorld().spawn(e.getBlockPlaced().getLocation(), Zombie.class);
         bandit.setCustomNameVisible(true);
@@ -243,46 +257,9 @@ public class EntityService {
         frostBoots.addEnchantment(org.bukkit.enchantments.Enchantment.FROST_WALKER, 2);
         bandit.getEquipment().setBoots(frostBoots);
         Player enemy = TestJava.playerService.getNearestPlayerWhereNot(bandit, player.getName());
-        TestJava.banditTargets.put(bandit.getUniqueId(), enemy.getName());
-        bandit.setTarget(enemy);
-    }
-
-    public void testIfBanditTargetRight(EntityTargetLivingEntityEvent e) {
-        if (!(e.getEntity() instanceof Zombie zombie)) {
-            return;
-        }
-
-        if (!zombie.isCustomNameVisible()) {
-            return;
-        }
-
-        if (!(e.getTarget() instanceof Player player)) {
-            e.setCancelled(true);
-            return;
-        }
-
-        if (TestJava.banditTargets.get(zombie.getUniqueId()).equals(player.getName())) {
-            return;
-        }
-        e.setCancelled(true);
-    }
-
-    public void preventFireForCustom(EntityDamageEvent e) {
-        if (e.getEntity() instanceof Player) {
-            return;
-        }
-
-        if (!e.getEntity().isCustomNameVisible()) {
-            return;
-        }
-
-        if (e.getCause() == EntityDamageEvent.DamageCause.FIRE ||
-                e.getCause() == EntityDamageEvent.DamageCause.FIRE_TICK) {
-            if (e.getEntity() instanceof Skeleton skeleton) {
-                skeleton.getEquipment().setHelmet(new ItemStack(Material.LEATHER_HELMET, 1));
-            }
-            e.setCancelled(true);
-            e.setDamage(0D);
+        if (enemy != null) {
+            TestJava.banditTargets.put(bandit.getUniqueId(), enemy.getName());
+            bandit.setTarget(enemy);
         }
     }
 
@@ -293,6 +270,9 @@ public class EntityService {
 
         Bukkit.getLogger().info("[GardeNationale] Golem de fer détecté en spawn");
         VillageModel village = VillageRepository.getNearestOf(golem);
+        if (village == null) {
+            return;
+        }
         golem.setCustomNameVisible(true);
         String name = CustomName.generate();
         golem.setCustomName(
@@ -425,5 +405,72 @@ public class EntityService {
             }
         }
         // Pour tous les autres types d'entités (monstres, etc.), laisser faire
+    }
+
+    public void testIfBanditTargetRight(EntityTargetLivingEntityEvent e) {
+        if (!(e.getEntity() instanceof Zombie bandit)) {
+            return;
+        }
+        // Only manage our custom mercenaries (named and tracked)
+        if (!bandit.isCustomNameVisible() || bandit.getCustomName() == null) {
+            return;
+        }
+        String lockedName = TestJava.banditTargets.get(bandit.getUniqueId());
+        if (lockedName == null || lockedName.isEmpty()) {
+            return;
+        }
+        LivingEntity current = e.getTarget();
+        if (current instanceof Player player) {
+            if (!player.getName().equals(lockedName)) {
+                Player desired = Bukkit.getPlayer(lockedName);
+                if (desired != null && desired.isOnline()) {
+                    bandit.setTarget(desired);
+                    e.setTarget(desired);
+                } else {
+                    // No valid target available, cancel retargeting
+                    e.setCancelled(true);
+                }
+            }
+        } else {
+            Player desired = Bukkit.getPlayer(lockedName);
+            if (desired != null && desired.isOnline()) {
+                bandit.setTarget(desired);
+                e.setTarget(desired);
+            } else {
+                e.setCancelled(true);
+            }
+        }
+    }
+
+    public void preventFireForCustom(EntityDamageEvent e) {
+        // Protect custom, named guards from sunlight by re-equipping helmets and cancelling burning
+        if (!(e.getEntity() instanceof LivingEntity living)) {
+            return;
+        }
+        EntityDamageEvent.DamageCause cause = e.getCause();
+        if (cause != EntityDamageEvent.DamageCause.FIRE &&
+            cause != EntityDamageEvent.DamageCause.FIRE_TICK &&
+            cause != EntityDamageEvent.DamageCause.HOT_FLOOR &&
+            cause != EntityDamageEvent.DamageCause.LAVA) {
+            return;
+        }
+        if (!living.isCustomNameVisible() || living.getCustomName() == null) {
+            return;
+        }
+        // Ensure this is one of our managed entities (has a [Village] tag)
+        try {
+            CustomName.extractVillageName(living.getCustomName());
+        } catch (Exception ex) {
+            return; // Not a managed custom entity
+        }
+        if (living instanceof Skeleton skeleton) {
+            var equipment = skeleton.getEquipment();
+            if (equipment != null && (equipment.getHelmet() == null || equipment.getHelmet().getType() == Material.AIR)) {
+                equipment.setHelmet(new ItemStack(Material.LEATHER_HELMET));
+                equipment.setHelmetDropChance(0.0f);
+            }
+            skeleton.setFireTicks(0);
+            e.setCancelled(true);
+        }
     }
 }

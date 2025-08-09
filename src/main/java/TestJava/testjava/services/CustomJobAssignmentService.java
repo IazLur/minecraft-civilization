@@ -19,6 +19,7 @@ import java.util.List;
  * Service pour gérer l'attribution automatique des métiers custom aux villageois inactifs
  * quand un nouveau bâtiment custom est construit
  */
+@SuppressWarnings("deprecation")
 public class CustomJobAssignmentService {
     
     private static final int MAX_SEARCH_RADIUS = 256; // Rayon max de recherche de villageois
@@ -156,6 +157,8 @@ public class CustomJobAssignmentService {
             
             // Sauvegarder
             VillagerRepository.update(villagerModel);
+            // MAJ du nom en temps réel (afficher le métier custom)
+            SocialClassService.updateVillagerDisplayName(villagerModel);
             
             // Message de confirmation
             String villagerName = extractVillagerName(villager);
@@ -209,6 +212,8 @@ public class CustomJobAssignmentService {
             
             // Sauvegarder
             VillagerRepository.update(villagerModel);
+            // MAJ du nom en temps réel (métier custom retiré)
+            SocialClassService.updateVillagerDisplayName(villagerModel);
             
             String villagerName = extractVillagerName(villager);
             Bukkit.getLogger().info("[CustomJobAssignment] ✅ Métier custom retiré pour " + villagerName);

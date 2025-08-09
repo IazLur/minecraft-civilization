@@ -12,6 +12,7 @@ import TestJava.testjava.services.SocialClassService;
 import TestJava.testjava.services.VillagerInventoryService;
 import TestJava.testjava.services.VillagerInventoryService.FeedResult;
 import TestJava.testjava.services.HistoryService;
+import TestJava.testjava.services.VillagerMovementManager;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
@@ -204,54 +205,68 @@ public class VillagerGoEatThread implements Runnable {
     private void moveVillagerToFood(Villager eVillager, VillagerModel villager, EatableModel targetEatable, HashMap<String, Collection<EatableModel>> villageEatablesMap) {
         Random rand = new Random();
         int delay = MIN_DELAY + rand.nextInt(RANGE_DELAY);
-        UUID uuid = UUID.randomUUID();
-
-        Location loc = new Location(TestJava.world, targetEatable.getX(), targetEatable.getY(), targetEatable.getZ());
-        Block block = loc.getBlock();
-
-        final int[] attempts = {0};
-        final double[] increasedDistance = {2.0};
-
-        TestJava.threads.put(uuid, Bukkit.getScheduler().scheduleSyncRepeatingTask(TestJava.plugin, () -> {
-            attempts[0] += 1;
-
-            if (attempts[0] % 3 == 0) {
-                increasedDistance[0] += 1.0;
+        
+        Location targetLocation = new Location(TestJava.world, targetEatable.getX(), targetEatable.getY(), targetEatable.getZ());
+        
+        // Attendre un délai aléatoire avant de commencer le déplacement
+        Bukkit.getScheduler().runTaskLater(TestJava.plugin, () -> {
+            
+            // Vérifications de sécurité avant de commencer
+            if (eVillager == null || eVillager.isDead() || !eVillager.isValid()) {
+                targetedEatables.remove(targetEatable.getId());
+                return;
             }
-
-            performScheduledTask(eVillager, villager, targetEatable, block, loc, uuid, increasedDistance[0], villageEatablesMap);
-        }, delay, 10));
-    }
-
-    private void performScheduledTask(Villager eVillager, VillagerModel villager, EatableModel targetEatable, Block block, Location loc, UUID uuid, double increasedDistance, HashMap<String, Collection<EatableModel>> villageEatablesMap) {
-        if (eVillager.isSleeping()) {
-            eVillager.wakeup();
-        }
-
-        eVillager.getPathfinder().moveTo(loc, MOVE_SPEED);
-
-        if (isFoodGone(block)) {
-            handleFoodGone(targetEatable, uuid, villager, villageEatablesMap);
-            return;
-        }
-
-        if (eVillager.getLocation().distance(loc) <= increasedDistance) {
-            handleEating(villager, block, targetEatable, uuid);
-        }
+            
+            // Vérifier si la nourriture existe encore
+            Block block = targetLocation.getBlock();
+            if (isFoodGone(block)) {
+                handleFoodGone(targetEatable, villager, villageEatablesMap);
+                return;
+            }
+            
+            // Utiliser le gestionnaire centralisé pour le déplacement
+            VillagerMovementManager.moveVillager(eVillager, targetLocation)
+                .withSuccessDistance(2.0) // Distance de base, peut augmenter si nécessaire
+                .withMoveSpeed(MOVE_SPEED)
+                .withTimeout(30) // 30 secondes maximum
+                .withName("VillagerEating_" + villager.getId())
+                .onSuccess(() -> {
+                    // Manger la nourriture à l'arrivée
+                    Block currentBlock = targetLocation.getBlock();
+                    if (!isFoodGone(currentBlock)) {
+                        handleEating(villager, currentBlock, targetEatable);
+                    } else {
+                        handleFoodGone(targetEatable, villager, villageEatablesMap);
+                    }
+                })
+                .onFailure(() -> {
+                    // Échec du déplacement, libérer la nourriture
+                    targetedEatables.remove(targetEatable.getId());
+                })
+                .onPositionUpdate((distance, attempts) -> {
+                    // Vérifier à chaque tentative si la nourriture existe encore
+                    Block currentBlock = targetLocation.getBlock();
+                    if (isFoodGone(currentBlock)) {
+                        // La nourriture a disparu, on va laisser le callback onFailure gérer
+                        handleFoodGone(targetEatable, villager, villageEatablesMap);
+                    }
+                })
+                .start();
+                
+        }, delay);
     }
 
     private boolean isFoodGone(Block block) {
         return !(block.getBlockData() instanceof Ageable age) || age.getAge() != age.getMaximumAge();
     }
 
-    private void handleFoodGone(EatableModel targetEatable, UUID uuid, VillagerModel villager, HashMap<String, Collection<EatableModel>> villageEatablesMap) {
+    private void handleFoodGone(EatableModel targetEatable, VillagerModel villager, HashMap<String, Collection<EatableModel>> villageEatablesMap) {
         targetedEatables.remove(targetEatable.getId());
         // Note: On ne relance pas handleHungryVillager ici pour éviter les boucles infinies
         // et parce que le villageois sera traité au prochain cycle
-        cancelTask(uuid);
     }
 
-    private void handleEating(VillagerModel villager, Block block, EatableModel targetEatable, UUID uuid) {
+    private void handleEating(VillagerModel villager, Block block, EatableModel targetEatable) {
         Ageable age = (Ageable) block.getBlockData();
         age.setAge(1);
         block.setBlockData(age);
@@ -274,12 +289,6 @@ public class VillagerGoEatThread implements Runnable {
 
         VillageRepository.update(village);
         EatableRepository.remove(targetEatable);
-        cancelTask(uuid);
-    }
-
-    private void cancelTask(UUID uuid) {
-        Bukkit.getScheduler().cancelTask(TestJava.threads.get(uuid));
-        TestJava.threads.remove(uuid);
     }
 
     /**

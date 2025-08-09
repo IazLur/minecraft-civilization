@@ -125,7 +125,7 @@ public class TaxService {
                 stats.villageName = villageName;
 
                 // Log pour debug
-                Bukkit.getLogger().info("[TaxService] Salaire payé: " + villager.getId() + 
+                org.bukkit.Bukkit.getLogger().info("[TaxService] Salaire payé: " + villager.getId() + 
                                        " - Village: " + villageName +
                                        " - Métier: " + jobType + 
                                        " - Salaire brut: " + salary + "µ" +
@@ -134,6 +134,8 @@ public class TaxService {
 
                 // Sauvegarder le villageois
                 VillagerRepository.update(villager);
+                // Mise à jour temps réel du nom (richesse)
+                SocialClassService.updateVillagerDisplayName(villager);
 
                 // ACTION MÉTIER NATIF: Forgeron d'Outils répare les golems après paiement
                 try {
@@ -141,7 +143,7 @@ public class TaxService {
                         ToolsmithService.triggerRepairsAfterSalary(villager, entity);
                     }
                 } catch (Throwable t) {
-                    Bukkit.getLogger().warning("[TaxService] Erreur ToolsmithService: " + t.getMessage());
+                    org.bukkit.Bukkit.getLogger().warning("[TaxService] Erreur ToolsmithService: " + t.getMessage());
                 }
 
                 // ACTION MÉTIER NATIF: Fletcher équipe les gardes squelettes avec armure d'or après paiement
@@ -150,7 +152,16 @@ public class TaxService {
                         FletcherService.triggerArmorEquippingAfterSalary(villager, entity);
                     }
                 } catch (Throwable t) {
-                    Bukkit.getLogger().warning("[TaxService] Erreur FletcherService: " + t.getMessage());
+                    org.bukkit.Bukkit.getLogger().warning("[TaxService] Erreur FletcherService: " + t.getMessage());
+                }
+
+                // ACTION MÉTIER NATIF: Clerc applique un buff aléatoire après paiement
+                try {
+                    if (!villager.hasCustomJob() && entity.getProfession() == Villager.Profession.CLERIC) {
+                        ClericService.triggerRandomBuffAfterSalary(villager, entity);
+                    }
+                } catch (Throwable t) {
+                    org.bukkit.Bukkit.getLogger().warning("[TaxService] Erreur ClericService: " + t.getMessage());
                 }
 
                 // ACTION MÉTIER NATIF: Armurier améliore l'armure du joueur après paiement
@@ -162,11 +173,39 @@ public class TaxService {
                         }
                     }
                 } catch (Throwable t) {
-                    Bukkit.getLogger().warning("[TaxService] Erreur ArmorierService: " + t.getMessage());
+                    org.bukkit.Bukkit.getLogger().warning("[TaxService] Erreur ArmorierService: " + t.getMessage());
+                }
+
+                // ACTION MÉTIER NATIF: Tailleur de Pierre transforme les blocs après paiement
+                try {
+                    if (!villager.hasCustomJob() && entity.getProfession() == Villager.Profession.MASON) {
+                        MasonService.triggerBlockTransformationAfterSalary(villager, entity);
+                    }
+                } catch (Throwable t) {
+                    org.bukkit.Bukkit.getLogger().warning("[TaxService] Erreur MasonService: " + t.getMessage());
+                }
+
+                // ACTIONS MÉTIERS CUSTOM: Exécution après paiement des taxes
+                try {
+                    if (villager.hasCustomJob()) {
+                        String customJobName = villager.getCurrentJobName();
+                        
+                        // Garde forestier plante un arbre après paiement
+                        if ("garde_forestier".equals(customJobName)) {
+                            ForestGuardService.triggerTreePlantingAfterSalary(villager, entity);
+                        }
+                        
+                        // D'autres métiers custom peuvent être ajoutés ici dans le futur
+                        // if ("autre métier".equals(customJobName)) {
+                        //     AutreMetierService.triggerActionAfterSalary(villager, entity);
+                        // }
+                    }
+                } catch (Throwable t) {
+                    org.bukkit.Bukkit.getLogger().warning("[TaxService] Erreur lors de l'exécution de l'action métier custom: " + t.getMessage());
                 }
 
             } catch (Exception e) {
-                Bukkit.getLogger().warning("[TaxService] Erreur lors de la collecte d'impôts pour " + 
+                org.bukkit.Bukkit.getLogger().warning("[TaxService] Erreur lors de la collecte d'impôts pour " + 
                                          villager.getId() + ": " + e.getMessage());
             }
         }
@@ -254,7 +293,7 @@ public class TaxService {
         
         // Si aucun misérable, rien à redistribuer
         if (totalMiserables == 0) {
-            Bukkit.getLogger().info("[TaxService] Aucun villageois misérable trouvé pour la redistribution");
+            org.bukkit.Bukkit.getLogger().info("[TaxService] Aucun villageois misérable trouvé pour la redistribution");
             return redistributionByVillage;
         }
         
@@ -274,9 +313,11 @@ public class TaxService {
             for (VillagerModel miserable : miserables) {
                 miserable.setRichesse(miserable.getRichesse() + amountPerMiserable);
                 VillagerRepository.update(miserable);
+                // Mise à jour temps réel du nom (richesse)
+                SocialClassService.updateVillagerDisplayName(miserable);
                 
                 // Log pour debug
-                Bukkit.getLogger().info("[TaxService] Redistribution: " + miserable.getId() + 
+                org.bukkit.Bukkit.getLogger().info("[TaxService] Redistribution: " + miserable.getId() + 
                                        " (Village: " + villageName + ") a reçu " + 
                                        String.format("%.2f", amountPerMiserable) + "µ");
             }
@@ -285,7 +326,7 @@ public class TaxService {
         }
         
         // Log global de redistribution
-        Bukkit.getLogger().info("[TaxService] Redistribution terminée: " + 
+        org.bukkit.Bukkit.getLogger().info("[TaxService] Redistribution terminée: " + 
                                String.format("%.2f", totalAmount) + "µ redistribués à " + 
                                totalMiserables + " misérables dans " + 
                                miserablesByVillage.size() + " villages");

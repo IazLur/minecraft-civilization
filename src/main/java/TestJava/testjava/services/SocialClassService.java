@@ -4,7 +4,6 @@ import TestJava.testjava.TestJava;
 import TestJava.testjava.enums.SocialClass;
 import TestJava.testjava.models.VillagerModel;
 import TestJava.testjava.repositories.VillagerRepository;
-import TestJava.testjava.services.HistoryService;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Entity;
@@ -14,15 +13,13 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@SuppressWarnings("deprecation")
 public class SocialClassService {
 
     // Seuils de nourriture pour les transitions
     private static final int FOOD_THRESHOLD_0_TO_1 = 19; // Misérable → Inactive
     private static final int FOOD_THRESHOLD_1_TO_0 = 6;  // Inactive → Misérable  
     private static final int FOOD_THRESHOLD_2_TO_0 = 5;  // Ouvrière → Misérable
-
-    // Pattern pour nettoyer les tags de classe existants (anciens crochets ET nouveaux accolades)
-    private static final Pattern SOCIAL_CLASS_TAG_PATTERN = Pattern.compile("(\\[\\d\\]|\\{\\d\\})\\s*");
 
     /**
      * Évalue et met à jour la classe sociale d'un villageois basée sur sa nourriture et son métier
@@ -124,7 +121,7 @@ public class SocialClassService {
         handleJobRestrictions(villager, oldClass, newClass);
         
         // Enregistre le changement dans l'historique
-        HistoryService.recordSocialClassChange(villager, newClass);
+        // HistoryService.recordSocialClassChange(villager, newClass);
         
         Bukkit.getLogger().info("[SocialClass] Changement de classe pour " + villager.getId() + 
                                ": " + oldClass.getName() + " → " + newClass.getName());
@@ -168,7 +165,7 @@ public class SocialClassService {
     }
 
     /**
-     * Met à jour le nom d'affichage du villageois avec le tag de classe sociale
+     * Met à jour le nom d'affichage du villageois avec le format centralisé
      */
     public static void updateVillagerDisplayName(VillagerModel villager) {
         if (TestJava.world == null) {
@@ -187,19 +184,8 @@ public class SocialClassService {
                 if (entity instanceof Villager bukkit_villager && 
                     entity.getUniqueId().equals(villager.getId())) {
                     
-                    String currentName = bukkit_villager.getCustomName();
-                    
-                    if (currentName == null) {
-                        currentName = "Villageois";
-                    }
-                    
-                    // Nettoie les anciens tags de classe sociale
-                    String cleanName = SOCIAL_CLASS_TAG_PATTERN.matcher(currentName).replaceAll("").trim();
-                    
-                    // Ajoute le nouveau tag
-                    SocialClass socialClass = villager.getSocialClassEnum();
-                    String coloredTag = socialClass.getColoredTag();
-                    String newName = coloredTag + cleanName;
+                    // Construit le nom complet via le service centralisé
+                    String newName = VillagerNameService.buildDisplayName(villager, bukkit_villager, null);
                     
                     bukkit_villager.setCustomName(newName);
                     bukkit_villager.setCustomNameVisible(true);
@@ -289,7 +275,7 @@ public class SocialClassService {
                         bukkit_villager.getPathfinder().stopPathfinding();
                         
                         // Enregistrer dans l'historique
-                        HistoryService.recordJobChange(villager, "Sans emploi");
+                        // HistoryService.recordJobChange(villager, "Sans emploi");
                         
                         Bukkit.getLogger().info("[SocialClass] ✅ Métier retiré pour villageois misérable " + villager.getId());
                     }
@@ -323,7 +309,7 @@ public class SocialClassService {
     }
 
     /**
-     * Vérifie si un villageois peut avoir un métier selon sa classe sociale
+     * Vérifie si un villageois peut avoir un métier selon la classe sociale
      */
     public static boolean canVillagerHaveJob(VillagerModel villager) {
         return villager.getSocialClassEnum().canHaveJob();
@@ -494,9 +480,9 @@ public class SocialClassService {
         Matcher matcher = oldFormatPattern.matcher(oldName);
         
         if (matcher.matches()) {
-            String colorBefore = matcher.group(1) != null ? matcher.group(1) : "";
+            // String colorBefore = matcher.group(1) != null ? matcher.group(1) : "";
             String classNumber = matcher.group(2);
-            String colorAfter = matcher.group(3) != null ? matcher.group(3) : "";
+            // String colorAfter = matcher.group(3) != null ? matcher.group(3) : "";
             String villageName = matcher.group(4);
             String rest = matcher.group(5) != null ? matcher.group(5) : "";
             

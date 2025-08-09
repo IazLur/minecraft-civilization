@@ -20,6 +20,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 
 
 
+@SuppressWarnings("deprecation")
 public class SocialClassJobListener implements Listener {
 
 
@@ -59,6 +60,8 @@ public class SocialClassJobListener implements Listener {
                 
                 // Empêcher le villageois de continuer à chercher des blocs de métier
                 preventMiserableFromSeekingJobs(villager);
+                // MAJ nom (peut affecter l'étiquette de métier)
+                SocialClassService.updateVillagerDisplayName(villagerModel);
             }, 1L);
             
             return;
@@ -76,6 +79,8 @@ public class SocialClassJobListener implements Listener {
             Bukkit.getScheduler().runTaskLater(Bukkit.getPluginManager().getPlugin("TestJava"), () -> {
                 villager.setProfession(Villager.Profession.NONE);
                 villager.getPathfinder().stopPathfinding();
+                // MAJ nom (peut affecter l'étiquette de métier)
+                SocialClassService.updateVillagerDisplayName(villagerModel);
             }, 1L);
             
             return;
@@ -109,6 +114,8 @@ public class SocialClassJobListener implements Listener {
                 HistoryService.recordJobChange(villagerModel, jobName);
                 
                 SocialClassService.promoteToWorkerOnJobAssignment(villagerModel);
+                // MAJ nom (étiquette de métier)
+                SocialClassService.updateVillagerDisplayName(villagerModel);
             }
             
             // Si le villageois perd son métier NATIF (passe à NONE) - MAIS PAS SI IL A UN MÉTIER CUSTOM
@@ -127,12 +134,21 @@ public class SocialClassJobListener implements Listener {
                 HistoryService.recordJobChange(villagerModel, "Sans emploi");
                 
                 SocialClassService.demoteToInactiveOnJobLoss(villagerModel);
+                // MAJ nom (étiquette de métier)
+                SocialClassService.updateVillagerDisplayName(villagerModel);
             }
             // AJOUT: Logger si villageois custom avec profession NONE (normal)
             else if (newProfession == Villager.Profession.NONE && 
                      villagerModel.hasCustomJob()) {
                 Bukkit.getLogger().info("[SocialClass] Villageois avec métier custom (" + villagerModel.getCurrentJobName() + 
                                        ") a profession NONE - C'EST NORMAL, pas de rétrogradation");
+                // MAJ nom par sécurité
+                SocialClassService.updateVillagerDisplayName(villagerModel);
+            }
+            
+            // Cas général: profession a changé sans changement de classe → rafraîchir le nom
+            else {
+                SocialClassService.updateVillagerDisplayName(villagerModel);
             }
         }, 2L); // Délai de 2 ticks pour s'assurer que le changement est effectif
     }

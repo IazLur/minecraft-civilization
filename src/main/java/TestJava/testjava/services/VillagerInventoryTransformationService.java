@@ -19,6 +19,7 @@ import java.util.Collection;
  * Service pour gérer les transformations automatiques d'inventaire des villageois
  * et la vente à la banque mondiale
  */
+@SuppressWarnings("deprecation")
 public class VillagerInventoryTransformationService {
 
     /**
@@ -153,6 +154,8 @@ public class VillagerInventoryTransformationService {
         // Donner l'argent au villageois
         villagerModel.setRichesse(villagerModel.getRichesse() + totalEarnings);
         VillagerRepository.update(villagerModel);
+        // Mise à jour temps réel du nom (richesse)
+        SocialClassService.updateVillagerDisplayName(villagerModel);
 
         // Mettre à jour la banque mondiale
         hayResource.setQuantity(hayResource.getQuantity() + hayBlockCount);

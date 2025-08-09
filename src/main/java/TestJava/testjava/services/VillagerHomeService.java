@@ -90,6 +90,12 @@ public class VillagerHomeService {
             Bukkit.getLogger().info("[VillagerHome] Correction du Home pour " + villager.getUniqueId() + 
                                    " vers " + village.getId());
             
+            // ⚠️ NOUVEAU: Ne pas interférer avec les mouvements gérés par VillagerMovementManager
+            if (VillagerMovementManager.isMoving(villager)) {
+                Bukkit.getLogger().info("[VillagerHome] ⏸️ Correction du Home reportée - villageois en mouvement via VillagerMovementManager");
+                return;
+            }
+            
             // Arrêter tous les mouvements en cours
             villager.getPathfinder().stopPathfinding();
             
@@ -116,6 +122,12 @@ public class VillagerHomeService {
     public static void resetVillagerNavigation(Villager villager) {
         try {
             Bukkit.getLogger().info("[VillagerHome] Réinitialisation navigation pour " + villager.getUniqueId());
+            
+            // ⚠️ NOUVEAU: Ne pas interférer avec les mouvements gérés par VillagerMovementManager
+            if (VillagerMovementManager.isMoving(villager)) {
+                Bukkit.getLogger().info("[VillagerHome] ⏸️ Réinitialisation navigation reportée - villageois en mouvement via VillagerMovementManager");
+                return;
+            }
             
             // Arrêter tous les mouvements en cours
             villager.getPathfinder().stopPathfinding();

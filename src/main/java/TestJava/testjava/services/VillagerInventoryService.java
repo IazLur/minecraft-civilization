@@ -4,9 +4,7 @@ import TestJava.testjava.TestJava;
 
 import TestJava.testjava.models.VillagerModel;
 import TestJava.testjava.repositories.VillagerRepository;
-import TestJava.testjava.services.HistoryService;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Villager;
 import org.bukkit.inventory.ItemStack;
@@ -16,7 +14,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.UUID;
 
 /**
  * Service pour gérer l'inventaire des villageois et les échanges de nourriture
@@ -42,8 +39,7 @@ public class VillagerInventoryService {
         put(Material.HAY_BLOCK, 9.0f);
     }};
 
-    // Paramètres de déplacement (similaires à VillagerGoEatThread)
-    private static final int MIN_DELAY = 20;
+    // Paramètres de déplacement
     private static final int RANGE_DELAY = 20 * 10;
     private static final double MOVE_SPEED = 1.0;
     private static final double INTERACTION_DISTANCE = 3.0;
@@ -156,87 +152,49 @@ public class VillagerInventoryService {
 
     /**
      * Démarre le déplacement du villageois vers le fermier pour effectuer la transaction
+     * NOUVEAU: Utilise VillagerMovementManager pour centraliser la logique de déplacement
      */
     private static void startMovementToFarmer(VillagerModel buyer, VillagerModel seller, 
                                             Villager buyerEntity, Villager sellerEntity, 
                                             Material foodType, float price) {
         
         Random rand = new Random();
-        int delay = MIN_DELAY + rand.nextInt(RANGE_DELAY);
-        UUID taskId = UUID.randomUUID();
-
-        final int[] attempts = {0};
-        final double[] increasedDistance = {INTERACTION_DISTANCE};
-
-        TestJava.threads.put(taskId, Bukkit.getScheduler().scheduleSyncRepeatingTask(TestJava.plugin, () -> {
-            attempts[0] += 1;
-
-            // Augmenter progressivement la distance d'interaction
-            if (attempts[0] % 3 == 0) {
-                increasedDistance[0] += 1.0;
-            }
-
-            performMovementTask(buyer, seller, buyerEntity, sellerEntity, foodType, price, 
-                              taskId, increasedDistance[0], attempts[0]);
-        }, delay, 10));
-    }
-
-    /**
-     * Exécute une itération du déplacement vers le fermier
-     */
-    private static void performMovementTask(VillagerModel buyer, VillagerModel seller,
-                                          Villager buyerEntity, Villager sellerEntity,
-                                          Material foodType, float price,
-                                          UUID taskId, double maxDistance, int attempts) {
+        int delay = rand.nextInt(RANGE_DELAY);
         
-        // Vérifications de sécurité
-        if (buyerEntity == null || sellerEntity == null || buyerEntity.isDead() || sellerEntity.isDead()) {
-            cancelMovementTask(taskId);
-            return;
-        }
-
-        // Réveiller le villageois s'il dort
-        if (buyerEntity.isSleeping()) {
-            buyerEntity.wakeup();
-        }
-
-        // Déplacer vers le fermier
-        Location farmerLocation = sellerEntity.getLocation();
-        buyerEntity.getPathfinder().moveTo(farmerLocation, MOVE_SPEED);
-
-        // Vérifier si le fermier a encore la nourriture
-        if (!hasSpecificFood(sellerEntity, foodType)) {
-            cancelMovementTask(taskId);
-            return;
-        }
-
-        // Vérifier si assez proche pour la transaction
-        double distance = buyerEntity.getLocation().distance(farmerLocation);
-        if (distance <= maxDistance) {
-            // Effectuer la transaction
-            if (performFoodTransaction(buyer, seller, buyerEntity, sellerEntity, foodType, price)) {
-                cancelMovementTask(taskId);
-            } else {
-                // Transaction échouée, annuler
-                cancelMovementTask(taskId);
+        // Attendre un délai aléatoire avant de commencer le déplacement
+        Bukkit.getScheduler().runTaskLater(TestJava.plugin, () -> {
+            
+            // Vérifications de sécurité avant de commencer
+            if (buyerEntity == null || sellerEntity == null || buyerEntity.isDead() || sellerEntity.isDead()) {
+                return;
             }
-            return;
-        }
-
-        // Timeout après trop de tentatives
-        if (attempts > 30) {
-            cancelMovementTask(taskId);
-        }
-    }
-
-    /**
-     * Annule une tâche de déplacement
-     */
-    private static void cancelMovementTask(UUID taskId) {
-        if (TestJava.threads.containsKey(taskId)) {
-            Bukkit.getScheduler().cancelTask(TestJava.threads.get(taskId));
-            TestJava.threads.remove(taskId);
-        }
+            
+            if (!hasSpecificFood(sellerEntity, foodType)) {
+                return; // Le fermier n'a plus la nourriture
+            }
+            
+            // Utiliser le gestionnaire centralisé pour le déplacement
+            VillagerMovementManager.moveVillager(buyerEntity, sellerEntity.getLocation())
+                .withSuccessDistance(INTERACTION_DISTANCE)
+                .withMoveSpeed(MOVE_SPEED)
+                .withTimeout(30) // 30 secondes maximum
+                .withName("VillagerFoodPurchase")
+                .onSuccess(() -> {
+                    // Transaction à l'arrivée
+                    if (performFoodTransaction(buyer, seller, buyerEntity, sellerEntity, foodType, price)) {
+                        // Transaction réussie
+                        Bukkit.getLogger().fine("[VillagerInventory] Transaction réussie entre " + 
+                                              buyer.getId() + " et " + seller.getId());
+                    }
+                })
+                .onFailure(() -> {
+                    // Échec du déplacement
+                    Bukkit.getLogger().fine("[VillagerInventory] Échec du déplacement pour transaction entre " + 
+                                          buyer.getId() + " et " + seller.getId());
+                })
+                .start();
+                
+        }, delay);
     }
 
     /**
@@ -289,6 +247,9 @@ public class VillagerInventoryService {
         // Sauvegarder les changements
         VillagerRepository.update(buyer);
         VillagerRepository.update(seller);
+        // Mise à jour temps réel des noms (richesse)
+        SocialClassService.updateVillagerDisplayName(buyer);
+        SocialClassService.updateVillagerDisplayName(seller);
 
         // Évaluer la classe sociale
         SocialClassService.evaluateAndUpdateSocialClass(buyer);
@@ -352,18 +313,6 @@ public class VillagerInventoryService {
         }
         
         return false;
-    }
-
-    /**
-     * Retourne le nom d'affichage d'un type de nourriture
-     */
-    private static String getFoodDisplayName(Material foodType) {
-        return switch (foodType) {
-            case WHEAT -> "blé";
-            case BREAD -> "pain";
-            case HAY_BLOCK -> "bloc de foin";
-            default -> foodType.toString().toLowerCase();
-        };
     }
 
     /**

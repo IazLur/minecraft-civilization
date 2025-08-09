@@ -12,16 +12,23 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import TestJava.testjava.TestJava;
 import TestJava.testjava.Config;
+import TestJava.testjava.models.BuildingModel;
 import TestJava.testjava.models.VillageModel;
+import TestJava.testjava.models.VillagerModel;
+import TestJava.testjava.repositories.BuildingRepository;
 import TestJava.testjava.repositories.VillageRepository;
-import TestJava.testjava.services.CartographeService;
+import TestJava.testjava.repositories.VillagerRepository;
 import TestJava.testjava.services.ArmorierService;
+import TestJava.testjava.services.CartographeService;
+import TestJava.testjava.services.ForestGuardService;
+import TestJava.testjava.services.MasonService;
 import TestJava.testjava.services.SocialClassService;
 import TestJava.testjava.services.TaxService;
 import TestJava.testjava.threads.VillagerGoEatThread;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -82,6 +89,10 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
                 return handleFletcherCommand(player, subArgs);
             case "armurier":
                 return handleArmorierCommand(player, subArgs);
+            case "tailleur":
+                return handleTailleurCommand(player, subArgs);
+            case "forestguard":
+                return handleForestGuardCommand(player, subArgs);
             default:
                 showHelp(player);
                 return true;
@@ -97,7 +108,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         if (args.length == 1) {
             List<String> subCommands = Arrays.asList(
                 "refresh", "data", "emptyvillage", "forcespawn",
-                "testautojob", "traderstatus", "testsocialclass", "collecttaxes", "goeat", "cartographe", "fletcher", "armurier"
+                "testautojob", "traderstatus", "testsocialclass", "collecttaxes", "goeat", "cartographe", "fletcher", "armurier", "tailleur", "forestguard"
             );
             
             String input = args[0].toLowerCase();
@@ -295,6 +306,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         player.sendMessage(Component.text("/admin cartographe").color(NamedTextColor.YELLOW).append(Component.text(" - Gestion du système cartographe (status|test|debug)").color(NamedTextColor.WHITE)));
         player.sendMessage(Component.text("/admin fletcher").color(NamedTextColor.YELLOW).append(Component.text(" - Gestion du système fletcher (status|test|debug)").color(NamedTextColor.WHITE)));
         player.sendMessage(Component.text("/admin armurier").color(NamedTextColor.YELLOW).append(Component.text(" - Gestion du système armurier (status|test|debug)").color(NamedTextColor.WHITE)));
+        player.sendMessage(Component.text("/admin tailleur").color(NamedTextColor.YELLOW).append(Component.text(" - Gestion du système tailleur de pierre (status|test|debug)").color(NamedTextColor.WHITE)));
     }
 
     /**
@@ -483,6 +495,256 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         }
         
         player.sendMessage(Component.text("==========================").color(NamedTextColor.GOLD));
+        return true;
+    }
+
+    /**
+     * Commande de test pour le Tailleur de Pierre
+     */
+    private boolean handleTailleurCommand(Player player, String[] args) {
+        if (args.length < 1) {
+            player.sendMessage(Component.text("❌ Usage: /admin tailleur <status|test|debug> [village]").color(NamedTextColor.RED));
+            return true;
+        }
+
+        String subCommand = args[0].toLowerCase();
+        String[] subArgs = Arrays.copyOfRange(args, 1, args.length);
+
+        switch (subCommand) {
+            case "status":
+                return handleTailleurStatus(player, subArgs);
+            case "test":
+                return handleTailleurTest(player, subArgs);
+            case "debug":
+                return handleTailleurDebug(player);
+            default:
+                player.sendMessage(Component.text("❌ Sous-commande inconnue. Usage: /admin tailleur <status|test|debug>").color(NamedTextColor.RED));
+                return true;
+        }
+    }
+
+    /**
+     * Affiche le statut des tailleurs de pierre
+     */
+    private boolean handleTailleurStatus(Player player, String[] args) {
+        player.sendMessage(Component.text("🪨 === STATUT TAILLEUR DE PIERRE ===").color(NamedTextColor.GOLD));
+        
+        // Compter les tailleurs de pierre
+        int masonCount = 0;
+        if (TestJava.world != null) {
+            for (Entity entity : TestJava.world.getEntities()) {
+                if (entity instanceof Villager villager && villager.getProfession() == Villager.Profession.MASON) {
+                    masonCount++;
+                }
+            }
+        }
+
+        player.sendMessage(Component.text("Tailleurs de pierre actifs: " + masonCount).color(NamedTextColor.GREEN));
+        player.sendMessage(Component.text("Fonction: Transforme cobblestone → pierre taillée, quartz → quartz taillé").color(NamedTextColor.GRAY));
+        player.sendMessage(Component.text("Déclenchement: Après paiement du salaire toutes les 5 minutes").color(NamedTextColor.GRAY));
+        player.sendMessage(Component.text("Rayon de recherche: " + Config.VILLAGE_PROTECTION_RADIUS + " blocs").color(NamedTextColor.GRAY));
+        player.sendMessage(Component.text("=======================================").color(NamedTextColor.GOLD));
+        return true;
+    }
+
+    /**
+     * Test manuel du système Tailleur de Pierre
+     */
+    private boolean handleTailleurTest(Player player, String[] args) {
+        // Trouver le village le plus proche
+        VillageModel nearestVillage = null;
+        double nearestDistance = Double.MAX_VALUE;
+        
+        Location playerLoc = player.getLocation();
+        for (VillageModel village : VillageRepository.getAll()) {
+            Location villageCenter = VillageRepository.getBellLocation(village);
+            if (villageCenter != null && villageCenter.getWorld().equals(playerLoc.getWorld())) {
+                double distance = playerLoc.distance(villageCenter);
+                if (distance < nearestDistance) {
+                    nearestDistance = distance;
+                    nearestVillage = village;
+                }
+            }
+        }
+
+        if (nearestVillage == null) {
+            player.sendMessage(Component.text("❌ Aucun village trouvé près de votre position.").color(NamedTextColor.RED));
+            return true;
+        }
+
+        // Trouver un tailleur de pierre dans le village
+        Villager mason = null;
+        if (TestJava.world != null) {
+            Location villageCenter = VillageRepository.getBellLocation(nearestVillage);
+            if (villageCenter != null) {
+                for (Entity entity : TestJava.world.getNearbyEntities(villageCenter, Config.VILLAGE_PROTECTION_RADIUS, Config.VILLAGE_PROTECTION_RADIUS, Config.VILLAGE_PROTECTION_RADIUS)) {
+                    if (entity instanceof Villager villager && villager.getProfession() == Villager.Profession.MASON) {
+                        mason = villager;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (mason == null) {
+            player.sendMessage(Component.text("❌ Aucun tailleur de pierre trouvé dans le village '" + nearestVillage.getId() + "'.").color(NamedTextColor.RED));
+            return true;
+        }
+
+        // Déclencher manuellement le service
+        try {
+            VillagerModel villagerModel = VillagerRepository.find(mason.getUniqueId());
+            if (villagerModel != null) {
+                MasonService.triggerBlockTransformationAfterSalary(villagerModel, mason);
+                player.sendMessage(Component.text("✅ Test du Tailleur de Pierre déclenché pour le village '" + nearestVillage.getId() + "'.").color(NamedTextColor.GREEN));
+                player.sendMessage(Component.text("ℹ️ Le tailleur va chercher des blocs de cobblestone ou de quartz à transformer.").color(NamedTextColor.GRAY));
+            } else {
+                player.sendMessage(Component.text("❌ Villageois non trouvé dans la base de données.").color(NamedTextColor.RED));
+            }
+        } catch (Exception e) {
+            player.sendMessage(Component.text("❌ Erreur lors du test: " + e.getMessage()).color(NamedTextColor.RED));
+            TestJava.plugin.getLogger().warning("Erreur test tailleur: " + e.getMessage());
+        }
+
+        return true;
+    }
+
+    /**
+     * Affiche les informations de débogage du tailleur de pierre
+     */
+    private boolean handleTailleurDebug(Player player) {
+        player.sendMessage(Component.text("🪨 === DEBUG TAILLEUR DE PIERRE ===").color(NamedTextColor.GOLD));
+        player.sendMessage(Component.text("Service actif: ✅").color(NamedTextColor.GRAY));
+        
+        // Compter les tailleurs de pierre
+        int masonCount = 0;
+        if (TestJava.world != null) {
+            for (Entity entity : TestJava.world.getEntities()) {
+                if (entity instanceof Villager villager && villager.getProfession() == Villager.Profession.MASON) {
+                    masonCount++;
+                }
+            }
+        }
+
+        player.sendMessage(Component.text("Tailleurs de pierre actifs: " + masonCount).color(NamedTextColor.GREEN));
+        player.sendMessage(Component.text("Rayon de village: " + Config.VILLAGE_PROTECTION_RADIUS + " blocs").color(NamedTextColor.GRAY));
+        player.sendMessage(Component.text("Transformations: COBBLESTONE → STONE_BRICKS").color(NamedTextColor.GRAY));
+        player.sendMessage(Component.text("Alternative: QUARTZ_BLOCK → CHISELED_QUARTZ_BLOCK").color(NamedTextColor.GRAY));
+        player.sendMessage(Component.text("Distance de travail: 2.5 blocs").color(NamedTextColor.GRAY));
+        player.sendMessage(Component.text("Timeout: 20 secondes par bloc").color(NamedTextColor.GRAY));
+        player.sendMessage(Component.text("=======================================").color(NamedTextColor.GOLD));
+        return true;
+    }
+
+    private boolean handleForestGuardCommand(Player player, String[] args) {
+        if (args.length == 0) {
+            player.sendMessage(Component.text("Usage: /admin forestguard <test|status>").color(NamedTextColor.RED));
+            return true;
+        }
+        
+        String subCommand = args[0].toLowerCase();
+        
+        switch (subCommand) {
+            case "test":
+                return handleForestGuardTestCommand(player);
+            case "status":
+                return handleForestGuardStatusCommand(player);
+            default:
+                player.sendMessage(Component.text("Sous-commandes disponibles: test, status").color(NamedTextColor.RED));
+                return true;
+        }
+    }
+    
+    private boolean handleForestGuardTestCommand(Player player) {
+        player.sendMessage(Component.text("================ TEST GARDE FORESTIER ================").color(NamedTextColor.GOLD));
+        
+        // Trouver tous les gardes forestiers dans le rayon
+        int guardCount = 0;
+        Collection<VillagerModel> allVillagers = VillagerRepository.getAll();
+        
+        for (VillagerModel villagerModel : allVillagers) {
+            if (villagerModel.hasCustomJob() && "garde_forestier".equals(villagerModel.getCurrentJobName())) {
+                guardCount++;
+                
+                // Trouver l'entité correspondante
+                Villager entity = (Villager) TestJava.plugin.getServer().getEntity(villagerModel.getId());
+                if (entity != null) {
+                    player.sendMessage(Component.text("🌲 Garde forestier trouvé: " + villagerModel.getId()).color(NamedTextColor.GREEN));
+                    player.sendMessage(Component.text("   Village: " + villagerModel.getVillageName()).color(NamedTextColor.GRAY));
+                    player.sendMessage(Component.text("   Position: " + entity.getLocation().getBlockX() + "," + entity.getLocation().getBlockY() + "," + entity.getLocation().getBlockZ()).color(NamedTextColor.GRAY));
+                    player.sendMessage(Component.text("   Classe sociale: " + villagerModel.getSocialClassEnum().getColoredTag()).color(NamedTextColor.GRAY));
+                    
+                    // Test du déclenchement manuel
+                    player.sendMessage(Component.text("   🧪 Test de plantation en cours...").color(NamedTextColor.YELLOW));
+                    try {
+                        ForestGuardService.triggerTreePlantingAfterSalary(villagerModel, entity);
+                        player.sendMessage(Component.text("   ✅ Déclenchement réussi - Vérifiez les logs du serveur").color(NamedTextColor.GREEN));
+                    } catch (Exception e) {
+                        player.sendMessage(Component.text("   ❌ Erreur: " + e.getMessage()).color(NamedTextColor.RED));
+                    }
+                    
+                } else {
+                    player.sendMessage(Component.text("🌲 Garde forestier fantôme: " + villagerModel.getId()).color(NamedTextColor.RED));
+                }
+            }
+        }
+        
+        if (guardCount == 0) {
+            player.sendMessage(Component.text("❌ Aucun garde forestier trouvé sur le serveur").color(NamedTextColor.RED));
+            player.sendMessage(Component.text("💡 Construisez un bâtiment garde_forestier et assignez des villageois").color(NamedTextColor.YELLOW));
+        } else {
+            player.sendMessage(Component.text("📊 Total: " + guardCount + " garde(s) forestier(s) trouvé(s)").color(NamedTextColor.GREEN));
+        }
+        
+        player.sendMessage(Component.text("=======================================").color(NamedTextColor.GOLD));
+        return true;
+    }
+    
+    private boolean handleForestGuardStatusCommand(Player player) {
+        player.sendMessage(Component.text("=============== STATUS GARDE FORESTIER ===============").color(NamedTextColor.GOLD));
+        
+        // Statistiques des bâtiments garde forestier
+        Collection<BuildingModel> allBuildings = BuildingRepository.getAll();
+        int forestGuardBuildings = 0;
+        int activeBuildings = 0;
+        
+        for (BuildingModel building : allBuildings) {
+            if ("garde_forestier".equals(building.getBuildingType())) {
+                forestGuardBuildings++;
+                if (building.isActive()) {
+                    activeBuildings++;
+                    player.sendMessage(Component.text("🏢 Bâtiment actif: " + building.getVillageName()).color(NamedTextColor.GREEN));
+                    player.sendMessage(Component.text("   Position: " + building.getX() + "," + building.getY() + "," + building.getZ()).color(NamedTextColor.GRAY));
+                    player.sendMessage(Component.text("   Niveau: " + building.getLevel()).color(NamedTextColor.GRAY));
+                } else {
+                    player.sendMessage(Component.text("🏢 Bâtiment inactif: " + building.getVillageName()).color(NamedTextColor.RED));
+                }
+            }
+        }
+        
+        // Statistiques des employés
+        Collection<VillagerModel> allVillagers = VillagerRepository.getAll();
+        int totalGuards = 0;
+        int activeGuards = 0;
+        
+        for (VillagerModel villager : allVillagers) {
+            if (villager.hasCustomJob() && "garde_forestier".equals(villager.getCurrentJobName())) {
+                totalGuards++;
+                Villager entity = (Villager) TestJava.plugin.getServer().getEntity(villager.getId());
+                if (entity != null && !entity.isDead() && entity.isValid()) {
+                    activeGuards++;
+                }
+            }
+        }
+        
+        // Résumé
+        player.sendMessage(Component.text("📈 Bâtiments garde forestier: " + forestGuardBuildings + " (actifs: " + activeBuildings + ")").color(NamedTextColor.AQUA));
+        player.sendMessage(Component.text("👥 Employés garde forestier: " + totalGuards + " (en vie: " + activeGuards + ")").color(NamedTextColor.AQUA));
+        player.sendMessage(Component.text("⚙️ Fréquence de plantation: toutes les 5 minutes (avec les taxes)").color(NamedTextColor.GRAY));
+        player.sendMessage(Component.text("🌱 Types d'arbres: Chêne (30%), Bouleau (25%), Épicéa (20%)...").color(NamedTextColor.GRAY));
+        player.sendMessage(Component.text("📏 Rayon de recherche: 50 blocs autour du bâtiment").color(NamedTextColor.GRAY));
+        player.sendMessage(Component.text("=======================================").color(NamedTextColor.GOLD));
+        
         return true;
     }
 }

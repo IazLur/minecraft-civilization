@@ -8,6 +8,7 @@ import TestJava.testjava.repositories.VillageRepository;
 import TestJava.testjava.repositories.VillagerRepository;
 import TestJava.testjava.services.SocialClassService;
 import TestJava.testjava.services.HistoryService;
+import TestJava.testjava.services.VillagerNameService;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -18,6 +19,7 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 
+@SuppressWarnings("deprecation")
 public class ForceSpawnAtCommand implements CommandExecutor {
 
     @Override
@@ -62,7 +64,6 @@ public class ForceSpawnAtCommand implements CommandExecutor {
             // Crée le villageois dans le monde
             Villager newVillager = TestJava.world.spawn(spawnLocation, Villager.class);
             newVillager.setCustomNameVisible(true);
-            newVillager.setCustomName(ChatColor.BLUE + "[" + village.getId() + "] " + ChatColor.WHITE + customName);
             
             // Crée l'entrée dans la base de données
             VillagerModel villagerModel = new VillagerModel();
@@ -71,6 +72,10 @@ public class ForceSpawnAtCommand implements CommandExecutor {
             villagerModel.setFood(10); // Commence avec 10 points de nourriture (évite la mort immédiate)
             villagerModel.setSocialClass(0); // Classe 0 par défaut (Misérable)
             villagerModel.setRichesse(0.0f); // Richesse par défaut
+            
+            // Appliquer le nom formaté centralisé
+            String display = VillagerNameService.buildDisplayName(villagerModel, newVillager, customName);
+            newVillager.setCustomName(display);
             
             // Enregistrer la naissance dans l'historique
             HistoryService.recordVillagerBirth(villagerModel, village.getId());

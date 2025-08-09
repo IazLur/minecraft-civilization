@@ -7,6 +7,7 @@ import TestJava.testjava.listeners.JobBlockPlacementListener;
 import TestJava.testjava.listeners.VillagerFearListener;
 import TestJava.testjava.listeners.FriendlyFireListener;
 import TestJava.testjava.listeners.CartographeMovementListener;
+import TestJava.testjava.listeners.VillagerMovementConflictListener;
 import TestJava.testjava.models.*;
 
 import TestJava.testjava.repositories.ResourceRepository;
@@ -91,6 +92,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(new VillagerFearListener(), this);
         Bukkit.getPluginManager().registerEvents(new FriendlyFireListener(), this);
         Bukkit.getPluginManager().registerEvents(new CartographeMovementListener(), this);
+        Bukkit.getPluginManager().registerEvents(new VillagerMovementConflictListener(), this);
         TestJava.plugin = this;
         getLogger().log(Level.INFO, "Loading plugin v3.2");
         TestJava.world = Bukkit.getWorld(TestJava.worldName);
@@ -257,6 +259,10 @@ public final class TestJava extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onItemSpawn(ItemSpawnEvent e) {
+        // Empêcher le drop de graines d'arbres depuis les feuilles
+        if (TreeRestrictionService.preventSaplingDropFromLeaves(e)) return;
+        
+        // Logique existante pour réduire les chances de spawn de saplings
         TestJava.itemService.reduceSpawnChanceIfSapling(e);
     }
 
@@ -303,6 +309,9 @@ public final class TestJava extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent e) {
+        // Empêcher la plantation d'arbres par les joueurs
+        if (TreeRestrictionService.preventSaplingPlacement(e)) return;
+        
         if (TestJava.warBlockService.testIfCanPlaceTNT(e)) return;
         if (e.getBlockPlaced().getType() == Config.CONQUER_TYPE) {
             if (TestJava.villageService.canConquerVillage(e)) {

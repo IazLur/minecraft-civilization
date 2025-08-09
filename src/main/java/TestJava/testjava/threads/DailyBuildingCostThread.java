@@ -5,12 +5,15 @@ import TestJava.testjava.helpers.Colorize;
 import TestJava.testjava.models.BuildingModel;
 import TestJava.testjava.models.EmpireModel;
 import TestJava.testjava.models.VillageModel;
+import TestJava.testjava.models.VillagerModel;
 import TestJava.testjava.repositories.BuildingRepository;
 import TestJava.testjava.repositories.EmpireRepository;
 import TestJava.testjava.repositories.VillageRepository;
+import TestJava.testjava.repositories.VillagerRepository;
 import TestJava.testjava.services.CustomJobAssignmentService;
-import TestJava.testjava.services.SheepService;
 import TestJava.testjava.services.NativeJobLevelService;
+import TestJava.testjava.services.SheepService;
+import TestJava.testjava.services.SocialClassService;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -18,15 +21,15 @@ import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import TestJava.testjava.models.VillagerModel;
-import TestJava.testjava.repositories.VillagerRepository;
-import java.util.Set;
-import java.util.HashSet;
 import org.bukkit.entity.Villager;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+
+@SuppressWarnings("deprecation")
 public class DailyBuildingCostThread implements Runnable {
 
     @Override
@@ -148,6 +151,8 @@ public class DailyBuildingCostThread implements Runnable {
                 if (villager.hasNativeJob()) {
                     NativeJobLevelService.applyEducationToNativeJobLevel(villager);
                 }
+                // MAJ du nom en temps réel (richesse changée par l'éducation)
+                SocialClassService.updateVillagerDisplayName(villager);
             }
         }
         

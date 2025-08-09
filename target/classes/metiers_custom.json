@@ -24,5 +24,18 @@
     "nombreEmployesMax": 3,
     "salaireEmploye": 12,
     "tauxTaxeEmploye": 0.25
+  },
+  {
+    "buildingType": "garde_forestier",
+    "distanceMin": 77,
+    "distanceMax": 128,
+    "description": "Garde forestier pour générer une forêt",
+    "costToBuild": 500,
+    "costPerDay": 10,
+    "costPerUpgrade": 100,
+    "costUpgradeMultiplier": 1.2,
+    "nombreEmployesMax": 3,
+    "salaireEmploye": 12,
+    "tauxTaxeEmploye": 0.25
   }
 ]
