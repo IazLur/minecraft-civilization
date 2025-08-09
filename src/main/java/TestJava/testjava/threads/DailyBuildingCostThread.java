@@ -151,6 +151,42 @@ public class DailyBuildingCostThread implements Runnable {
             }
         }
         
+        // === Coût journalier des gardes squelettes ===
+        Collection<VillageModel> allVillages = VillageRepository.getAll();
+        for (VillageModel village : allVillages) {
+            EmpireModel empire = EmpireRepository.getForPlayer(village.getPlayerName());
+            if (empire == null) continue;
+            int skeletonPaid = 0;
+            for (Entity entity : TestJava.world.getEntities()) {
+                if (entity instanceof org.bukkit.entity.Skeleton && entity.isCustomNameVisible()) {
+                    String customName = entity.getCustomName();
+                    if (customName != null && customName.contains(village.getId())) {
+                        String[] nameParts = customName.replace(ChatColor.COLOR_CHAR + "", "").split(" ");
+                        String prenom = nameParts.length > 0 ? nameParts[0] : "Garde";
+                        String nom = nameParts.length > 1 ? nameParts[1] : "Squelette";
+                        if (empire.getJuridictionCount() >= 1) {
+                            empire.setJuridictionCount(empire.getJuridictionCount() - 1);
+                            EmpireRepository.update(empire);
+                            skeletonPaid++;
+                        } else {
+                            entity.remove();
+                            Bukkit.getServer().broadcastMessage(
+                                ChatColor.RED + prenom + " " + nom + ChatColor.GRAY + " sans salaire a déserté " +
+                                ChatColor.YELLOW + village.getId()
+                            );
+                        }
+                    }
+                }
+            }
+            // Message au propriétaire si paiement effectué
+            if (skeletonPaid > 0) {
+                Player owner = Bukkit.getPlayer(village.getPlayerName());
+                if (owner != null && owner.isOnline()) {
+                    owner.sendMessage(ChatColor.AQUA + "Votre village a payé " + ChatColor.YELLOW + skeletonPaid + "µ" + ChatColor.AQUA + " aux gardes squelettes");
+                }
+            }
+        }
+
         // Un seul log de résumé
         if (totalBuildingsProcessed > 0) {
             Bukkit.getLogger().info("[DailyBuildingCost] ✅ Résumé: " + totalBuildingsProcessed + " bâtiments traités, " + 

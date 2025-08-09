@@ -22,16 +22,16 @@
     "jobName": "Forgeron d'Outils",
     "distanceMin": 13,
     "distanceMax": 34,
-    "description": "Table de forgeron pour améliorer les outils",
+    "description": "Table de forgeron pour réparer les golems",
     "salaire": 12,
     "tauxImpot": 0.25
   },
   {
     "material": "FLETCHING_TABLE",
-    "jobName": "Archer",
+    "jobName": "Fletcher",
     "distanceMin": 13,
     "distanceMax": 34,
-    "description": "Table d'archerie pour fabriquer arcs et flèches",
+    "description": "Table d'archerie pour équiper les gardes en armure d'or",
     "salaire": 12,
     "tauxImpot": 0.25
   },

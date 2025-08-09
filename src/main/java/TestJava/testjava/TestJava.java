@@ -6,6 +6,7 @@ import TestJava.testjava.listeners.SheepManagementListener;
 import TestJava.testjava.listeners.JobBlockPlacementListener;
 import TestJava.testjava.listeners.VillagerFearListener;
 import TestJava.testjava.listeners.FriendlyFireListener;
+import TestJava.testjava.listeners.CartographeMovementListener;
 import TestJava.testjava.models.*;
 
 import TestJava.testjava.repositories.ResourceRepository;
@@ -54,6 +55,7 @@ public final class TestJava extends JavaPlugin implements Listener {
     public static VillagerService villagerService;
     public static WarBlockService warBlockService;
     public static ChunkManagerService chunkManagerService;
+    public static CartographeService cartographeService;
     public static World world;
 
     public static HashMap<UUID, String> banditTargets = new HashMap<>();
@@ -88,6 +90,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(new JobBlockPlacementListener(), this);
         Bukkit.getPluginManager().registerEvents(new VillagerFearListener(), this);
         Bukkit.getPluginManager().registerEvents(new FriendlyFireListener(), this);
+        Bukkit.getPluginManager().registerEvents(new CartographeMovementListener(), this);
         TestJava.plugin = this;
         getLogger().log(Level.INFO, "Loading plugin v3.2");
         TestJava.world = Bukkit.getWorld(TestJava.worldName);
@@ -115,6 +118,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         getCommand("distance").setExecutor(new DistanceCommand());
         getCommand("population").setExecutor(new PopulationCommand());
         getCommand("admin").setExecutor(new AdminCommand());
+        getCommand("building").setExecutor(new BuildingCommand());
 
         // Registering databases
         TestJava.database = new JsonDBTemplate(this.jsonLocation, this.baseScanPackage);
@@ -162,6 +166,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         TestJava.villagerService = new VillagerService();
         TestJava.warBlockService = new WarBlockService();
         TestJava.chunkManagerService = new ChunkManagerService(TestJava.world);
+        TestJava.cartographeService = new CartographeService();
 
         // Forcer le chargement des chunks pour tous les villages
         if (TestJava.world != null) {
@@ -184,6 +189,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerTaxThread(), 0, 20 * 60 * 5); // Collecte d'impôts toutes les 5 minutes
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new FarmerSupplyThread(), 0, 20 * 60 * 10); // Approvisionnement fermiers toutes les 10 minutes
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerGoEatThread(), 0, 20 * 60 * 2);
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillagerInventoryTransformationThread(), 0, 20 * 60); // Transformations inventaire toutes les minutes
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new DefenderThread(), 0, 20 * 5);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new TraderThread(), 0, 20 * 60);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new TraderMaintenanceThread(), 0, 20 * 60 * 2); // Maintenance marchands toutes les 2 minutes
@@ -196,6 +202,7 @@ public final class TestJava extends JavaPlugin implements Listener {
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new VillageStatsThread(), 0, 20 * 60 * 10); // Toutes les 10 minutes
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new CustomJobMaintenanceThread(), 0, 20 * 60 * 7); // Toutes les 7 minutes - Maintenance métiers custom
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new AutomaticJobAssignmentThread(), 0, 20 * 60); // Toutes les minutes - Assignation automatique d'emplois
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new CartographeMercenaryTrackingThread(), 0, 20 * 10); // Toutes les 10 secondes - Surveillance mercenaires cartographe
     }
 
     @EventHandler

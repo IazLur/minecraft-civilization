@@ -8,7 +8,6 @@ import TestJava.testjava.models.JobDistanceConfig;
 import TestJava.testjava.models.VillageModel;
 import TestJava.testjava.models.VillagerModel;
 import TestJava.testjava.repositories.EmpireRepository;
-import TestJava.testjava.services.HistoryService;
 import TestJava.testjava.repositories.VillageRepository;
 import TestJava.testjava.repositories.VillagerRepository;
 import TestJava.testjava.enums.SocialClass;
@@ -136,6 +135,36 @@ public class TaxService {
                 // Sauvegarder le villageois
                 VillagerRepository.update(villager);
 
+                // ACTION MÉTIER NATIF: Forgeron d'Outils répare les golems après paiement
+                try {
+                    if (!villager.hasCustomJob() && entity.getProfession() == Villager.Profession.TOOLSMITH) {
+                        ToolsmithService.triggerRepairsAfterSalary(villager, entity);
+                    }
+                } catch (Throwable t) {
+                    Bukkit.getLogger().warning("[TaxService] Erreur ToolsmithService: " + t.getMessage());
+                }
+
+                // ACTION MÉTIER NATIF: Fletcher équipe les gardes squelettes avec armure d'or après paiement
+                try {
+                    if (!villager.hasCustomJob() && entity.getProfession() == Villager.Profession.FLETCHER) {
+                        FletcherService.triggerArmorEquippingAfterSalary(villager, entity);
+                    }
+                } catch (Throwable t) {
+                    Bukkit.getLogger().warning("[TaxService] Erreur FletcherService: " + t.getMessage());
+                }
+
+                // ACTION MÉTIER NATIF: Armurier améliore l'armure du joueur après paiement
+                try {
+                    if (!villager.hasCustomJob() && entity.getProfession() == Villager.Profession.ARMORER) {
+                        VillageModel villageModel = VillageRepository.get(villager.getVillageName());
+                        if (villageModel != null) {
+                            ArmorierService.triggerArmorUpgradeAfterSalary(villager, villageModel);
+                        }
+                    }
+                } catch (Throwable t) {
+                    Bukkit.getLogger().warning("[TaxService] Erreur ArmorierService: " + t.getMessage());
+                }
+
             } catch (Exception e) {
                 Bukkit.getLogger().warning("[TaxService] Erreur lors de la collecte d'impôts pour " + 
                                          villager.getId() + ": " + e.getMessage());
@@ -154,11 +183,13 @@ public class TaxService {
         // Messages par village et enregistrement historique
         if (totalTaxCollected > 0) {
             // Message global résumé
-            Bukkit.getServer().broadcastMessage(
-                Colorize.name("💰 Paie des salaires terminée") + ": " + 
-                Colorize.name(String.format("%.2fµ", totalTaxCollected)) + 
-                " d'impôts collectés auprès de " + Colorize.name(totalTaxedVillagers + " travailleurs")
-            );
+            String summaryMsg =
+                Colorize.name("💰 Paie des salaires terminée") + ": " +
+                Colorize.name(String.format("%.2fµ", totalTaxCollected)) +
+                " d'impôts collectés auprès de " + Colorize.name(totalTaxedVillagers + " travailleurs");
+            for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) {
+                p.sendMessage(summaryMsg);
+            }
             
             // Messages détaillés par village
             for (VillageTaxStats stats : villageStats.values()) {
@@ -166,11 +197,13 @@ public class TaxService {
                     VillageModel village = VillageRepository.get(stats.villageName);
                     if (village != null) {
                         String ownerName = village.getPlayerName();
-                        Bukkit.getServer().broadcastMessage(
+                        String detailMsg =
                             Colorize.name(stats.villageName) + ": " +
-                            Colorize.name(String.format("%.2fµ", stats.taxCollected)) + 
-                            " pour " + Colorize.name(stats.taxedVillagers + " travailleurs")
-                        );
+                            Colorize.name(String.format("%.2fµ", stats.taxCollected)) +
+                            " pour " + Colorize.name(stats.taxedVillagers + " travailleurs");
+                        for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) {
+                            p.sendMessage(detailMsg);
+                        }
                         
                         // Message de redistribution pour le propriétaire du village
                         RedistributionStats redistribution = redistributionByVillage.get(stats.villageName);
@@ -293,16 +326,15 @@ public class TaxService {
         
         // Messages informatifs
         String villagerName = "Un villageois";
-        if (entity != null && entity.getCustomName() != null) {
-            villagerName = org.bukkit.ChatColor.stripColor(entity.getCustomName());
-        }
+    if (entity != null) { villagerName = entity.getName(); }
         
         // Message global de faillite
-        Bukkit.getServer().broadcastMessage(
-            "💸 " + Colorize.name("FAILLITE") + " à " + Colorize.name(villageName) + 
-            " : " + villagerName + " a perdu son " + jobType + 
-            " (salaire requis: " + requiredSalary + "µ, disponible: " + String.format("%.2f", availableFunds) + "µ)"
-        );
+        String bankruptcyMsg = "💸 " + Colorize.name("FAILLITE") + " à " + Colorize.name(villageName) +
+            " : " + villagerName + " a perdu son " + jobType +
+            " (salaire requis: " + requiredSalary + "µ, disponible: " + String.format("%.2f", availableFunds) + "µ)";
+        for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) {
+            p.sendMessage(bankruptcyMsg);
+        }
         
         // Enregistrer dans l'historique
         HistoryService.recordJobChange(villager, "Licenciement pour faillite");

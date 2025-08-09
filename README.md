@@ -398,6 +398,17 @@ if (result == FeedResult.SELF_FED) {
 VillagerInventoryService.giveFoodToFarmers();
 ```
 
+**VillagerInventoryTransformationThread** (1 min) - Transformations et ventes automatiques
+```java
+// Pour chaque villageois:
+// 1. Transformer 3 blés → 1 pain (silencieux)
+// 2. Transformer 3 pains → 1 bloc de foin (silencieux)  
+// 3. Vendre tous les blocs de foin à la banque mondiale (message coloré)
+VillagerInventoryTransformationService.executeInventoryTransformationCycle();
+// Message: "{Prénom} {Nom} a vendu {x} foin à la banque mondiale pour {x}µ"
+// Log résumé: "X villageois traités (blé→pain: X, pain→foin: X, foin vendus: X)"
+```
+
 **AutomaticJobAssignmentThread** (1 min) - Assignation automatique d'emplois
 ```java
 // Boucle sur chaque village et chaque villageois inactif
@@ -796,9 +807,9 @@ public void onEnable() {
 ## 📊 Métriques Système
 
 - **Modèles de données** : 13 classes principales (+ VillagerHistoryModel, VillageHistoryModel)
-- **Services** : 19+ services métier (TaxService, VillagerInventoryService, HistoryService)
+- **Services** : 20+ services métier (TaxService, VillagerInventoryService, VillagerInventoryTransformationService, HistoryService)
 - **Commandes** : 14 commandes utilisateur (+ /admin collecttaxes, /admin goeat, /data)
-- **Threads** : 10 threads de simulation (nouveaux: Tax, FarmerSupply)
+- **Threads** : 11 threads de simulation (nouveaux: Tax, FarmerSupply, VillagerInventoryTransformation)
 - **Listeners** : 5+ event handlers
 - **Configurations JSON** : 2 fichiers (13 métiers officiels + salaires/impôts + 1 bâtiment)
 - **Historique JSON** : Fichiers individuels par villageois/village avec archivage automatique
@@ -880,6 +891,15 @@ Toutes les actions importantes des villageois et villages sont automatiquement e
 - **Achat intelligent** : Recherche et achat auprès des fermiers proches
 - **Déplacement physique** : Villageois se déplacent vers les vendeurs
 - **Transaction complète** : Échange argent ↔ nourriture avec consommation
+
+### 🔄 Transformations Automatiques d'Inventaire (v3.12+)
+- **Transformation du blé** : 3 blés → 1 pain automatiquement (silencieux)
+- **Transformation du pain** : 3 pains → 1 bloc de foin automatiquement (silencieux)
+- **Vente à la banque mondiale** : Tous les blocs de foin vendus automatiquement
+- **Enrichissement villageois** : Les juridictions vont directement au villageois
+- **Fréquence** : Processus exécuté toutes les minutes pour tous les villageois
+- **Messages visibles** : `{Prénom} {Nom} a vendu {x} foin à la banque mondiale pour {x}µ`
+- **Économie fluide** : Conversion automatique des excédents alimentaires en richesse
 
 ### 🎮 Expérience Gameplay Enrichie
 - **Interactions visuelles** : Déplacements et échanges visibles

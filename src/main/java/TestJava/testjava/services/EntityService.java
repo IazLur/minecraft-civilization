@@ -291,6 +291,7 @@ public class EntityService {
             return;
         }
 
+        Bukkit.getLogger().info("[GardeNationale] Golem de fer détecté en spawn");
         VillageModel village = VillageRepository.getNearestOf(golem);
         golem.setCustomNameVisible(true);
         String name = CustomName.generate();
@@ -299,13 +300,38 @@ public class EntityService {
         );
         Bukkit.getServer().broadcastMessage(ChatColor.GRAY + Colorize.name(name) +
                 " a rejoint la garde nationale à " + Colorize.name(village.getId()));
+        Bukkit.getLogger().info("[GardeNationale] " + name + " a rejoint la garde nationale à " + village.getId());
     }
 
     public void testIfGolemDamageSameVillage(EntityTargetLivingEntityEvent e) {
         if (!(e.getEntity() instanceof IronGolem golem)) {
             return;
         }
-        testIfEntityDamageSameVillage(e, golem.isCustomNameVisible(), golem.getCustomName());
+        if (!golem.isCustomNameVisible() || golem.getCustomName() == null) {
+            return;
+        }
+        String golemVillage = CustomName.squareBrackets(golem.getCustomName(), 0);
+        VillageModel village = VillageRepository.get(golemVillage);
+        LivingEntity target = e.getTarget();
+        if (target == null) {
+            return;
+        }
+        // Cancel if target is a player from the same village
+        if (target instanceof Player player) {
+            if (village.getPlayerName().equals(player.getName())) {
+                e.setCancelled(true);
+                return;
+            }
+        }
+        // Cancel if target is a mob with the same village name
+        if (target.isCustomNameVisible() && target.getCustomName() != null) {
+            String targetVillage = CustomName.squareBrackets(target.getCustomName(), 0);
+            if (golemVillage.equals(targetVillage)) {
+                e.setCancelled(true);
+                return;
+            }
+        }
+        // Otherwise, allow attack (hostile mobs, other villages, etc.)
     }
 
     public void testIfPlaceLocust(BlockPlaceEvent e) {
@@ -338,7 +364,30 @@ public class EntityService {
         // Obtenez la raison de l'apparition de la créature
         CreatureSpawnEvent.SpawnReason reason = event.getSpawnReason();
         
-        // Ne traiter que les animaux passifs, pas les monstres
+        // Traitement spécial pour les golems de fer (garde nationale)
+        if (event.getEntityType() == EntityType.IRON_GOLEM) {
+            Bukkit.getLogger().info("[GardeNationale] Tentative de spawn golem de fer avec raison: " + reason);
+            switch (reason) {
+                case SPAWNER_EGG: // Apparu à partir d'un œuf d'apparition
+                case BREEDING:    // Résultat de l'accouplement
+                case CUSTOM:      // Instancié par un plugin ou un code
+                case VILLAGE_DEFENSE:  // Spawn naturel pour défendre un village
+                case VILLAGE_INVASION: // Spawn lors d'invasions
+                case BUILD_IRONGOLEM:  // Construit par les joueurs
+                case NATURAL:     // Spawn naturel dans les villages
+                    // Laisser les golems de fer apparaître pour la garde nationale
+                    Bukkit.getLogger().info("[GardeNationale] ✅ Spawn golem de fer autorisé (raison: " + reason + ")");
+                    break;
+                default:
+                    // Pour toutes les autres raisons, annulez l'événement
+                    Bukkit.getLogger().info("[GardeNationale] ❌ Spawn golem de fer bloqué (raison: " + reason + ")");
+                    event.setCancelled(true);
+                    break;
+            }
+            return;
+        }
+        
+        // Ne traiter que les autres animaux passifs, pas les monstres
         if (event.getEntityType() == EntityType.SHEEP ||
             event.getEntityType() == EntityType.COW ||
             event.getEntityType() == EntityType.PIG ||
@@ -360,8 +409,7 @@ public class EntityService {
             event.getEntityType() == EntityType.GLOW_SQUID ||
             event.getEntityType() == EntityType.TURTLE ||
             event.getEntityType() == EntityType.PANDA ||
-            event.getEntityType() == EntityType.POLAR_BEAR ||
-            event.getEntityType() == EntityType.IRON_GOLEM) {
+            event.getEntityType() == EntityType.POLAR_BEAR) {
             
             switch (reason) {
                 // Les raisons acceptables pour lesquelles un animal peut apparaître

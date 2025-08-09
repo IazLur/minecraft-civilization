@@ -45,3 +45,6 @@ commands:
     description: Commandes administratives
     usage: /admin <refresh|data|emptyvillage|forcespawn|reactivate|testautojob|traderstatus|collecttaxes|goeat>
     permission: testjava.admin
+  building:
+    description: Gérer les bâtiments
+    usage: /building <info|create|remove|list>
